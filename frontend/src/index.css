@@ -1,0 +1,965 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+  /* Color Palette - Premium Dark Sky & Congolese Copper/Gold */
+  --bg-main: #060913;
+  --bg-card: rgba(13, 20, 38, 0.6);
+  --bg-card-hover: rgba(20, 30, 58, 0.8);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(0, 124, 255, 0.3);
+  
+  --primary: #007cff;
+  --primary-hover: #0062cc;
+  --primary-glow: rgba(0, 124, 255, 0.35);
+  --secondary: #f59e0b; /* Congolese Gold */
+  --accent: #10b981;    /* Vibrant Green for success/online status */
+  
+  --text-main: #f8fafc;
+  --text-muted: #64748b;
+  --text-secondary: #cbd5e1;
+  
+  --error: #ef4444;
+  --warning: #f59e0b;
+  
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  
+  --transition-fast: all 0.15s ease;
+  --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 20px rgba(0, 124, 255, 0.2);
+}
+
+/* Global Reset & Base */
+html, body, #root, .app-container {
+  max-width: 100vw !important;
+  width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Universal Responsive & Adaptive Image Handling (Toutes dimensions) */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.img-cover-adaptive {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.img-contain-adaptive {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(0, 124, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+/* Typography Utility */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Layout Utilities */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browser UI */
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  transition: var(--transition-normal);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  font-family: var(--font-sans);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-hover);
+}
+
+/* Card & Glassmorphism */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+}
+
+.glass-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow), var(--shadow-md);
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 124, 255, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(0, 124, 255, 0.5); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   Responsive & Layout Optimizations (Jakob Nielsen UI/UX & Mobile Parity)
+   ========================================================================== */
+
+/* Tables responsives */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 15px;
+}
+
+table {
+  min-width: 600px; /* Force le scroll horizontal propre sur mobile */
+}
+
+/* Grilles de formulaires */
+.form-grid, [style*="formGrid"] {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+}
+
+/* --- Media Queries --- */
+
+/* Adaptation écran PC compact & Laptops (993px à 1280px) */
+@media (min-width: 993px) and (max-width: 1280px) {
+  .navbar .container {
+    padding: 0 10px !important;
+  }
+
+  .nav-menu-wrapper {
+    margin-left: 10px !important;
+  }
+
+  .nav-links-container {
+    gap: 3px !important;
+  }
+
+  .nav-links-container a,
+  .nav-links-container .nav-radio-btn {
+    padding: 3px 5px !important;
+    font-size: 12px !important;
+    gap: 3px !important;
+  }
+
+  /* Cacher les icônes des liens sur PC compact pour préserver la largeur de l'écran */
+  .nav-links-container a svg {
+    display: none !important;
+  }
+
+  .nav-setting-btn {
+    padding: 3px 5px !important;
+    font-size: 10px !important;
+  }
+
+  .nav-user-header {
+    gap: 4px !important;
+  }
+
+  /* Sur PC compact, bouton Déconnexion avec icône rouge compacte pour garantir 100% de visibilité */
+  .nav-logout-text {
+    display: none !important;
+  }
+
+  .logout-action-btn {
+    padding: 5px 8px !important;
+    min-width: 30px !important;
+    justify-content: center !important;
+  }
+
+  .console-dropdown-btn {
+    padding: 4px 7px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Écrans intermédiaires (Tablettes, smartphones < 992px) */
+@media (max-width: 992px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  /* Homepage Main Layout sur écran mobile & tablette : 1 colonne propre sans chevauchement */
+  .home-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 28px !important;
+  }
+
+  .home-layout .feed-column {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .home-layout .sidebar-column {
+    width: 100% !important;
+    position: static !important;
+    top: auto !important;
+    margin-top: 10px !important;
+  }
+
+  /* Grille des articles sur mobile (< 992px) */
+  .articles-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    width: 100% !important;
+  }
+
+  @media (min-width: 640px) and (max-width: 991px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 24px !important;
+    }
+  }
+
+
+  /* Navigation adaptative mobile (< 992px) */
+  .mobile-toggle-btn {
+    display: block !important;
+  }
+
+  .nav-menu-wrapper {
+    position: fixed !important;
+    top: 66px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: calc(100dvh - 66px) !important;
+    background: #060913 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    padding: 24px 20px 80px !important;
+    gap: 20px !important;
+    margin-left: 0 !important;
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+    z-index: 99999 !important;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .nav-menu-wrapper.mobile-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .nav-links-container {
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+
+  .nav-links-container a,
+  .nav-links-container .nav-radio-btn {
+    font-size: 17px !important;
+    width: 100% !important;
+    padding: 12px 6px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    color: var(--text-main) !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .nav-links-container .nav-radio-btn {
+    background: transparent !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    font-size: 17px !important;
+    justify-content: flex-start !important;
+    cursor: pointer !important;
+  }
+
+  /* Quick Settings (Mode Éco & Fuseaux RDC) sur Smartphone */
+  .nav-settings-group {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+    padding-top: 14px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .nav-setting-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    margin-left: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Section Utilisateur / Console / Déconnexion sur Smartphone */
+  .nav-auth-container {
+    width: 100% !important;
+    margin-top: 12px !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding-top: 16px !important;
+  }
+
+  .nav-user-menu {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+
+
+  /* Ligne utilisateur avec Cloche de notification parfaitement alignée */
+  .nav-user-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 10px 14px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Menu Console Agent sur smartphone : extension pleine largeur sans coupure à gauche */
+  .console-dropdown-container {
+    width: 100% !important;
+    display: block !important;
+    position: relative !important;
+  }
+
+  .console-dropdown-btn {
+    width: 100% !important;
+    justify-content: space-between !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .console-dropdown-menu {
+    position: static !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin-top: 8px !important;
+    border-radius: 10px !important;
+    background: rgba(15, 23, 42, 0.96) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+    padding: 4px 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .console-dropdown-menu .dropdown-item {
+    width: 100% !important;
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    display: block !important;
+  }
+
+  .console-dropdown-menu .dropdown-item:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Bouton Déconnexion pleine largeur sur smartphone */
+  .logout-action-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Menu dropdown des notifications responsive */
+  .notification-dropdown {
+    position: fixed !important;
+    top: 70px !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    max-width: calc(100vw - 32px) !important;
+    z-index: 100000 !important;
+  }
+
+  .admin-shortcuts {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .admin-shortcuts a {
+    width: 100%;
+  }
+}
+
+/* Petits écrans (Smartphones < 576px) */
+@media (max-width: 576px) {
+  /* Hero section scaling */
+  [style*="heroTitle"] {
+    font-size: 32px !important;
+  }
+
+  /* Formulaires simples */
+  form, .form-container {
+    padding: 16px !important;
+  }
+
+  /* Boutons de formulaires & actions clés en pleine largeur sur smartphone */
+  form .btn,
+  .form-container .btn,
+  .auth-card .btn,
+  .btn-block-mobile {
+    width: 100%;
+  }
+
+  /* Préservation des boutons d'action d'articles et contrôles compacts */
+  .article-card-footer .btn,
+  .articles-grid .btn,
+  .read-btn {
+    width: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  /* Cartes d'articles sur petits écrans */
+  .article-card-image-wrapper {
+    height: 190px !important;
+  }
+
+  .article-card-body {
+    padding: 16px !important;
+  }
+
+  .article-card-title {
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+  }
+
+
+  /* Ticker défilant */
+  [style*="tickerBadge"] {
+    padding: 0 10px !important;
+    font-size: 9px !important;
+  }
+}
+
+/* Styles pour le menu déroulant de la Console Agent */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  padding-left: 20px; /* Petit effet glissant moderne */
+}
+
+/* Optimisation responsive du Footer pour mobile (< 768px) */
+@media (max-width: 768px) {
+  footer {
+    padding: 16px 0 !important;
+  }
+
+  .footer-container {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+
+  .footer-section {
+    flex: none !important;
+    width: 100% !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  /* Masque la description sur mobile pour gagner de la place */
+  .footer-left p {
+    display: none !important;
+  }
+
+  .footer-left {
+    margin-bottom: 0px !important;
+  }
+
+  /* Masque le titre "Suivez-nous" (les icônes suffisent) */
+  .footer-center h4 {
+    display: none !important;
+  }
+
+  .footer-center {
+    margin: 4px 0 !important;
+  }
+
+  /* Réduit et fusionne le copyright */
+  .footer-right {
+    text-align: center !important;
+    margin-top: 5px !important;
+  }
+
+  .footer-right p {
+    font-size: 11px !important;
+    margin-bottom: 0px !important;
+  }
+
+  /* Cache le sous-copyright technique sur mobile */
+  .footer-right p:last-child {
+    display: none !important;
+  }
+}
+
+/* Animations pour les notifications Toast */
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Squelettes de Chargement (Skeleton Screens) */
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonPulse {
+  0% {
+    background-color: rgba(255, 255, 255, 0.03);
+    opacity: 0.6;
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.03);
+    opacity: 0.6;
+  }
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  overflow: hidden;
+  height: 380px;
+}
+
+.skeleton-image {
+  height: 200px;
+  width: 100%;
+}
+
+.skeleton-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 80%;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.skeleton-text.short {
+  width: 60%;
+}
+
+.skeleton-meta {
+  height: 12px;
+  width: 40%;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  padding-top: 12px;
+}
+
+.skeleton-btn {
+  height: 28px;
+  width: 80px;
+  border-radius: 6px;
+}
+
+/* Category Pills Scrolling Container */
+.category-pills-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.category-pills-scroll::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Animation des ondes sonores en direct (Live Wave Bars) */
+.wave-bar {
+  width: 3px;
+  background-color: var(--secondary);
+  border-radius: 2px;
+  animation: waveBarBounce 1.2s ease-in-out infinite alternate;
+}
+
+.wave-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.wave-bar:nth-child(2) { height: 14px; animation-delay: 0.3s; }
+.wave-bar:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { height: 8px; animation-delay: 0.4s; }
+
+@keyframes waveBarBounce {
+  0% { height: 3px; }
+  100% { height: 14px; }
+}
+
+/* ==========================================================================
+   Desktop / PC High-End Layout Enhancements (>= 992px & >= 1200px)
+   Garantit un rendu impeccable sur grand écran sans toucher au mobile
+   ========================================================================== */
+
+@media (min-width: 992px) {
+  /* Conteneur et espacement PC */
+  .container {
+    max-width: 1280px;
+    padding: 0 32px;
+  }
+
+  /* Disposition principale de la Homepage : 2 colonnes avec sidebar sticky */
+  .home-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 360px !important;
+    gap: 36px !important;
+    align-items: start !important;
+  }
+
+  /* Sidebar ancrée en défilement sur PC */
+  .sidebar-column,
+  .sidebar-column-pc {
+    position: sticky !important;
+    top: 90px !important;
+  }
+
+  /* Grille des articles sur PC : 2 colonnes bien espacées */
+  .articles-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 28px !important;
+  }
+
+
+  /* Cartes d'articles sur PC : dimensions fixes et alignement au pixel près */
+  .articles-grid article,
+  .articles-grid .glass-card {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    border-radius: var(--radius-md) !important;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
+  }
+
+  .articles-grid article:hover,
+  .articles-grid .glass-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 124, 255, 0.18) !important;
+    border-color: rgba(0, 124, 255, 0.4) !important;
+  }
+
+  /* Conteneur d'image des cartes sur PC : hauteur fixe et effet de zoom fluide */
+  .articles-grid article img,
+  .articles-grid .glass-card img {
+    height: 220px !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+  }
+
+  .articles-grid article:hover img,
+  .articles-grid .glass-card:hover img {
+    transform: scale(1.03) !important;
+  }
+
+  /* Titre des articles sur PC : 2 lignes régulières pour un alignement parfait */
+  .articles-grid h3 {
+    font-size: 19px !important;
+    line-height: 1.35 !important;
+    min-height: 52px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* Résumé des articles sur PC : 3 lignes régulières */
+  .articles-grid p {
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    min-height: 65px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* Navbar sur grand écran : ligne équilibrée avec zéro chevauchement */
+  .nav-menu-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .nav-links-container {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  .logout-action-btn:hover {
+    background: rgba(239, 68, 68, 0.22) !important;
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    transform: translateY(-1px);
+  }
+
+  /* Page de détail d'article sur PC : typographie éditoriale haute qualité */
+  .article-detail-container-pc {
+    max-width: 900px !important;
+    margin: 0 auto !important;
+  }
+
+  .article-cover-pc {
+    max-height: 520px !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    border-radius: 16px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .article-body-pc {
+    font-size: 18px !important;
+    line-height: 1.85 !important;
+    color: #e2e8f0 !important;
+    letter-spacing: -0.01em !important;
+  }
+}
+
+/* Très grands écrans PC (Full HD & 2K / 4K >= 1280px & >= 1440px) */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1360px;
+    padding: 0 40px;
+  }
+
+  .home-layout {
+    grid-template-columns: minmax(0, 1fr) 380px !important;
+    gap: 42px !important;
+  }
+
+  .articles-grid {
+    gap: 32px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1440px;
+  }
+}
+
+
+
+
+

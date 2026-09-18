@@ -1,0 +1,508 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { getUsers, updateUserActivation, updateUserRole, deleteUser, register } from '../services/api';
+import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert } from 'lucide-react';
+
+const ManageUsers = () => {
+  const { token, user: currentUser } = useAuth();
+  
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  // Creation form state
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('USER');
+  const [creating, setCreating] = useState(false);
+
+  const rolesList = ['VISITOR', 'USER', 'JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await getUsers(token);
+      setUsers(data);
+    } catch (error) {
+      console.error(error);
+      showMessage("Échec de chargement des utilisateurs", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const showMessage = (text, type = 'success') => {
+    setMessage({ text, type });
+    setTimeout(() => setMessage({ text: '', type: '' }), 5000);
+  };
+
+  // Création / Pré-création de compte
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      const registerData = {
+        username,
+        email,
+        password,
+        role
+      };
+      
+      // Utilise le endpoint d'inscription générique (qui gère l'état d'activation et le droit de rôle côté Spring Boot)
+      const res = await register(registerData);
+      
+      showMessage(res.message || "Utilisateur créé avec succès !");
+      
+      // Reset
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setRole('USER');
+      setShowForm(false);
+      fetchUsers();
+    } catch (error) {
+      showMessage(error.message, 'error');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // Activer / Désactiver un compte utilisateur
+  const handleToggleActivation = async (userToUpdate) => {
+    if (userToUpdate.username === currentUser.username) {
+      showMessage("Vous ne pouvez pas désactiver votre propre compte !", "error");
+      return;
+    }
+    try {
+      await updateUserActivation(userToUpdate.id, !userToUpdate.active, token);
+      showMessage(`Compte de ${userToUpdate.username} ${!userToUpdate.active ? 'activé' : 'désactivé'} avec succès.`);
+      fetchUsers();
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  };
+
+  // Modifier le rôle
+  const handleRoleChange = async (userId, username, newRole) => {
+    if (username === currentUser.username) {
+      showMessage("Vous ne pouvez pas modifier votre propre rôle !", "error");
+      return;
+    }
+    try {
+      await updateUserRole(userId, newRole, token);
+      showMessage(`Rôle de ${username} modifié en ${newRole} avec succès.`);
+      fetchUsers();
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  };
+
+  // Supprimer un utilisateur
+  const handleDeleteUser = async (userToDelete) => {
+    if (userToDelete.username === currentUser.username) {
+      showMessage("Vous ne pouvez pas supprimer votre propre compte !", "error");
+      return;
+    }
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le compte de ${userToDelete.username} ?`)) {
+      return;
+    }
+    try {
+      await deleteUser(userToDelete.id, token);
+      showMessage(`Le compte de ${userToDelete.username} a été supprimé.`);
+      fetchUsers();
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  };
+
+  // Filtrage de recherche
+  const filteredUsers = users.filter(u => 
+    u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="container animate-fade-in" style={styles.container}>
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>Gestion des Rôles & Comptes</h1>
+          <p style={styles.subtitle}>
+            Activez les comptes des journalistes/rédacteurs pré-inscrits et gérez les autorisations de rôles.
+          </p>
+        </div>
+        <button 
+          onClick={() => setShowForm(!showForm)} 
+          className="btn btn-primary"
+          style={styles.addBtn}
+        >
+          <UserPlus size={18} /> {showForm ? "Annuler" : "Créer/Pré-créer un agent"}
+        </button>
+      </div>
+
+      {/* Messages */}
+      {message.text && (
+        <div style={{
+          ...styles.alert,
+          backgroundColor: message.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+          borderColor: message.type === 'error' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+          color: message.type === 'error' ? 'var(--error)' : 'var(--accent)'
+        }}>
+          {message.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
+          <span>{message.text}</span>
+        </div>
+      )}
+
+      {/* Formulaire de création / pré-inscription */}
+      {showForm && (
+        <form onSubmit={handleCreateUser} className="glass-card animate-fade-in" style={styles.form}>
+          <h3 style={styles.formTitle}>Créer / Pré-inscrire un agent</h3>
+          <p style={styles.formSubtitle}>
+            Les comptes créés par les administrateurs sont actifs immédiatement. Les comptes pré-inscrits par les journalistes ou rédacteurs requièrent l'activation d'un admin.
+          </p>
+          
+          <div style={styles.formGrid}>
+            <div className="form-group">
+              <label className="form-label">Nom d'utilisateur *</label>
+              <input
+                type="text"
+                className="form-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ex: mika_journalist"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Adresse Email *</label>
+              <input
+                type="email"
+                className="form-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="mika@lifechannel.cd"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Mot de Passe *</label>
+              <input
+                type="password"
+                className="form-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Rôle d'Agent Assigné *</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="form-input"
+                style={{ appearance: 'auto' }}
+              >
+                {rolesList.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={styles.submitBtn}
+            disabled={creating}
+          >
+            {creating ? "Création en cours..." : "Créer le compte"}
+          </button>
+        </form>
+      )}
+
+      {/* Barre de Recherche */}
+      <div style={styles.searchBar}>
+        <Search size={18} style={{ color: 'var(--text-muted)', marginLeft: '12px' }} />
+        <input 
+          type="text" 
+          placeholder="Rechercher par nom, email, rôle..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={styles.searchInput}
+        />
+      </div>
+
+      {/* Table des Utilisateurs */}
+      <div className="glass-card" style={styles.tableCard}>
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>Chargement des comptes...</p>
+        ) : filteredUsers.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
+            Aucun compte trouvé.
+          </p>
+        ) : (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Utilisateur</th>
+                  <th style={styles.th}>Adresse Email</th>
+                  <th style={styles.th}>Statut d'Activation</th>
+                  <th style={styles.th}>Rôle Assigné</th>
+                  <th style={styles.th} style={{ textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((u) => {
+                  const isSelf = u.username === currentUser.username;
+                  return (
+                    <tr key={u.id} style={styles.tr}>
+                      <td style={styles.td}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{u.username}</span>
+                          {isSelf && <span style={styles.selfBadge}>Moi</span>}
+                        </div>
+                      </td>
+                      <td style={styles.td}>
+                        <span style={styles.emailText}><Mail size={12} style={{ display: 'inline', marginRight: '6px' }} />{u.email}</span>
+                      </td>
+                      <td style={styles.td}>
+                        {u.active ? (
+                          <span style={styles.statusActiveBadge}><UserCheck size={12} /> Actif</span>
+                        ) : (
+                          <span style={styles.statusPendingBadge}><ShieldAlert size={12} /> En attente</span>
+                        )}
+                      </td>
+                      <td style={styles.td}>
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, u.username, e.target.value)}
+                          className="form-input"
+                          style={styles.roleSelect}
+                          disabled={isSelf}
+                        >
+                          {rolesList.map(r => (
+                            <option key={r} value={r}>{r}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td style={{ ...styles.td, textAlign: 'right' }}>
+                        <div style={styles.actions}>
+                          <button
+                            onClick={() => handleToggleActivation(u)}
+                            style={{
+                              ...styles.actionBtn,
+                              color: u.active ? 'var(--error)' : 'var(--accent)'
+                            }}
+                            title={u.active ? "Désactiver le compte" : "Activer et valider"}
+                            disabled={isSelf}
+                          >
+                            <Power size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(u)}
+                            style={{
+                              ...styles.actionBtn,
+                              color: 'var(--error)',
+                              opacity: isSelf ? 0.3 : 1
+                            }}
+                            title="Supprimer le compte"
+                            disabled={isSelf}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    padding: '40px 24px 80px',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '30px',
+    borderBottom: '1px solid var(--border-color)',
+    paddingBottom: '20px',
+  },
+  title: {
+    fontSize: '28px',
+    marginBottom: '6px',
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: 'var(--text-muted)',
+  },
+  addBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '10px 20px',
+  },
+  alert: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    border: '1px solid',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    fontSize: '14px',
+  },
+  form: {
+    padding: '30px',
+    marginBottom: '30px',
+  },
+  formTitle: {
+    fontSize: '18px',
+    marginBottom: '6px',
+  },
+  formSubtitle: {
+    fontSize: '13px',
+    color: 'var(--text-muted)',
+    marginBottom: '24px',
+  },
+  formGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+    marginBottom: '24px',
+  },
+  submitBtn: {
+    padding: '12px 28px',
+  },
+  searchBar: {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    border: '1px solid var(--border-color)',
+    borderRadius: '8px',
+    marginBottom: '20px',
+  },
+  searchInput: {
+    width: '100%',
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-main)',
+    padding: '12px',
+    fontSize: '14px',
+    outline: 'none',
+  },
+  tableCard: {
+    padding: '20px',
+  },
+  tableWrapper: {
+    overflowX: 'auto',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: '14px',
+  },
+  th: {
+    textAlign: 'left',
+    padding: '12px 16px',
+    borderBottom: '2px solid var(--border-color)',
+    color: 'var(--text-secondary)',
+    fontWeight: '700',
+  },
+  tr: {
+    borderBottom: '1px solid rgba(255,255,255,0.04)',
+  },
+  td: {
+    padding: '14px 16px',
+    color: 'var(--text-secondary)',
+    verticalAlign: 'middle',
+  },
+  selfBadge: {
+    backgroundColor: 'var(--primary-light)',
+    color: 'var(--primary)',
+    fontSize: '10px',
+    fontWeight: '800',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    textTransform: 'uppercase',
+  },
+  emailText: {
+    color: 'var(--text-muted)',
+    fontSize: '13px',
+  },
+  statusActiveBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    color: 'var(--accent)',
+    border: '1px solid rgba(16, 185, 129, 0.2)',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    fontSize: '12px',
+    fontWeight: '700',
+  },
+  statusPendingBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    color: 'var(--secondary)',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    fontSize: '12px',
+    fontWeight: '700',
+  },
+  roleSelect: {
+    padding: '6px 12px',
+    fontSize: '13px',
+    borderRadius: '6px',
+    background: 'rgba(10,15,30,0.95)',
+    border: '1px solid var(--border-color)',
+    color: 'var(--text-main)',
+    cursor: 'pointer',
+    appearance: 'auto',
+  },
+  actions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+  },
+  actionBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '6px',
+    borderRadius: '4px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background-color 0.2s',
+    '&:hover': {
+      backgroundColor: 'rgba(255,255,255,0.03)',
+    }
+  }
+};
+
+export default ManageUsers;

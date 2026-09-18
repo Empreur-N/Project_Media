@@ -1,0 +1,198 @@
+package com.media.user.controller;
+
+import com.media.user.dto.AuthResponse;
+import com.media.user.dto.LoginRequest;
+import com.media.user.dto.RegisterRequest;
+import com.media.user.model.Role;
+import com.media.user.model.User;
+import com.media.user.repository.UserRepository;
+import com.media.user.security.JwtUtils;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class AuthController {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
+
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+    }
+
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        if (userRepository.existsByUsername(registerRequest.username())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Nom d'utilisateur déjà pris"));
+        }
+        if (userRepository.existsByEmail(registerRequest.email())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Email déjà utilisé"));
+        }
+
+        // Détermination sécurisée du rôle et du statut d'activation (Jakob Nielsen & Africanews Access Control)
+        Role role = Role.USER;
+        boolean active = true;
+
+        if (registerRequest.role() != null) {
+            try {
+                Role requestedRole = Role.valueOf(registerRequest.role().toUpperCase());
+                
+                // Récupérer les détails de l'utilisateur effectuant la requête
+                org.springframework.security.core.Authentication auth = 
+                        org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                String creatorRole = "";
+                if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                    creatorRole = auth.getAuthorities().stream()
+                            .map(a -> a.getAuthority().replace("ROLE_", ""))
+                            .findFirst().orElse("");
+                }
+
+                if ("ADMIN".equals(creatorRole) || "SUPER_ADMIN".equals(creatorRole)) {
+                    // Les admins peuvent attribuer n'importe quel rôle directement
+                    role = requestedRole;
+                    active = true;
+                } else if ("JOURNALIST".equals(creatorRole) || "EDITOR".equals(creatorRole)) {
+                    // Les agents (journalistes/rédacteurs) peuvent pré-créer des comptes, mais inactifs (active = false)
+                    role = requestedRole;
+                    active = false; // Validation administrative requise
+                } else {
+                    // Les lecteurs ou anonymes ne peuvent pas s'attribuer un rôle d'agent
+                    if (requestedRole == Role.VISITOR) {
+                        role = Role.VISITOR;
+                    } else {
+                        role = Role.USER;
+                    }
+                    active = true;
+                }
+            } catch (IllegalArgumentException e) {
+                role = Role.USER;
+            }
+        }
+
+        User user = User.builder()
+                .username(registerRequest.username())
+                .email(registerRequest.email())
+                .password(passwordEncoder.encode(registerRequest.password()))
+                .role(role)
+                .active(active)
+                .build();
+
+        userRepository.save(user);
+
+        String successMsg = active ? "Utilisateur créé avec succès" : "Compte pré-créé avec succès. En attente d'activation par un administrateur.";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", successMsg, "active", active));
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.username())
+                .orElse(null);
+
+        if (user == null || !passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Identifiants incorrects"));
+        }
+
+        if (!user.isActive()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Ce compte est désactivé"));
+        }
+
+        String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+
+        return ResponseEntity.ok(new AuthResponse(
+                token,
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name()
+        ));
+    }
+
+    @GetMapping("/users/me")
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal String username) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Utilisateur non trouvé"));
+        }
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "role", user.getRole().name(),
+                "createdAt", user.getCreatedAt()
+        ));
+    }
+
+    // --- Endpoints d'administration (Jakob Nielsen & Africanews Access Control) ---
+
+    // Récupérer la liste complète des utilisateurs (Admin seul)
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    // Activer / Désactiver un compte utilisateur (Admin seul)
+    @PutMapping("/users/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> toggleActivation(@PathVariable Long id, @RequestParam boolean active) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Utilisateur introuvable"));
+        }
+        user.setActive(active);
+        userRepository.save(user);
+        String action = active ? "activé" : "désactivé";
+        return ResponseEntity.ok(Map.of("message", "Le compte utilisateur a été " + action + " avec succès."));
+    }
+
+    // Assigner / Modifier le rôle d'un compte (Admin seul)
+    @PutMapping("/users/{id}/role")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> changeUserRole(@PathVariable Long id, @RequestParam String role) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Utilisateur introuvable"));
+        }
+        try {
+            Role newRole = Role.valueOf(role.toUpperCase());
+            user.setRole(newRole);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Le rôle de l'utilisateur a été changé en " + newRole.name() + " avec succès."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Rôle spécifié invalide."));
+        }
+    }
+
+    // Supprimer un compte (Admin seul)
+    @DeleteMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Utilisateur introuvable"));
+        }
+        userRepository.delete(user);
+        return ResponseEntity.ok(Map.of("message", "Compte supprimé avec succès."));
+    }
+}

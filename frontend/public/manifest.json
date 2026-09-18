@@ -1,0 +1,22 @@
+{
+  "short_name": "LIFE CHANNEL",
+  "name": "LIFE CHANNEL - L'Information Continue & Radio 24h/24",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#060913",
+  "theme_color": "#060913",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "description": "Plateforme média congolaise de référence : information continue, flux radio 24h/24 direct, podcasts et direct TV."
+}

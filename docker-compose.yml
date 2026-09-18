@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres-media:
+    image: postgres:15-alpine
+    container_name: postgres-media
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    restart: unless-stopped
+
+  mongodb-media:
+    image: mongo:6.0
+    container_name: mongodb-media
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    restart: unless-stopped
+
+  rabbitmq-media:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-media
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  redis-media:
+    image: redis:7-alpine
+    container_name: redis-media
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  mongodata:
+  rabbitdata:
+  redisdata:
