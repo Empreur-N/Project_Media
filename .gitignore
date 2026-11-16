@@ -65,3 +65,15 @@ Thumbs.db
 # Temporary & Uploads
 uploads/*
 !uploads/.gitkeep
+
+# Environment variables
+.env
+.env.local
+
+# Local Embedded Database data
+data/
+*/data/
+*.mv.db
+*.trace.db
+
+

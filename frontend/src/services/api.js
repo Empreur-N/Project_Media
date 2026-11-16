@@ -1,4 +1,6 @@
-const API_URL = `http://${window.location.hostname}:8080/api`;
+import { getApiUrl } from '../utils/urlUtils';
+
+const API_URL = getApiUrl();
 
 export const apiCall = async (endpoint, method = 'GET', body = null, token = null) => {
   const headers = {

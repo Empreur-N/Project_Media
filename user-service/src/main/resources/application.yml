@@ -1,28 +1,29 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/user_db
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:user_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
 
 eureka:
+  instance:
+    prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
 
 jwt:
-  secret: 9a4f2c8d3b7a1e5f8c6b3d2e9f1a7b4c6e5d3c8b1a7f9e2d5c8b1a7f9e2d5c8b
-  expiration: 86400000 # 24 heures en millisecondes
+  secret: ${JWT_SECRET:9a4f2c8d3b7a1e5f8c6b3d2e9f1a7b4c6e5d3c8b1a7f9e2d5c8b1a7f9e2d5c8b}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 heures en millisecondes

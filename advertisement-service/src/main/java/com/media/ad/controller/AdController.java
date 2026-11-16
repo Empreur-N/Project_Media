@@ -2,8 +2,8 @@ package com.media.ad.controller;
 
 import com.media.ad.model.AdBanner;
 import com.media.ad.repository.AdBannerRepository;
+import com.media.ad.service.AdService;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,16 +16,17 @@ import java.util.Map;
 public class AdController {
 
     private final AdBannerRepository adBannerRepository;
+    private final AdService adService;
 
-    public AdController(AdBannerRepository adBannerRepository) {
+    public AdController(AdBannerRepository adBannerRepository, AdService adService) {
         this.adBannerRepository = adBannerRepository;
+        this.adService = adService;
     }
 
     // Récupérer les publicités actives pour un emplacement spécifique
     @GetMapping("/active")
-    @Cacheable(value = "ads_active", key = "#placement", unless = "#result.body.isEmpty()")
     public ResponseEntity<List<AdBanner>> getActiveAds(@RequestParam String placement) {
-        List<AdBanner> banners = adBannerRepository.findByPlacementAndActiveTrue(placement);
+        List<AdBanner> banners = adService.getActiveAds(placement);
         return ResponseEntity.ok(banners);
     }
 

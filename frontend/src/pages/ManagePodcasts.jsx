@@ -255,15 +255,25 @@ const ManagePodcasts = () => {
                 </tr>
               </thead>
               <tbody>
-                {episodes.map((ep) => (
-                  <tr key={ep.id} style={styles.tr}>
-                    <td style={{ ...styles.td, fontWeight: '700', color: 'var(--primary)' }}>{ep.showTitle}</td>
-                    <td style={styles.td}>{ep.title}</td>
-                    <td style={styles.td}>{ep.category}</td>
-                    <td style={styles.td}>{Math.floor(ep.durationSeconds / 60)} min</td>
-                    <td style={styles.td}>{new Date(ep.publishDate).toLocaleDateString('fr-FR')}</td>
-                  </tr>
-                ))}
+                {episodes && Array.isArray(episodes) && episodes.map((ep, idx) => {
+                  if (!ep) return null;
+                  const epKey = ep.id || ep._id || idx;
+                  const durationMin = ep.durationSeconds && !isNaN(ep.durationSeconds) 
+                    ? `${Math.floor(ep.durationSeconds / 60)} min` 
+                    : '--';
+                  const dateStr = ep.publishDate 
+                    ? new Date(ep.publishDate).toLocaleDateString('fr-FR') 
+                    : '--';
+                  return (
+                    <tr key={epKey} style={styles.tr}>
+                      <td style={{ ...styles.td, fontWeight: '700', color: 'var(--primary)' }}>{ep.showTitle || 'Émission'}</td>
+                      <td style={styles.td}>{ep.title || 'Sans titre'}</td>
+                      <td style={styles.td}>{ep.category || 'Actualité'}</td>
+                      <td style={styles.td}>{durationMin}</td>
+                      <td style={styles.td}>{dateStr}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

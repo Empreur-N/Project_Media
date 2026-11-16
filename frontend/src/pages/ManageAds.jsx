@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getAllAds, createAd, uploadMedia } from '../services/api';
 import { Plus, BarChart3, Image, Link2, CheckCircle, AlertCircle, FileImage, LayoutGrid, Smartphone } from 'lucide-react';
 import MobileMoneyModal from '../components/MobileMoneyModal';
+import { getMediaUrl as resolveMediaUrl } from '../utils/urlUtils';
 
 const ManageAds = () => {
   const { token } = useAuth();
@@ -91,9 +92,7 @@ const ManageAds = () => {
   };
 
   const getMediaUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+    return resolveMediaUrl(url);
   };
 
   return (

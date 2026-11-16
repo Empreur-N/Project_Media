@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getArticles, reviewArticle, publishBreakingNews, getAllAuditLogs } from '../services/api';
 import { FileText, Eye, CheckCircle2, XCircle, ArrowLeft, Calendar, User, Tag, MapPin, AlertCircle, CheckCircle, Radio, X, ShieldCheck } from 'lucide-react';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const EditorSpace = () => {
   const { user, token } = useAuth();
@@ -258,7 +259,7 @@ const EditorSpace = () => {
                 <div style={{ marginTop: '20px' }}>
                   <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Image principale associée :</span>
                   <img 
-                    src={selectedArticle.mainImageUrl.startsWith('http') ? selectedArticle.mainImageUrl : `http://localhost:8080${selectedArticle.mainImageUrl}`} 
+                    src={getFullImageUrl(selectedArticle.mainImageUrl, selectedArticle.category)} 
                     alt="Main" 
                     style={styles.previewImage} 
                   />

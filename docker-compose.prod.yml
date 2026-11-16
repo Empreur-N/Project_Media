@@ -1,0 +1,342 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. INFRASTRUCTURE & BASES DE DONNÉES
+  # ==========================================
+  postgres-media:
+    image: postgres:15-alpine
+    container_name: postgres-media
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    restart: always
+    networks:
+      - media-net
+
+  mongodb-media:
+    image: mongo:6.0
+    container_name: mongodb-media
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodata:/data/db
+    restart: always
+    networks:
+      - media-net
+
+  rabbitmq-media:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-media
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+    restart: always
+    networks:
+      - media-net
+
+  redis-media:
+    image: redis:7-alpine
+    container_name: redis-media
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    restart: always
+    networks:
+      - media-net
+
+  # ==========================================
+  # 2. DISCOVERY SERVER (EUREKA)
+  # ==========================================
+  discovery-server:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  # ==========================================
+  # 3. API GATEWAY
+  # ==========================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  # ==========================================
+  # 4. MICROSERVICES MÉTIER
+  # ==========================================
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      SERVER_PORT: 8081
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: user_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      JWT_SECRET: ${JWT_SECRET:-9a4f2c8d3b7a1e5f8c6b3d2e9f1a7b4c6e5d3c8b1a7f9e2d5c8b1a7f9e2d5c8b}
+    depends_on:
+      - postgres-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  content-service:
+    build:
+      context: ./content-service
+      dockerfile: Dockerfile
+    container_name: content-service
+    environment:
+      SERVER_PORT: 8082
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: content_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      RABBITMQ_HOST: rabbitmq-media
+      RABBITMQ_PORT: 5672
+      REDIS_HOST: redis-media
+      REDIS_PORT: 6379
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - postgres-media
+      - rabbitmq-media
+      - redis-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  media-service:
+    build:
+      context: ./media-service
+      dockerfile: Dockerfile
+    container_name: media-service
+    environment:
+      SERVER_PORT: 8083
+      MONGO_HOST: mongodb-media
+      MONGO_PORT: 27017
+      RABBITMQ_HOST: rabbitmq-media
+      RABBITMQ_PORT: 5672
+      UPLOAD_DIR: /uploads
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    volumes:
+      - mediauploads:/uploads
+    depends_on:
+      - mongodb-media
+      - rabbitmq-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  comment-service:
+    build:
+      context: ./comment-service
+      dockerfile: Dockerfile
+    container_name: comment-service
+    environment:
+      SERVER_PORT: 8084
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: comment_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - postgres-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  search-service:
+    build:
+      context: ./search-service
+      dockerfile: Dockerfile
+    container_name: search-service
+    environment:
+      SERVER_PORT: 8085
+      MONGO_HOST: mongodb-media
+      MONGO_PORT: 27017
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - mongodb-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  podcast-service:
+    build:
+      context: ./podcast-service
+      dockerfile: Dockerfile
+    container_name: podcast-service
+    environment:
+      SERVER_PORT: 8087
+      MONGO_HOST: mongodb-media
+      MONGO_PORT: 27017
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - mongodb-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  live-service:
+    build:
+      context: ./live-service
+      dockerfile: Dockerfile
+    container_name: live-service
+    environment:
+      SERVER_PORT: 8088
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: live_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - postgres-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      SERVER_PORT: 8089
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: notification_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      RABBITMQ_HOST: rabbitmq-media
+      RABBITMQ_PORT: 5672
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - postgres-media
+      - rabbitmq-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    environment:
+      SERVER_PORT: 8090
+      MONGO_HOST: mongodb-media
+      MONGO_PORT: 27017
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - mongodb-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  advertisement-service:
+    build:
+      context: ./advertisement-service
+      dockerfile: Dockerfile
+    container_name: advertisement-service
+    environment:
+      SERVER_PORT: 8091
+      DB_HOST: postgres-media
+      DB_PORT: 5432
+      DB_NAME: ad_db
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REDIS_HOST: redis-media
+      REDIS_PORT: 6379
+      EUREKA_URI: http://discovery-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+    depends_on:
+      - postgres-media
+      - redis-media
+      - discovery-server
+    restart: always
+    networks:
+      - media-net
+
+  # ==========================================
+  # 5. FRONTEND WEB & REVERSE PROXY NGINX
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-media
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    restart: always
+    networks:
+      - media-net
+
+# ==========================================
+# VOLUMES & RÉSEAUX
+# ==========================================
+volumes:
+  pgdata:
+  mongodata:
+  rabbitdata:
+  redisdata:
+  mediauploads:
+
+networks:
+  media-net:
+    driver: bridge

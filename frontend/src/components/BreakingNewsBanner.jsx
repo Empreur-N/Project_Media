@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, X, ArrowRight } from 'lucide-react';
+import { getApiUrl } from '../utils/urlUtils';
 
 const BreakingNewsBanner = () => {
   const [alert, setAlert] = useState(null);
@@ -11,7 +12,7 @@ const BreakingNewsBanner = () => {
 
     const connectSSE = () => {
       try {
-        eventSource = new EventSource('http://localhost:8080/api/notifications/stream');
+        eventSource = new EventSource(`${getApiUrl()}/notifications/stream`);
 
         eventSource.addEventListener('breaking-news', (event) => {
           try {

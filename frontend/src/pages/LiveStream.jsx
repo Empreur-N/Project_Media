@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getActiveLive, getUpcomingLives } from '../services/api';
 import { Radio, Calendar, Clock, Video, Tv } from 'lucide-react';
+import { getMediaUrl } from '../utils/urlUtils';
 
 const FALLBACK_ACTIVE_LIVE = {
   id: 1,
@@ -146,7 +147,7 @@ const LiveStream = () => {
                     controls 
                     autoPlay 
                     style={styles.videoPlayer}
-                    poster={activeLive.coverUrl ? `http://localhost:8080${activeLive.coverUrl}` : undefined}
+                    poster={activeLive.coverUrl ? getMediaUrl(activeLive.coverUrl) : undefined}
                   />
                 )}
               </div>

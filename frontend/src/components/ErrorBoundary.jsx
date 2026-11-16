@@ -49,6 +49,32 @@ class ErrorBoundary extends React.Component {
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
               Le chargement de cette page a rencontré un problème. Vous pouvez actualiser la page ou retourner à l'accueil du portail.
             </p>
+
+            {this.state.error && (
+              <details style={{
+                marginBottom: '24px',
+                textAlign: 'left',
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.2)'
+              }}>
+                <summary style={{ cursor: 'pointer', fontWeight: '700', marginBottom: '6px' }}>
+                  Détails techniques du diagnostic
+                </summary>
+                <div style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', opacity: 0.9 }}>
+                  <strong>{this.state.error.name}: {this.state.error.message}</strong>
+                  {this.state.error.stack && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', lineHeight: '1.4', opacity: 0.8 }}>
+                      {this.state.error.stack}
+                    </div>
+                  )}
+                </div>
+              </details>
+            )}
+
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
                 onClick={this.handleReload} 

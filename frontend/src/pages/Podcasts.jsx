@@ -3,6 +3,7 @@ import { getEpisodes, getShows } from '../services/api';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 import { Play, Pause, Disc, Calendar, Clock, Radio, Headphones } from 'lucide-react';
+import { getMediaUrl } from '../utils/urlUtils';
 
 const FALLBACK_SHOWS = [
   "Life Channel Sports Talk",
@@ -58,7 +59,16 @@ const Podcasts = () => {
     try {
       const episodesData = await getEpisodes(selectedShow);
       if (episodesData && Array.isArray(episodesData) && episodesData.length > 0) {
-        setEpisodes(episodesData);
+        // Nettoyer les épisodes pour éliminer les objets invalides ou null
+        const validEpisodes = episodesData.filter(ep => ep && typeof ep === 'object' && (ep.id || ep._id));
+        if (validEpisodes.length > 0) {
+          setEpisodes(validEpisodes);
+        } else {
+          const filtered = selectedShow 
+            ? FALLBACK_EPISODES.filter(e => e.showTitle === selectedShow || String(e.id) === String(selectedShow))
+            : FALLBACK_EPISODES;
+          setEpisodes(filtered);
+        }
       } else {
         const filtered = selectedShow 
           ? FALLBACK_EPISODES.filter(e => e.showTitle === selectedShow || String(e.id) === String(selectedShow))
@@ -68,7 +78,17 @@ const Podcasts = () => {
       
       const showsData = await getShows();
       if (showsData && Array.isArray(showsData) && showsData.length > 0) {
-        setShows(showsData);
+        // Éliminer strictement les valeurs null, vides ou malformées
+        const validShows = showsData
+          .filter(s => s !== null && s !== undefined)
+          .map(s => (typeof s === 'object' ? (s.title || s.name || s.id) : String(s)))
+          .filter(s => s && String(s).trim() !== '' && s !== 'null' && s !== 'undefined');
+
+        if (validShows.length > 0) {
+          setShows(validShows);
+        } else {
+          setShows(FALLBACK_SHOWS);
+        }
       } else {
         setShows(FALLBACK_SHOWS);
       }
@@ -107,12 +127,15 @@ const Podcasts = () => {
   };
 
   const handlePlayClick = (episode) => {
-    if (currentEpisode && currentEpisode.id === episode.id) {
+    if (!episode) return;
+    const epId = episode.id || episode._id;
+    if (currentEpisode && (currentEpisode.id === epId || currentEpisode.id === episode.id)) {
       togglePlay();
     } else {
       playEpisode({
         ...episode,
-        audioUrl: episode.audioUrl || (episode.fileUrl ? `http://localhost:8080${episode.fileUrl}` : '')
+        id: epId,
+        audioUrl: episode.audioUrl || (episode.fileUrl ? getMediaUrl(episode.fileUrl) : '')
       });
     }
   };
@@ -140,8 +163,14 @@ const Podcasts = () => {
           Tous les épisodes
         </button>
         {shows.map((show, idx) => {
-          const showName = typeof show === 'object' ? (show.title || show.name || show.id) : String(show);
-          const showKey = typeof show === 'object' ? (show.id || show.title || idx) : `${show}-${idx}`;
+          if (!show) return null;
+          const showName = (typeof show === 'object' && show !== null)
+            ? (show.title || show.name || show.id || '')
+            : String(show);
+          if (!showName || showName.trim() === '' || showName === 'null') return null;
+          const showKey = (typeof show === 'object' && show !== null)
+            ? (show.id || show.title || idx)
+            : `${showName}-${idx}`;
           return (
             <button
               key={showKey}
@@ -168,17 +197,22 @@ const Podcasts = () => {
         </div>
       ) : (
         <div style={styles.grid}>
-          {episodes.map((ep) => {
-            const isCurrent = currentEpisode && currentEpisode.id === ep.id;
+          {episodes.map((ep, idx) => {
+            if (!ep || typeof ep !== 'object') return null;
+            const episodeId = ep.id || ep._id || `ep-${idx}`;
+            const isCurrent = currentEpisode && (currentEpisode.id === episodeId || currentEpisode.id === ep.id);
             const isCurrentPlaying = isCurrent && isPlaying;
+            const title = ep.title || "Épisode sans titre";
+            const desc = ep.description || "";
+            const showTitle = ep.showTitle || "Life Channel";
 
             return (
-              <div key={ep.id} className="glass-card" style={styles.card}>
+              <div key={episodeId} className="glass-card" style={styles.card}>
                 <div style={styles.cardCoverWrapper}>
                   {ep.coverUrl ? (
                     <img 
                       src={getFullImageUrl(ep.coverUrl, 'Culture')} 
-                      alt={ep.title} 
+                      alt={title} 
                       className="img-cover-adaptive"
                       style={styles.cardCover} 
                       loading="lazy"
@@ -200,9 +234,9 @@ const Podcasts = () => {
                 </div>
 
                 <div style={styles.cardBody}>
-                  <span style={styles.cardShowTitle}>{ep.showTitle || "Émission"}</span>
-                  <h3 style={styles.cardTitle}>{ep.title}</h3>
-                  <p style={styles.cardDesc}>{ep.description}</p>
+                  <span style={styles.cardShowTitle}>{showTitle}</span>
+                  <h3 style={styles.cardTitle}>{title}</h3>
+                  <p style={styles.cardDesc}>{desc}</p>
                   
                   <div style={styles.cardFooter}>
                     <span style={styles.metaItem}>

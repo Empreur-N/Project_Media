@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { Play, Pause, Volume2, X, Music, Radio, Zap } from 'lucide-react';
+import { getMediaUrl as resolveMediaUrl } from '../utils/urlUtils';
 
 const AudioPlayer = () => {
   const { 
@@ -85,20 +86,12 @@ const AudioPlayer = () => {
   };
 
   const getMediaUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return `http://${host}:8080${url.startsWith('/') ? url : `/${url}`}`;
+    return resolveMediaUrl(url);
   };
 
   const getCoverUrl = (url) => {
     if (!url) return '/logo.png';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/logo') || url.startsWith('/favicon') || url.startsWith('/assets') || url.startsWith('/icons')) {
-      return url;
-    }
-    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return `http://${host}:8080${url.startsWith('/') ? url : `/${url}`}`;
+    return resolveMediaUrl(url);
   };
 
   if (!visible || !currentEpisode) return null;

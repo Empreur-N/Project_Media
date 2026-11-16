@@ -70,7 +70,10 @@ public class PodcastController {
             List<String> distinctShows = mongoTemplate.query(Episode.class)
                     .distinct("showTitle")
                     .as(String.class)
-                    .all();
+                    .all()
+                    .stream()
+                    .filter(s -> s != null && !s.trim().isEmpty())
+                    .toList();
             return ResponseEntity.ok(distinctShows);
         } catch (Exception e) {
             // Fallback si la collection est vide ou erreur

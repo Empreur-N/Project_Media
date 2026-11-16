@@ -1,14 +1,16 @@
 server:
-  port: 8087
+  port: ${SERVER_PORT:8087}
 
 spring:
   application:
     name: podcast-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/podcast_db
+      uri: ${MONGODB_URI:mongodb://${MONGO_HOST:localhost}:${MONGO_PORT:27017}/podcast_db}
 
 eureka:
+  instance:
+    prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}

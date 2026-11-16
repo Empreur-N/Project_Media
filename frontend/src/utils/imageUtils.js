@@ -1,4 +1,6 @@
-﻿/**
+﻿import { getMediaUrl } from './urlUtils';
+
+/**
  * Image Utilities for LIFE CHANNEL Platform
  * Guarantees zero broken images across all devices, network conditions, and image formats.
  */
@@ -80,9 +82,7 @@ export const getFullImageUrl = (url, category = null) => {
   }
 
   // Backend uploaded media
-  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  return `http://${host}:8080${cleanPath}`;
+  return getMediaUrl(trimmed);
 };
 
 /**

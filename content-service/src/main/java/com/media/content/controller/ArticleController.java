@@ -5,10 +5,10 @@ import com.media.content.model.ArticleStatus;
 import com.media.content.model.AuditLog;
 import com.media.content.repository.ArticleRepository;
 import com.media.content.repository.AuditLogRepository;
+import com.media.content.service.ArticleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,36 +29,27 @@ public class ArticleController {
     private final ArticleRepository articleRepository;
     private final AuditLogRepository auditLogRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final ArticleService articleService;
     private final RestClient restClient = RestClient.create();
 
     public ArticleController(
             ArticleRepository articleRepository, 
             AuditLogRepository auditLogRepository,
-            RabbitTemplate rabbitTemplate) {
+            RabbitTemplate rabbitTemplate,
+            ArticleService articleService) {
         this.articleRepository = articleRepository;
         this.auditLogRepository = auditLogRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.articleService = articleService;
     }
 
     // Récupérer les articles (Public : affiche uniquement les PUBLISHED. Rôle interne : possibilité de filtrer par statut)
     @GetMapping("/articles")
-    @Cacheable(value = "articles", key = "#category + '-' + #region + '-' + #status", unless = "#result.body.isEmpty()")
     public ResponseEntity<List<Article>> getArticles(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String region,
             @RequestParam(required = false) ArticleStatus status) {
-        
-        ArticleStatus targetStatus = (status != null) ? status : ArticleStatus.PUBLISHED;
-
-        if (category != null && region != null) {
-            return ResponseEntity.ok(articleRepository.findByStatusAndCategoryAndRegionOrderByCreatedAtDesc(targetStatus, category, region));
-        } else if (category != null) {
-            return ResponseEntity.ok(articleRepository.findByStatusAndCategoryOrderByCreatedAtDesc(targetStatus, category));
-        } else if (region != null) {
-            return ResponseEntity.ok(articleRepository.findByStatusAndRegionOrderByCreatedAtDesc(targetStatus, region));
-        } else {
-            return ResponseEntity.ok(articleRepository.findByStatusOrderByCreatedAtDesc(targetStatus));
-        }
+        return ResponseEntity.ok(articleService.getArticles(category, region, status));
     }
 
     // Récupérer un article par ID

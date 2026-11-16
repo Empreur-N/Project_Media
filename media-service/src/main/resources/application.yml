@@ -1,26 +1,28 @@
 server:
-  port: 8083
+  port: ${SERVER_PORT:8083}
 
 spring:
   application:
     name: media-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/media_db
+      uri: ${MONGODB_URI:mongodb://${MONGO_HOST:localhost}:${MONGO_PORT:27017}/media_db}
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 eureka:
+  instance:
+    prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
 
 upload:
-  dir: ../uploads
+  dir: ${UPLOAD_DIR:../uploads}
