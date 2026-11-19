@@ -1,7 +1,7 @@
 /**
- * Articles officiels importés des chaînes et pages officielles de LIFE CHANNEL :
+ * Articles officiels de LIFE CHANNEL :
  * - Life Channel Sports (YouTube : @LifeChannelSports)
- * - Life UP TV / Life Channel Goma (Facebook : @LifechannelG, Instagram : @life_channel243, TikTok : @lifeuptv)
+ * - Actualités politiques, économiques et culturelles de RDC
  */
 
 export const IMPORTED_ARTICLES = [
@@ -24,24 +24,6 @@ En attaque, la complicité entre Yoane Wissa et les ailiers dynamise les phases 
     createdAt: "2026-09-05T08:30:00Z"
   },
   {
-    id: 2,
-    title: "Nord-Kivu : Les jeunes de Goma se mobilisent pour la paix et la cohésion communautaire",
-    summary: "Reportage exclusif au cœur des collectifs de jeunes du chef-lieu du Nord-Kivu qui multiplient les initiatives de dialogue citoyen, d'éducation et d'entraide solidaire.",
-    content: `Dans les quartiers de Goma, du centre-ville jusqu'aux faubourgs de Birere et Majengo, une nouvelle génération d'acteurs de changement fait entendre sa voix. Portés par la conviction que le développement passe avant tout par la cohésion sociale, plusieurs collectifs de jeunes organisent des ateliers de formation civique et d'entrepreneuriat solidaire.
-
-« Notre mission est d'offrir des perspectives concrètes à la jeunesse et de prouver que Goma est une ville de résilience, de créativité et d'avenir », explique un coordinateur associatif lors d'un forum communautaire sur les rives du lac Kivu.
-
-Les débats ont réuni des étudiants, des animateurs de radios locales et des chefs de quartier autour de solutions pratiques : accès à la formation professionnelle, assainissement des avenues et promotion d'une information vérifiée pour contrer les rumeurs sur les réseaux sociaux. Une dynamique inspirante qui témoigne de la vitalité indomptable de l'Est congolais.`,
-    category: "Société",
-    region: "Nord-Kivu",
-    tags: "Goma, Nord-Kivu, Jeunesse, Paix, Société, Résilience, Éducation",
-    mainImageUrl: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200",
-    status: "PUBLISHED",
-    authorUsername: "Life UP TV Goma",
-    publicationDate: "2026-09-04T15:00:00Z",
-    createdAt: "2026-09-04T15:00:00Z"
-  },
-  {
     id: 3,
     title: "Mercato : Les performances éclatantes de Yoane Wissa et la montée en puissance des talents congolais",
     summary: "Décryptage des trajectoires européennes des attaquants de la diaspora congolaise, dont les statistiques remarquables confirment l'ascension du football de RDC au plus haut niveau.",
@@ -58,24 +40,6 @@ Pour les supporters congolais à Kinshasa comme à Lubumbashi ou dans la diaspor
     authorUsername: "Life Channel Sports",
     publicationDate: "2026-09-04T11:45:00Z",
     createdAt: "2026-09-04T11:45:00Z"
-  },
-  {
-    id: 4,
-    title: "Goma Ville Verte : Coup d'envoi d'une vaste campagne citoyenne de reboisement urbain",
-    summary: "Face aux défis de l'érosion et de la pression démographique, des centaines de volontaires ont planté plus de 5 000 arbres d'essences locales pour reverdir les collines volcaniques.",
-    content: `Sous un ciel matinal dégagé face aux massifs des Virunga, les équipes de volontaires de Goma ont lancé ce samedi la première phase de l'opération « Goma Ville Verte ». Cette initiative participative a mobilisé des élèves, des agents municipaux et des acteurs de la société civile avec pour objectif de planter des milliers de jeunes pousses le long des axes majeurs et sur les pentes vulnérables.
-
-Les experts environnementaux locaux soulignent que ces plantations permettront de stabiliser les sols volcaniques friables, de réduire la poussière en saison sèche et d'offrir des zones d'ombrage salutaires dans les quartiers à forte densité d'habitation.
-
-« Chaque arbre planté aujourd'hui est une promesse d'air pur et de protection pour nos enfants demain », a confié une enseignante engagée dans le projet. Les organisateurs prévoient un suivi régulier avec un comité citoyen de gardiennage pour veiller à la croissance des plantations tout au long de la saison des pluies.`,
-    category: "Environnement",
-    region: "Nord-Kivu",
-    tags: "Environnement, Goma, Reboisement, Écologie, Climat, Nord-Kivu, Virunga",
-    mainImageUrl: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=1200",
-    status: "PUBLISHED",
-    authorUsername: "Life UP TV Goma",
-    publicationDate: "2026-09-03T14:15:00Z",
-    createdAt: "2026-09-03T14:15:00Z"
   },
   {
     id: 5,
@@ -130,23 +94,5 @@ Les acteurs de la société civile et les médias indépendants continuent de re
     authorUsername: "Desk Politique & Diplomatie",
     publicationDate: "2026-08-31T18:10:00Z",
     createdAt: "2026-08-31T18:10:00Z"
-  },
-  {
-    id: 8,
-    title: "Port de Goma : L'éveil matinal et le départ des navires marchands sur le Lac Kivu",
-    summary: "Ambiance du littoral lacustre au petit matin : débarquement de vivres, embarquement des passagers et vitalité commerciale essentielle entre Goma et Bukavu.",
-    content: `Dès 5 heures du matin, le port public de Goma s'anime d'un ballet incessant. Les bateaux reliant le Nord-Kivu et le Sud-Kivu manœuvrent dans la brume matinale pendant que les dockers déchargent cageots de tomates, sacs de pommes de terre et poissons frais du lac.
-
-Ce couloir lacustre constitue le poumon économique reliant Goma et Bukavu, assurant le ravitaillement quotidien des marchés malgré les difficultés des voies terrestres.
-
-À travers ce reportage de terrain, LIFE CHANNEL donne à voir le courage quotidien des commerçantes et des marins qui maintiennent la circulation des biens et des personnes avec une dignité exemplaire.`,
-    category: "Société",
-    region: "Nord-Kivu",
-    tags: "Goma, Lac Kivu, Bukavu, Transport, Commerce, Société",
-    mainImageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200",
-    status: "PUBLISHED",
-    authorUsername: "Life UP TV",
-    publicationDate: "2026-08-30T07:15:00Z",
-    createdAt: "2026-08-30T07:15:00Z"
   }
 ];

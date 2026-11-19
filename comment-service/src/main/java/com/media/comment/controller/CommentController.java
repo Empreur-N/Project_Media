@@ -33,8 +33,27 @@ public class CommentController {
     public ResponseEntity<?> createComment(@Valid @RequestBody Comment comment) {
         comment.setStatus(CommentStatus.APPROVED); // Approuvé par défaut
         comment.setFlagCount(0);
+        if (comment.getLikesCount() < 0) {
+            comment.setLikesCount(0);
+        }
+        if (comment.getAuthorName() == null || comment.getAuthorName().trim().isEmpty()) {
+            comment.setAuthorName(comment.getUsername());
+        }
         Comment saved = commentRepository.save(comment);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // Aimer un commentaire (Like)
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> likeComment(@PathVariable Long id) {
+        Comment comment = commentRepository.findById(id).orElse(null);
+        if (comment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Commentaire non trouvé"));
+        }
+        comment.setLikesCount(comment.getLikesCount() + 1);
+        Comment saved = commentRepository.save(comment);
+        return ResponseEntity.ok(Map.of("likesCount", saved.getLikesCount()));
     }
 
     // Supprimer/Désactiver son propre commentaire (Soft Delete)

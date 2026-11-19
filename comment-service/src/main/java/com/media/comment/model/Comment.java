@@ -25,6 +25,16 @@ public class Comment {
     @Column(nullable = false)
     private String username;
 
+    @Column(name = "author_name")
+    private String authorName;
+
+    @Column(name = "user_role")
+    private String userRole;
+
+    @Column(name = "likes_count")
+    @Builder.Default
+    private int likesCount = 0;
+
     @Column(nullable = false, length = 2000)
     private String content;
 

@@ -140,6 +140,10 @@ export const flagComment = (id, token) => {
   return apiCall(`/comments/${id}/flag`, 'POST', null, token);
 };
 
+export const likeComment = (id, token = null) => {
+  return apiCall(`/comments/${id}/like`, 'POST', null, token);
+};
+
 export const getFlaggedComments = (token) => {
   return apiCall('/comments/moderation', 'GET', null, token);
 };

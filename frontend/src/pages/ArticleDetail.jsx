@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { getArticle, getComments, postComment, flagComment, trackPageView } from '../services/api';
+import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send } from 'lucide-react';
+import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
@@ -30,6 +30,7 @@ const ArticleDetail = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [visitorName, setVisitorName] = useState('');
+  const [visitorHandle, setVisitorHandle] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
 
@@ -84,37 +85,168 @@ const ArticleDetail = () => {
     }
   };
 
+  const getAuthorMeta = (com) => {
+    let name = com.authorName;
+    let handle = com.username;
+    let role = com.userRole;
+
+    if (com.username && com.username.includes('|')) {
+      const parts = com.username.split('|');
+      name = parts[0] || name;
+      handle = parts[1] || handle;
+      role = parts[2] || role;
+    }
+
+    if (!name) {
+      name = com.username || "Lecteur Citoyen";
+    }
+
+    if (!handle) {
+      handle = '@' + name.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    } else if (!handle.startsWith('@')) {
+      handle = '@' + handle;
+    }
+
+    const cleanName = name.replace(/@/g, '').trim();
+    const parts = cleanName.split(' ').filter(Boolean);
+    const initials = parts.length > 1 
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : (cleanName.slice(0, 2).toUpperCase() || 'LC');
+
+    return { name, handle, role, initials };
+  };
+
+  const getAvatarGradient = (role, handle) => {
+    if (role === 'SUPERVISOR') return 'linear-gradient(135deg, #10b981 0%, #047857 100%)';
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') return 'linear-gradient(135deg, #007cff 0%, #1e40af 100%)';
+    if (role === 'JOURNALIST') return 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)';
+    if (role === 'EDITOR') return 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)';
+    
+    const colors = [
+      'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+      'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
+      'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)',
+      'linear-gradient(135deg, #84cc16 0%, #4d7c0f 100%)'
+    ];
+    let hash = 0;
+    const str = handle || 'default';
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const getRoleBadge = (role) => {
+    if (role === 'SUPERVISOR') {
+      return (
+        <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={11} /> Direction Fondatrice
+        </span>
+      );
+    }
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+      return (
+        <span style={{ backgroundColor: 'rgba(0, 124, 255, 0.15)', color: 'var(--primary)', border: '1px solid rgba(0, 124, 255, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={11} /> Rédaction en Chef
+        </span>
+      );
+    }
+    if (role === 'JOURNALIST') {
+      return (
+        <span style={{ backgroundColor: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4', border: '1px solid rgba(6, 182, 212, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <Sparkles size={11} /> Journaliste Life Channel
+        </span>
+      );
+    }
+    if (role === 'EDITOR') {
+      return (
+        <span style={{ backgroundColor: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800' }}>
+          Éditeur
+        </span>
+      );
+    }
+    return (
+      <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 7px', borderRadius: '10px', fontSize: '10px', fontWeight: '700' }}>
+        Lecteur
+      </span>
+    );
+  };
+
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const authorDisplayName = user ? `${user.username} (${user.role})` : (visitorName.trim() || 'Lecteur');
+    let finalName = '';
+    let finalHandle = '';
+    let finalRole = '';
+
+    if (user) {
+      finalName = user.fullName || user.username;
+      finalHandle = '@' + user.username;
+      finalRole = user.role;
+    } else {
+      finalName = visitorName.trim() || 'Citoyen Engagé';
+      finalHandle = visitorHandle.trim()
+        ? (visitorHandle.trim().startsWith('@') ? visitorHandle.trim() : '@' + visitorHandle.trim())
+        : ('@' + finalName.toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+      finalRole = 'CITOYEN';
+    }
 
     setSubmittingComment(true);
     try {
-      await postComment(id, {
-        content: newComment,
-        authorUsername: authorDisplayName,
-      }, token);
+      const payload = {
+        articleId: Number(id),
+        content: newComment.trim(),
+        username: `${finalName}|${finalHandle}|${finalRole}`,
+        authorName: finalName,
+        userRole: finalRole,
+        likesCount: 0
+      };
+
+      await postComment(payload, token);
       setNewComment('');
       setVisitorName('');
-      showToast("Votre réaction a été publiée.", "success");
+      setVisitorHandle('');
+      showToast("Votre réaction a été publiée avec succès !", "success");
       fetchArticleComments();
     } catch (error) {
       console.warn("API commentaire indisponible, ajout immédiat dans la vue locale:", error);
       const localCom = {
         id: Date.now(),
         articleId: Number(id),
-        username: authorDisplayName,
-        content: newComment,
+        username: `${finalName}|${finalHandle}|${finalRole}`,
+        authorName: finalName,
+        userRole: finalRole,
+        content: newComment.trim(),
+        likesCount: 0,
         createdAt: new Date().toISOString()
       };
       setComments(prev => [localCom, ...prev]);
       setNewComment('');
       setVisitorName('');
+      setVisitorHandle('');
       showToast("Votre réaction a été enregistrée avec succès.", "success");
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleLikeComment = async (commentId) => {
+    setComments(prev => (Array.isArray(prev) ? prev : []).map(c => 
+      c.id === commentId ? { ...c, likesCount: (c.likesCount || 0) + 1, userLiked: true } : c
+    ));
+    try {
+      await likeComment(commentId, token);
+    } catch (e) {
+      console.warn("Like local appliqué:", e);
+    }
+  };
+
+  const handleReply = (authorHandle) => {
+    setNewComment(prev => `${authorHandle} ${prev}`.trim() + ' ');
+    const commentInput = document.getElementById('comment-textarea');
+    if (commentInput) {
+      commentInput.focus();
+      commentInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
@@ -248,78 +380,177 @@ const ArticleDetail = () => {
 
         {/* Section Commentaires */}
         <div style={styles.commentsSection}>
-          <h3 style={styles.commentsTitle}>
-            <MessageSquare size={18} style={{ color: 'var(--primary)' }} />
-            Discussion ({comments.length})
-          </h3>
+          <div style={styles.commentsSectionHeader}>
+            <div>
+              <h3 style={styles.commentsTitle}>
+                <MessageSquare size={20} style={{ color: 'var(--primary)' }} />
+                Espace Réactions & Débats ({comments.length})
+              </h3>
+              <p style={styles.commentsSubtitle}>
+                Partagez votre avis, dialoguez avec les auteurs et la communauté citoyenne de LIFE CHANNEL.
+              </p>
+            </div>
+          </div>
 
-          {/* Formulaire de réaction (Ouvert aux visiteurs & à la rédaction sans obligation de compte) */}
-          <form onSubmit={handleCommentSubmit} style={styles.commentForm}>
-            {!user && (
-              <div style={{ marginBottom: '10px' }}>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={visitorName}
-                  onChange={(e) => setVisitorName(e.target.value)}
-                  placeholder="Votre nom ou pseudonyme (ex: Patrick M., Citoyen de Goma...)"
-                  style={{ maxWidth: '380px', fontSize: '13px', padding: '9px 14px' }}
-                />
+          {/* Formulaire de réaction structuré */}
+          <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
+            {user ? (
+              <div style={styles.userCommentBanner}>
+                <div style={{
+                  ...styles.avatarSmall,
+                  background: getAvatarGradient(user.role, user.username)
+                }}>
+                  {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+                    {user.fullName || user.username}
+                    <span style={{ marginLeft: '8px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                      @{user.username}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--primary)', marginTop: '1px' }}>
+                    Compte accrédité ({user.role})
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={styles.visitorInputsRow}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <label style={styles.inputFieldLabel}>Nom complet ou Prénom *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={visitorName}
+                    onChange={(e) => setVisitorName(e.target.value)}
+                    placeholder="Ex: Patrick Mutombo, Dr. Alain..."
+                    required
+                    style={{ fontSize: '13px' }}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <label style={styles.inputFieldLabel}>Identifiant public (@) *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={visitorHandle}
+                    onChange={(e) => setVisitorHandle(e.target.value)}
+                    placeholder="Ex: @patrick_m"
+                    style={{ fontSize: '13px' }}
+                  />
+                </div>
               </div>
             )}
-            <textarea
-              className="form-input"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Exprimez-vous sur ce sujet (espace d'échange public modéré)..."
-              rows="3"
-              required
-              disabled={submittingComment}
-              style={{ marginBottom: '12px' }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+
+            <div style={{ marginTop: '12px' }}>
+              <label style={styles.inputFieldLabel}>Votre message *</label>
+              <textarea
+                id="comment-textarea"
+                className="form-input"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Exprimez-vous de manière constructive (respect de la charte de modération)..."
+                rows="3"
+                required
+                disabled={submittingComment}
+                style={{ width: '100%', resize: 'vertical' }}
+              />
+            </div>
+
+            <div style={styles.formFooterRow}>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                {user ? `Identifié en tant que ${user.username} (${user.role})` : "Publication citoyenne libre et sans création de compte"}
+                {user ? "Publication instantanée sous votre profil accrédité" : "Chaque intervention affiche votre nom et votre identifiant @ pour la clarté des échanges."}
               </span>
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                style={{ padding: '8px 18px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }} 
+                style={{ padding: '9px 20px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '8px' }} 
                 disabled={submittingComment}
               >
-                <Send size={14} /> {submittingComment ? "Envoi..." : "Publier ma réaction"}
+                <Send size={14} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
               </button>
             </div>
           </form>
 
           {/* Liste des commentaires */}
           {commentsLoading ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Chargement des commentaires...</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Chargement des réactions...</p>
           ) : comments.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', fontStyle: 'italic' }}>Aucun commentaire. Soyez le premier à réagir !</p>
+            <div className="glass-card" style={styles.emptyCommentsCard}>
+              <MessageSquare size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px', opacity: 0.6 }} />
+              <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-main)' }}>Aucun commentaire pour le moment</div>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Soyez le premier à ouvrir le débat citoyen sur cet article !</p>
+            </div>
           ) : (
             <div style={styles.commentsList}>
-              {comments.map((com) => (
-                <div key={com.id} className="glass-card" style={styles.commentCard}>
-                  <div style={styles.commentHeader}>
-                    <span style={styles.commentAuthor}>{com.username || com.authorUsername || "Lecteur"}</span>
-                    <span style={styles.commentDate}>
-                      {com.createdAt ? new Date(com.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Récemment'}
-                    </span>
+              {comments.map((com) => {
+                const meta = getAuthorMeta(com);
+                return (
+                  <div key={com.id} className="glass-card animate-fade-in" style={styles.modernCommentCard}>
+                    {/* Header de l'intervention */}
+                    <div style={styles.commentHeaderRow}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <div style={{
+                          ...styles.avatarCircle,
+                          background: getAvatarGradient(meta.role, meta.handle)
+                        }}>
+                          {meta.initials}
+                        </div>
+
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={styles.authorFullName}>{meta.name}</span>
+                            <span style={styles.authorHandle}>{meta.handle}</span>
+                            {getRoleBadge(meta.role)}
+                          </div>
+                          <div style={styles.commentDateBadge}>
+                            {com.createdAt ? new Date(com.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Récemment'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Signalement */}
+                      <button 
+                        onClick={() => handleFlagComment(com.id)} 
+                        style={styles.flagIconBtn} 
+                        title="Signaler cette intervention à l'équipe de modération"
+                      >
+                        <AlertTriangle size={13} />
+                      </button>
+                    </div>
+
+                    {/* Contenu textuel */}
+                    <div style={styles.commentContentWrapper}>
+                      <p style={styles.commentMessageText}>{com.content}</p>
+                    </div>
+
+                    {/* Barre d'interaction style plateforme moderne */}
+                    <div style={styles.commentInteractionsRow}>
+                      <button 
+                        onClick={() => handleLikeComment(com.id)} 
+                        style={{
+                          ...styles.likeBtn,
+                          color: com.userLiked ? '#ef4444' : 'var(--text-muted)',
+                          borderColor: com.userLiked ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-color)'
+                        }}
+                        title="J'aime cette réaction"
+                      >
+                        <Heart size={13} fill={com.userLiked ? '#ef4444' : 'none'} />
+                        <span style={{ fontWeight: '700' }}>{com.likesCount || 0}</span>
+                      </button>
+
+                      <button 
+                        onClick={() => handleReply(meta.handle)} 
+                        style={styles.replyBtn}
+                        title={`Répondre directement à ${meta.name}`}
+                      >
+                        <CornerDownRight size={13} />
+                        <span>Répondre</span>
+                      </button>
+                    </div>
                   </div>
-                  <p style={styles.commentText}>{com.content}</p>
-                  
-                  {user && user.username !== com.username && (
-                    <button 
-                      onClick={() => handleFlagComment(com.id)} 
-                      style={styles.flagBtn} 
-                      title="Signaler comme inapproprié"
-                    >
-                      <AlertTriangle size={12} /> Signaler
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -463,60 +694,177 @@ const styles = {
   commentsSection: {
     marginTop: '50px',
     borderTop: '1px solid var(--border-color)',
-    paddingTop: '30px',
+    paddingTop: '36px',
+  },
+  commentsSectionHeader: {
+    marginBottom: '24px',
   },
   commentsTitle: {
-    fontSize: '20px',
+    fontSize: '22px',
+    fontWeight: '800',
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    marginBottom: '20px',
+    margin: 0,
+    color: 'var(--text-main)',
   },
-  commentForm: {
+  commentsSubtitle: {
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+    marginTop: '4px',
+  },
+  modernCommentForm: {
+    padding: '20px 24px',
+    borderRadius: '16px',
+    marginBottom: '36px',
+    border: '1px solid var(--border-color)',
+    background: 'rgba(255, 255, 255, 0.02)',
+  },
+  userCommentBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '10px 14px',
+    borderRadius: '10px',
+    backgroundColor: 'rgba(0, 124, 255, 0.08)',
+    border: '1px solid rgba(0, 124, 255, 0.2)',
+    marginBottom: '12px',
+  },
+  avatarSmall: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: '800',
+    fontSize: '12px',
+    color: '#ffffff',
+  },
+  visitorInputsRow: {
+    display: 'flex',
+    gap: '14px',
+    flexWrap: 'wrap',
+  },
+  inputFieldLabel: {
+    display: 'block',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: 'var(--text-secondary)',
+    marginBottom: '6px',
+  },
+  formFooterRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '12px',
+    marginTop: '14px',
+  },
+  emptyCommentsCard: {
+    padding: '40px 20px',
+    textAlign: 'center',
     display: 'flex',
     flexDirection: 'column',
-    marginBottom: '30px',
+    alignItems: 'center',
+    borderRadius: '16px',
   },
   commentsList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
   },
-  commentCard: {
-    padding: '20px',
-    position: 'relative',
+  modernCommentCard: {
+    padding: '18px 20px',
+    borderRadius: '14px',
+    border: '1px solid var(--border-color)',
+    background: 'rgba(255, 255, 255, 0.03)',
   },
-  commentHeader: {
+  commentHeaderRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: '10px',
+    alignItems: 'flex-start',
+    marginBottom: '12px',
   },
-  commentAuthor: {
-    fontWeight: '700',
+  avatarCircle: {
+    width: '42px',
+    height: '42px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: '800',
     fontSize: '14px',
+    color: '#ffffff',
+    flexShrink: 0,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
   },
-  commentDate: {
+  authorFullName: {
+    fontWeight: '800',
+    fontSize: '14px',
+    color: 'var(--text-main)',
+  },
+  authorHandle: {
     fontSize: '12px',
     color: 'var(--text-muted)',
+    fontWeight: '600',
   },
-  commentText: {
-    fontSize: '14px',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.5',
+  commentDateBadge: {
+    fontSize: '11px',
+    color: 'var(--text-muted)',
+    marginTop: '2px',
   },
-  flagBtn: {
+  flagIconBtn: {
     background: 'none',
     border: 'none',
-    color: 'var(--error)',
-    fontSize: '12px',
+    color: 'var(--text-muted)',
     cursor: 'pointer',
+    padding: '4px',
+    borderRadius: '4px',
+    opacity: 0.6,
+    transition: 'all 0.2s',
+  },
+  commentContentWrapper: {
+    paddingLeft: '54px',
+    marginBottom: '10px',
+  },
+  commentMessageText: {
+    fontSize: '14px',
+    color: 'var(--text-secondary)',
+    lineHeight: '1.6',
+    margin: 0,
+  },
+  commentInteractionsRow: {
+    paddingLeft: '54px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  likeBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    padding: '4px 10px',
+    borderRadius: '16px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid var(--border-color)',
+    fontSize: '11px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  replyBtn: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '4px',
-    marginTop: '12px',
-    padding: 0,
-    opacity: 0.7,
-    transition: 'opacity 0.2s',
+    padding: '4px 10px',
+    borderRadius: '16px',
+    background: 'none',
+    border: 'none',
+    color: 'var(--text-muted)',
+    fontSize: '11px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   }
 };
 
