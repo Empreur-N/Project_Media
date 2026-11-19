@@ -36,7 +36,7 @@ const Login = () => {
         navigate('/admin/journalist');
       } else if (data.role === 'EDITOR') {
         navigate('/admin/editor');
-      } else if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN') {
+      } else if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN' || data.role === 'SUPERVISOR') {
         navigate('/admin');
       } else {
         navigate('/');

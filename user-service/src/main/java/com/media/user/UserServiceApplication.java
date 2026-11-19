@@ -59,6 +59,35 @@ public class UserServiceApplication {
                 userRepository.save(journalist);
                 System.out.println("Compte Journaliste par défaut inséré.");
             }
+
+            // 4. Comptes de Supervision dédiés aux Fondateurs / Direction (Rôle SUPERVISOR)
+            if (!userRepository.existsByUsername("directeur1")) {
+                User dir1 = User.builder()
+                        .username("directeur1")
+                        .fullName("Direction Générale - Fondateur")
+                        .email("direction1@lifechannelmedia.com")
+                        .password(passwordEncoder.encode("DirectionPass2026!"))
+                        .role(Role.SUPERVISOR)
+                        .emailVerified(true)
+                        .active(true)
+                        .build();
+                userRepository.save(dir1);
+                System.out.println("Compte Supervision Fondateur 1 (directeur1) inséré.");
+            }
+
+            if (!userRepository.existsByUsername("directeur2")) {
+                User dir2 = User.builder()
+                        .username("directeur2")
+                        .fullName("Co-Fondateur & Supervision Éditoriale")
+                        .email("direction2@lifechannelmedia.com")
+                        .password(passwordEncoder.encode("DirectionPass2026!"))
+                        .role(Role.SUPERVISOR)
+                        .emailVerified(true)
+                        .active(true)
+                        .build();
+                userRepository.save(dir2);
+                System.out.println("Compte Supervision Fondateur 2 (directeur2) inséré.");
+            }
         };
     }
 }

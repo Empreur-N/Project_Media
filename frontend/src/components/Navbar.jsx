@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useDataSaver } from '../contexts/DataSaverContext';
 import { useTimezone } from '../contexts/TimezoneContext';
-import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Zap, Clock } from 'lucide-react';
+import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Zap, Clock, Bell } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
@@ -15,7 +15,42 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [pushActive, setPushActive] = useState(
+    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
+  );
   const dropdownRef = useRef(null);
+
+  const handleTogglePush = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      alert("Votre navigateur ne prend pas en charge les notifications push.");
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      alert("Les alertes Flash Info sont déjà activées sur votre navigateur !");
+      return;
+    }
+    try {
+      const res = await Notification.requestPermission();
+      if (res === 'granted') {
+        setPushActive(true);
+        const notifTitle = '🔴 LIFE CHANNEL MEDIA';
+        const notifOptions = {
+          body: '✅ Alertes Flash activées ! Vous recevrez nos alertes urgentes et breaking news en direct.',
+          icon: '/logo.png',
+          badge: '/logo.png'
+        };
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(notifTitle, notifOptions);
+          });
+        } else {
+          new Notification(notifTitle, notifOptions);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -160,6 +195,32 @@ const Navbar = () => {
                 <Clock size={13} />
                 <span>{currentDetails.shortBadge} ({currentDetails.key === 'KINSHASA' ? 'Kin' : "L'shi"})</span>
               </button>
+
+              {/* Bouton Alertes Flash Web Push */}
+              <button
+                onClick={handleTogglePush}
+                className="nav-setting-btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  background: pushActive ? 'rgba(239, 68, 68, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                  border: pushActive ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid var(--border-color)',
+                  color: pushActive ? '#ef4444' : 'var(--text-muted)',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  letterSpacing: '0.5px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginLeft: '2px'
+                }}
+                title={pushActive ? "Alertes Flash Info activées sur votre navigateur" : "Activer les notifications push pour recevoir les alertes d'urgence"}
+              >
+                <Bell size={13} fill={pushActive ? "#ef4444" : "none"} />
+                <span>{pushActive ? "ALERTES ON" : "ALERTES"}</span>
+              </button>
             </div>
           </div>
 
@@ -197,6 +258,24 @@ const Navbar = () => {
                           </Link>
                           <Link to="/admin/podcasts" className="dropdown-item" onClick={handleLinkClick}>
                             Mes Podcasts
+                          </Link>
+                        </>
+                      )}
+
+                      {/* Supervisor / Direction shortcuts (Fondateurs) */}
+                      {user.role === 'SUPERVISOR' && (
+                        <>
+                          <Link to="/admin" className="dropdown-item" onClick={handleLinkClick}>
+                            📊 Cockpit Direction & KPIs
+                          </Link>
+                          <Link to="/admin/podcasts" className="dropdown-item" onClick={handleLinkClick}>
+                            🎙️ Suivi des Podcasts
+                          </Link>
+                          <Link to="/admin/lives" className="dropdown-item" onClick={handleLinkClick}>
+                            📡 Suivi des Directs
+                          </Link>
+                          <Link to="/admin/ads" className="dropdown-item" onClick={handleLinkClick}>
+                            📈 Régie & Publicités
                           </Link>
                         </>
                       )}

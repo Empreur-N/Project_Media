@@ -13,4 +13,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByStatusAndCategoryOrderByCreatedAtDesc(ArticleStatus status, String category);
     List<Article> findByStatusAndRegionOrderByCreatedAtDesc(ArticleStatus status, String region);
     List<Article> findByStatusAndCategoryAndRegionOrderByCreatedAtDesc(ArticleStatus status, String category, String region);
+    boolean existsByTitle(String title);
+    boolean existsByTagsContaining(String tagPart);
+    List<Article> findByTagsContainingOrderByCreatedAtDesc(String tagPart);
 }

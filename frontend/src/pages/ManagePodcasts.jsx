@@ -99,16 +99,24 @@ const ManagePodcasts = () => {
     <div className="container animate-fade-in" style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Gestion des Podcasts</h1>
-          <p style={styles.subtitle}>Uploadez des fichiers audios et publiez de nouveaux épisodes d'émissions</p>
+          <h1 style={styles.title}>
+            {user?.role === 'SUPERVISOR' ? 'Suivi & Supervision des Podcasts' : 'Gestion des Podcasts'}
+          </h1>
+          <p style={styles.subtitle}>
+            {user?.role === 'SUPERVISOR' 
+              ? 'Consultation de la grille des podcasts et émissions audio de LIFE CHANNEL' 
+              : 'Uploadez des fichiers audios et publiez de nouveaux épisodes d\'émissions'}
+          </p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)} 
-          className="btn btn-primary"
-          style={styles.addBtn}
-        >
-          <Plus size={18} /> {showForm ? "Annuler" : "Créer un Épisode"}
-        </button>
+        {user?.role !== 'SUPERVISOR' && (
+          <button 
+            onClick={() => setShowForm(!showForm)} 
+            className="btn btn-primary"
+            style={styles.addBtn}
+          >
+            <Plus size={18} /> {showForm ? "Annuler" : "Créer un Épisode"}
+          </button>
+        )}
       </div>
 
       {/* Messages d'alerte */}

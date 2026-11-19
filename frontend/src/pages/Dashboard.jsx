@@ -10,7 +10,7 @@ import {
   Activity, Users, FileText, Radio, PlayCircle, PlusCircle, 
   CheckCircle2, ShieldCheck, Search, Filter, Eye, Edit, 
   ExternalLink, Calendar, MapPin, Tag, UserCheck, RefreshCw,
-  Tv, MessageSquare, ArrowRight, BookOpen
+  Tv, MessageSquare, ArrowRight, BookOpen, Share2, Globe, Check, AlertCircle
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -25,6 +25,29 @@ const Dashboard = () => {
   const [selectedAuthor, setSelectedAuthor] = useState('ALL');
   const [selectedRegion, setSelectedRegion] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [socialSyncing, setSocialSyncing] = useState(false);
+  const [socialSyncMsg, setSocialSyncMsg] = useState(null);
+
+  const handleTriggerSocialSync = async () => {
+    setSocialSyncing(true);
+    setSocialSyncMsg(null);
+    try {
+      const res = await fetch('/api/contents/social-sync/pull-youtube', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Social-Sync-Key': 'lifechannel_social_sync_secret_2026'
+        }
+      });
+      const data = await res.json();
+      setSocialSyncMsg({ type: 'success', text: data.message || "Passerelle interrogée avec succès." });
+      fetchAllPublications();
+    } catch (e) {
+      setSocialSyncMsg({ type: 'error', text: "Erreur de connexion à la passerelle de synchronisation." });
+    } finally {
+      setSocialSyncing(false);
+    }
+  };
 
   // Chargement des articles (API avec fallback automatique vers IMPORTED_ARTICLES)
   const fetchAllPublications = async () => {
@@ -119,17 +142,42 @@ const Dashboard = () => {
   return (
     <div className="container animate-fade-in" style={styles.container}>
       {/* Header Administration */}
+      {user?.role === 'SUPERVISOR' && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(0, 124, 255, 0.12))',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          borderRadius: '12px',
+          padding: '18px 22px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <div style={{ fontSize: '32px' }}>🏛️</div>
+          <div>
+            <div style={{ fontWeight: '700', fontSize: '1.1rem', color: '#10b981' }}>
+              Cockpit de Supervision & Direction Fondatrice (Mode Consultation & Audit)
+            </div>
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Bienvenue aux Fondateurs et à la Direction Générale. Vous disposez d'un accès de contrôle en temps réel sur l'ensemble des flux d'information, des diffusions et de la régie, garantissant l'intégrité opérationnelle de la chaîne sans modifier le contenu opérationnel.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={styles.header}>
         <div>
           <div style={styles.badgeRow}>
             <span style={styles.adminBadge}>
-              <ShieldCheck size={14} /> PORTAIL D'ADMINISTRATION & SUPERVISION
+              <ShieldCheck size={14} /> {user?.role === 'SUPERVISOR' ? 'SUPERVISION GÉNÉRALE & DIRECTION' : 'PORTAIL D\'ADMINISTRATION & SUPERVISION'}
             </span>
             <span style={styles.tzBadge}>
               Fuseau : {currentDetails.shortBadge} ({currentDetails.key === 'KINSHASA' ? 'Kinshasa GMT+1' : 'Lubumbashi GMT+2'})
             </span>
           </div>
-          <h1 style={styles.title}>Registre & Supervision des Publications</h1>
+          <h1 style={styles.title}>
+            {user?.role === 'SUPERVISOR' ? 'Cockpit de Supervision Direction' : 'Registre & Supervision des Publications'}
+          </h1>
           <p style={styles.subtitle}>
             Connecté en tant que <strong style={{ color: 'var(--text-main)' }}>{user?.username}</strong> ({user?.role}) — Vue centrale de tous les articles, auteurs et diffusions multimédias.
           </p>
@@ -137,12 +185,28 @@ const Dashboard = () => {
 
         {/* Boutons d'actions rapides du panneau supérieur */}
         <div style={styles.actionButtonGroup}>
-          <Link to="/admin/journalist" className="btn btn-primary" style={styles.actionBtn}>
-            <PlusCircle size={16} /> Rédiger un Article
-          </Link>
-          <Link to="/admin/editor" className="btn btn-secondary" style={styles.actionBtn}>
-            <CheckCircle2 size={16} /> Relire & Valider
-          </Link>
+          {user?.role === 'SUPERVISOR' ? (
+            <>
+              <Link to="/admin/podcasts" className="btn btn-secondary" style={styles.actionBtn}>
+                <PlayCircle size={16} /> Suivi Podcasts
+              </Link>
+              <Link to="/admin/lives" className="btn btn-secondary" style={styles.actionBtn}>
+                <Radio size={16} /> Suivi Directs
+              </Link>
+              <Link to="/admin/ads" className="btn btn-secondary" style={styles.actionBtn}>
+                <Activity size={16} /> Régie Publicitaire
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/admin/journalist" className="btn btn-primary" style={styles.actionBtn}>
+                <PlusCircle size={16} /> Rédiger un Article
+              </Link>
+              <Link to="/admin/editor" className="btn btn-secondary" style={styles.actionBtn}>
+                <CheckCircle2 size={16} /> Relire & Valider
+              </Link>
+            </>
+          )}
           <button onClick={fetchAllPublications} className="btn btn-secondary" style={styles.refreshBtn} title="Actualiser le registre">
             <RefreshCw size={15} />
           </button>
@@ -224,6 +288,121 @@ const Dashboard = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* PASSERELLE SYNCHRONISATION RÉSEAUX SOCIAUX */}
+      <div className="glass-card" style={{
+        padding: '20px 24px',
+        marginBottom: '28px',
+        borderRadius: '16px',
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid var(--border-color)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '22px' }}>🔄</span>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
+                Passerelle de Synchronisation Automatique des Réseaux Sociaux
+              </h2>
+              <span style={{
+                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                color: '#22c55e',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+                padding: '2px 8px',
+                borderRadius: '10px',
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                PASSERELLE ACTIVE
+              </span>
+            </div>
+            <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+              Ingère et publie automatiquement sur le site web dès qu'un post ou vidéo est mis en ligne sur nos canaux officiels.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={handleTriggerSocialSync}
+              disabled={socialSyncing}
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px' }}
+            >
+              <RefreshCw size={14} className={socialSyncing ? "pulse" : ""} />
+              <span>{socialSyncing ? "Synchronisation en cours..." : "Synchroniser YouTube & Flux"}</span>
+            </button>
+          </div>
+        </div>
+
+        {socialSyncMsg && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            backgroundColor: socialSyncMsg.type === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            border: `1px solid ${socialSyncMsg.type === 'success' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+            color: socialSyncMsg.type === 'success' ? '#22c55e' : '#ef4444',
+            fontSize: '13px'
+          }}>
+            {socialSyncMsg.type === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}
+            <span>{socialSyncMsg.text}</span>
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#ff0000' }}>
+              ▶️ YouTube
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Importation vidéo automatique + iframe intégrée
+            </div>
+            <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '6px', fontWeight: '600' }}>● Auto-polling 30 min & RSS actif</div>
+          </div>
+
+          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#1877f2' }}>
+              📲 Facebook
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Webhook instantané vers l'actualité web
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Endpoint Webhook configuré</div>
+          </div>
+
+          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#fe2c55' }}>
+              🎵 TikTok
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Vidéos courtes & buzz éditoriaux
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Formatage vertical optimisé</div>
+          </div>
+
+          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#e1306c' }}>
+              📸 Instagram
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Photos de reportage et publications
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Galerie et légendes intégrées</div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', background: 'rgba(0, 0, 0, 0.25)', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <strong style={{ color: 'var(--text-main)' }}>URL du Webhook d'ingestion : </strong>
+          <code>https://lifechannelmedia.com/api/contents/social-sync</code>
+          <span style={{ marginLeft: '12px' }}>
+            <strong style={{ color: 'var(--text-main)' }}>Entête d'autorisation : </strong>
+            <code>X-Social-Sync-Key: lifechannel_social_sync_secret_2026</code>
+          </span>
+        </div>
       </div>
 
       {/* SECTION CENTRALE : Tableau de bord des publications */}
@@ -439,14 +618,16 @@ const Dashboard = () => {
                           >
                             <Eye size={13} /> Lire
                           </Link>
-                          <Link 
-                            to={`/admin/journalist?edit=${art.id}`} 
-                            className="btn btn-secondary" 
-                            style={styles.actionEditBtn}
-                            title="Modifier cet article dans l'espace éditorial"
-                          >
-                            <Edit size={13} />
-                          </Link>
+                          {user?.role !== 'SUPERVISOR' && (
+                            <Link 
+                              to={`/admin/journalist?edit=${art.id}`} 
+                              className="btn btn-secondary" 
+                              style={styles.actionEditBtn}
+                              title="Modifier cet article dans l'espace éditorial"
+                            >
+                              <Edit size={13} />
+                            </Link>
+                          )}
                         </div>
                       </td>
                     </tr>

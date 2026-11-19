@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { getArticles, getPopularArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search } from 'lucide-react';
+import { Calendar, Tag, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search, Radio, Play, Pause, Zap } from 'lucide-react';
 import { useTimezone } from '../contexts/TimezoneContext';
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 
@@ -73,6 +74,7 @@ const WeatherWidget = () => {
 
 const Home = () => {
   const { timezone } = useTimezone();
+  const { playRadio, togglePlay, isPlaying, isRadioLive, radioQuality, toggleRadioQuality } = useAudioPlayer();
   const [articles, setArticles] = useState([]);
   const [popularArticles, setPopularArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -250,6 +252,124 @@ const Home = () => {
       {/* Articles Feed */}
       <div className="container" style={{ marginTop: '20px' }}>
         <AdPlacement placement="HEADER" style={{ marginBottom: '30px' }} />
+
+        {/* Banner Radio En Direct 24/7 */}
+        <div className="glass-card" style={{
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.95) 100%)',
+          border: '1px solid rgba(239, 68, 68, 0.35)',
+          borderRadius: '16px',
+          padding: '18px 24px',
+          marginBottom: '28px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '20px',
+          flexWrap: 'wrap',
+          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(239, 68, 68, 0.15)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: '260px' }}>
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
+              flexShrink: 0
+            }}>
+              <Radio size={26} className={isRadioLive && isPlaying ? "pulse" : ""} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '10px',
+                  padding: '2px 8px',
+                  fontSize: '10px',
+                  fontWeight: '900',
+                  letterSpacing: '0.6px'
+                }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444', animation: 'pulse 1.2s infinite' }} />
+                  DIRECT CONTINU 24/7
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Kinshasa & Provinces</span>
+              </div>
+              <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#ffffff', marginTop: '3px' }}>
+                Life Channel Radio — Le Grand Débat & L'Info en Continu
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Écoutez en direct sans coupure pendant que vous parcourez l'actualité.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={toggleRadioQuality}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--secondary)',
+                padding: '8px 14px',
+                borderRadius: '24px',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+              title="Changer la qualité audio"
+            >
+              <Zap size={13} /> {radioQuality === 'standard' ? 'HD (128 kbps)' : 'Éco (48 kbps)'}
+            </button>
+
+            <button
+              onClick={() => {
+                if (isRadioLive) {
+                  togglePlay();
+                } else {
+                  playRadio();
+                }
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: isRadioLive && isPlaying ? 'rgba(239, 68, 68, 0.2)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                border: isRadioLive && isPlaying ? '1px solid #ef4444' : 'none',
+                color: '#ffffff',
+                padding: '10px 22px',
+                borderRadius: '30px',
+                fontWeight: '800',
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: isRadioLive && isPlaying ? 'none' : '0 4px 15px rgba(239, 68, 68, 0.4)',
+                transition: 'all 0.2s'
+              }}
+            >
+              {isRadioLive && isPlaying ? (
+                <>
+                  <Pause size={16} fill="currentColor" />
+                  <span>Mettre en Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play size={16} fill="currentColor" />
+                  <span>Écouter le Direct Radio</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
         <div className="home-layout" style={styles.mainLayout}>
           <div className="feed-column" style={styles.feedColumn}>

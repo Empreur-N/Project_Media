@@ -6,7 +6,7 @@ import MobileMoneyModal from '../components/MobileMoneyModal';
 import { getMediaUrl as resolveMediaUrl } from '../utils/urlUtils';
 
 const ManageAds = () => {
-  const { token } = useAuth();
+  const { user, token } = useAuth();
 
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,16 +99,24 @@ const ManageAds = () => {
     <div className="container animate-fade-in" style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Régie Publicitaire</h1>
-          <p style={styles.subtitle}>Gérez les bannières publicitaires et suivez les performances de conversion (CTR)</p>
+          <h1 style={styles.title}>
+            {user?.role === 'SUPERVISOR' ? 'Suivi Régie Publicitaire' : 'Régie Publicitaire'}
+          </h1>
+          <p style={styles.subtitle}>
+            {user?.role === 'SUPERVISOR'
+              ? 'Consultation des campagnes annonceurs, impressions et performances de conversion (CTR)'
+              : 'Gérez les bannières publicitaires et suivez les performances de conversion (CTR)'}
+          </p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)} 
-          className="btn btn-primary"
-          style={styles.addBtn}
-        >
-          <Plus size={18} /> {showForm ? "Annuler" : "Créer une Campagne"}
-        </button>
+        {user?.role !== 'SUPERVISOR' && (
+          <button 
+            onClick={() => setShowForm(!showForm)} 
+            className="btn btn-primary"
+            style={styles.addBtn}
+          >
+            <Plus size={18} /> {showForm ? "Annuler" : "Créer une Campagne"}
+          </button>
+        )}
       </div>
 
       {/* Messages */}
@@ -254,6 +262,10 @@ const ManageAds = () => {
                       {a.active ? (
                         <span style={{ color: '#22c55e', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <CheckCircle size={13} /> Actif & Payé
+                        </span>
+                      ) : user?.role === 'SUPERVISOR' ? (
+                        <span style={{ color: '#ff4d4d', fontSize: '11px', fontWeight: '600' }}>
+                          En attente paiement
                         </span>
                       ) : (
                         <button

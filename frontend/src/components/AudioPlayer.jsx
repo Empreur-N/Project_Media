@@ -94,7 +94,27 @@ const AudioPlayer = () => {
     return resolveMediaUrl(url);
   };
 
-  if (!visible || !currentEpisode) return null;
+  if (!visible || !currentEpisode) {
+    return (
+      <div style={styles.floatingRadioBar}>
+        <button
+          onClick={() => {
+            setVisible(true);
+            playRadio();
+          }}
+          style={styles.floatingRadioBtn}
+          title="Écouter le direct Radio Life Channel 24h/24"
+        >
+          <span style={styles.pulseRadioDot} />
+          <Radio size={16} />
+          <span style={styles.floatingRadioText}>
+            {isPlaying && isRadioLive ? "🔴 Radio en Direct (En cours d'écoute)" : "🎙️ Écouter la Radio en Direct 24/7"}
+          </span>
+          <Play size={14} fill="currentColor" style={{ marginLeft: '4px' }} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.playerContainer} className="glass-card">
@@ -404,6 +424,40 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.2s',
+  },
+  floatingRadioBar: {
+    position: 'fixed',
+    bottom: '24px',
+    right: '24px',
+    zIndex: 9998,
+    animation: 'slideUp 0.3s ease-out',
+  },
+  floatingRadioBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    backgroundColor: '#0a0f1e',
+    background: 'linear-gradient(135deg, #0a0f1e 0%, #1e1b4b 100%)',
+    color: '#ffffff',
+    border: '1px solid rgba(239, 68, 68, 0.4)',
+    borderRadius: '30px',
+    padding: '10px 18px',
+    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(239, 68, 68, 0.2)',
+    cursor: 'pointer',
+    fontWeight: '700',
+    fontSize: '13px',
+    transition: 'all 0.2s ease',
+  },
+  pulseRadioDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: '#ef4444',
+    boxShadow: '0 0 10px #ef4444',
+    animation: 'pulse 1.2s infinite',
+  },
+  floatingRadioText: {
+    letterSpacing: '0.3px',
   }
 };
 

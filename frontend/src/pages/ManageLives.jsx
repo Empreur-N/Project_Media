@@ -95,16 +95,24 @@ const ManageLives = () => {
     <div className="container animate-fade-in" style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Gestion des Directs</h1>
-          <p style={styles.subtitle}>Planifiez des émissions télé/radio en direct ou commutez les flux actifs</p>
+          <h1 style={styles.title}>
+            {user?.role === 'SUPERVISOR' ? 'Suivi des Directs Radio & TV' : 'Gestion des Directs'}
+          </h1>
+          <p style={styles.subtitle}>
+            {user?.role === 'SUPERVISOR' 
+              ? 'Supervision en temps réel des flux de streaming et émissions programmées' 
+              : 'Planifiez des émissions télé/radio en direct ou commutez les flux actifs'}
+          </p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)} 
-          className="btn btn-primary"
-          style={styles.addBtn}
-        >
-          <Plus size={18} /> {showForm ? "Annuler" : "Programmer un Direct"}
-        </button>
+        {user?.role !== 'SUPERVISOR' && (
+          <button 
+            onClick={() => setShowForm(!showForm)} 
+            className="btn btn-primary"
+            style={styles.addBtn}
+          >
+            <Plus size={18} /> {showForm ? "Annuler" : "Programmer un Direct"}
+          </button>
+        )}
       </div>
 
       {/* Messages d'alerte */}
@@ -230,26 +238,32 @@ const ManageLives = () => {
                     </td>
                     <td style={{ ...styles.td, fontSize: '12px', color: 'var(--text-muted)' }}>{l.streamUrl}</td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
-                      {l.status === 'UPCOMING' && (
-                        <button 
-                          onClick={() => handleToggleStatus(l.id, l.status)}
-                          className="btn btn-secondary"
-                          style={{ ...styles.actionBtn, color: 'var(--error)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
-                        >
-                          <Play size={12} fill="currentColor" /> Démarrer le live
-                        </button>
-                      )}
-                      {l.status === 'LIVE' && (
-                        <button 
-                          onClick={() => handleToggleStatus(l.id, l.status)}
-                          className="btn btn-secondary"
-                          style={{ ...styles.actionBtn, color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}
-                        >
-                          <Square size={12} fill="currentColor" /> Clôturer
-                        </button>
-                      )}
-                      {l.status === 'ENDED' && (
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Diffusé</span>
+                      {user?.role === 'SUPERVISOR' ? (
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Supervision</span>
+                      ) : (
+                        <>
+                          {l.status === 'UPCOMING' && (
+                            <button 
+                              onClick={() => handleToggleStatus(l.id, l.status)}
+                              className="btn btn-secondary"
+                              style={{ ...styles.actionBtn, color: 'var(--error)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                            >
+                              <Play size={12} fill="currentColor" /> Démarrer le live
+                            </button>
+                          )}
+                          {l.status === 'LIVE' && (
+                            <button 
+                              onClick={() => handleToggleStatus(l.id, l.status)}
+                              className="btn btn-secondary"
+                              style={{ ...styles.actionBtn, color: 'var(--text-muted)', borderColor: 'var(--border-color)' }}
+                            >
+                              <Square size={12} fill="currentColor" /> Clôturer
+                            </button>
+                          )}
+                          {l.status === 'ENDED' && (
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Diffusé</span>
+                          )}
+                        </>
                       )}
                     </td>
                   </tr>

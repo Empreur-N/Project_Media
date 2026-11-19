@@ -1,10 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, X, ArrowRight } from 'lucide-react';
+import { AlertCircle, X, ArrowRight, Bell, Check } from 'lucide-react';
 import { getApiUrl } from '../utils/urlUtils';
 
 const BreakingNewsBanner = () => {
   const [alert, setAlert] = useState(null);
+  const [pushSubscribed, setPushSubscribed] = useState(
+    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
+  );
+
+  const handleEnablePush = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+          setPushSubscribed(true);
+          const notifTitle = '🔴 LIFE CHANNEL MEDIA';
+          const notifOptions = {
+            body: '✅ Alertes Flash activées ! Vous recevrez désormais les urgences en direct sur cet appareil.',
+            icon: '/logo.png',
+            badge: '/logo.png'
+          };
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then((reg) => {
+              reg.showNotification(notifTitle, notifOptions);
+            });
+          } else {
+            new Notification(notifTitle, notifOptions);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur demande permission Web Push:', err);
+      }
+    }
+  };
 
   useEffect(() => {
     let eventSource = null;
@@ -18,6 +47,29 @@ const BreakingNewsBanner = () => {
           try {
             const data = JSON.parse(event.data);
             setAlert(data);
+
+            // Déclenchement de la notification native Web Push (Desktop & Mobile Android)
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+              const notifTitle = data.title ? `🔴 ALERTE INFO : ${data.title}` : '🔴 ALERTE INFO — LIFE CHANNEL';
+              const notifOptions = {
+                body: data.message || 'Information urgente en direct.',
+                icon: '/logo.png',
+                badge: '/logo.png',
+                tag: 'breaking-' + (data.id || Date.now()),
+                vibrate: [200, 100, 200],
+                data: { url: data.articleId ? `/articles/${data.articleId}` : '/' }
+              };
+
+              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then((reg) => {
+                  reg.showNotification(notifTitle, notifOptions);
+                }).catch(() => {
+                  new Notification(notifTitle, notifOptions);
+                });
+              } else {
+                new Notification(notifTitle, notifOptions);
+              }
+            }
           } catch (err) {
             console.error('Erreur parsing SSE Breaking News:', err);
           }
@@ -59,6 +111,17 @@ const BreakingNewsBanner = () => {
         </div>
 
         <div style={styles.actionWrapper}>
+          {!pushSubscribed && (
+            <button 
+              onClick={handleEnablePush} 
+              style={styles.pushBtn} 
+              title="Recevoir les prochaines alertes d'urgence sur votre téléphone ou PC"
+            >
+              <Bell size={12} />
+              <span>Activer alertes</span>
+            </button>
+          )}
+
           {alert.articleId && (
             <Link 
               to={`/articles/${alert.articleId}`} 
@@ -168,6 +231,20 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pushBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    color: '#ffffff',
+    padding: '3px 10px',
+    borderRadius: '12px',
+    fontSize: '11px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   },
 };
 

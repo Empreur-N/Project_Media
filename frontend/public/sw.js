@@ -63,3 +63,51 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// Événement Push standard (Web Push API pour Chrome Desktop & Mobile Android)
+self.addEventListener('push', (event) => {
+  let data = { title: '🔴 ALERTE INFO — LIFE CHANNEL', message: 'Nouvelle alerte d\'actualité en direct', url: '/' };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data.message = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.message || data.body || 'Flash information en direct de Kinshasa et provinces.',
+    icon: '/logo.png',
+    badge: '/logo.png',
+    vibrate: [200, 100, 200],
+    data: { url: data.url || (data.articleId ? `/articles/${data.articleId}` : '/') },
+    actions: [
+      { action: 'read', title: 'Lire l\'alerte' },
+      { action: 'close', title: 'Fermer' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || '🔴 ALERTE FLASH INFO', options)
+  );
+});
+
+// Clic sur la notification native
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});

@@ -116,7 +116,7 @@ function App() {
                   <Route 
                     path="/admin/podcasts" 
                     element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN']}>
+                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
                         <ManagePodcasts />
                       </ProtectedRoute>
                     } 
@@ -124,7 +124,7 @@ function App() {
                   <Route 
                     path="/admin/lives" 
                     element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN']}>
+                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
                         <ManageLives />
                       </ProtectedRoute>
                     } 
@@ -132,7 +132,7 @@ function App() {
                   <Route 
                     path="/admin/ads" 
                     element={
-                      <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                      <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
                         <ManageAds />
                       </ProtectedRoute>
                     } 
