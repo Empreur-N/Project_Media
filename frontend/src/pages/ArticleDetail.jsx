@@ -5,7 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck } from 'lucide-react';
+import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock } from 'lucide-react';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
@@ -173,23 +173,15 @@ const ArticleDetail = () => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      showToast("Vous devez être connecté pour publier un commentaire.", "error");
+      return;
+    }
     if (!newComment.trim()) return;
 
-    let finalName = '';
-    let finalHandle = '';
-    let finalRole = '';
-
-    if (user) {
-      finalName = user.fullName || user.username;
-      finalHandle = '@' + user.username;
-      finalRole = user.role;
-    } else {
-      finalName = visitorName.trim() || 'Citoyen Engagé';
-      finalHandle = visitorHandle.trim()
-        ? (visitorHandle.trim().startsWith('@') ? visitorHandle.trim() : '@' + visitorHandle.trim())
-        : ('@' + finalName.toLowerCase().replace(/[^a-z0-9_]/g, '_'));
-      finalRole = 'CITOYEN';
-    }
+    const finalName = user.fullName || user.username;
+    const finalHandle = user.username.startsWith('@') ? user.username : `@${user.username}`;
+    const finalRole = user.role || 'CITOYEN';
 
     setSubmittingComment(true);
     try {
@@ -204,8 +196,6 @@ const ArticleDetail = () => {
 
       await postComment(payload, token);
       setNewComment('');
-      setVisitorName('');
-      setVisitorHandle('');
       showToast("Votre réaction a été publiée avec succès !", "success");
       fetchArticleComments();
     } catch (error) {
@@ -222,8 +212,6 @@ const ArticleDetail = () => {
       };
       setComments(prev => [localCom, ...prev]);
       setNewComment('');
-      setVisitorName('');
-      setVisitorHandle('');
       showToast("Votre réaction a été enregistrée avec succès.", "success");
     } finally {
       setSubmittingComment(false);
@@ -392,9 +380,9 @@ const ArticleDetail = () => {
             </div>
           </div>
 
-          {/* Formulaire de réaction structuré */}
-          <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
-            {user ? (
+          {/* Formulaire de réaction structuré ou invite de connexion */}
+          {user ? (
+            <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
               <div style={styles.userCommentBanner}>
                 <div style={{
                   ...styles.avatarSmall,
@@ -410,67 +398,64 @@ const ArticleDetail = () => {
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--primary)', marginTop: '1px' }}>
-                    Compte accrédité ({user.role})
+                    Compte connecté ({user.role || 'Membre'})
                   </div>
                 </div>
               </div>
-            ) : (
-              <div style={styles.visitorInputsRow}>
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                  <label style={styles.inputFieldLabel}>Nom complet ou Prénom *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={visitorName}
-                    onChange={(e) => setVisitorName(e.target.value)}
-                    placeholder="Ex: Patrick Mutombo, Dr. Alain..."
-                    required
-                    style={{ fontSize: '13px' }}
-                  />
+
+              <div style={{ marginTop: '12px' }}>
+                <textarea
+                  id="comment-textarea"
+                  className="form-input"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Exprimez-vous de manière constructive (respect de la charte de modération)..."
+                  rows="3"
+                  required
+                  disabled={submittingComment}
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={styles.formFooterRow}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                  Publication instantanée sous votre profil vérifié
+                </span>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  style={{ padding: '9px 20px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '8px' }} 
+                  disabled={submittingComment}
+                >
+                  <Send size={14} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="glass-card" style={styles.authPromptCard}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={styles.authLockIcon}>
+                  <Lock size={22} style={{ color: 'var(--primary)' }} />
                 </div>
-                <div style={{ flex: 1, minWidth: '180px' }}>
-                  <label style={styles.inputFieldLabel}>Identifiant public (@) *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={visitorHandle}
-                    onChange={(e) => setVisitorHandle(e.target.value)}
-                    placeholder="Ex: @patrick_m"
-                    style={{ fontSize: '13px' }}
-                  />
+                <div style={{ flex: 1, minWidth: '220px' }}>
+                  <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-main)', marginBottom: '4px' }}>
+                    Rejoignez les débats de LIFE CHANNEL
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    L'accès aux commentaires est réservé aux membres connectés afin de garantir la qualité et la clarté des échanges.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Link to="/login" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: '13px', borderRadius: '8px' }}>
+                    Se connecter
+                  </Link>
+                  <Link to="/register" className="btn btn-secondary" style={{ padding: '9px 18px', fontSize: '13px', borderRadius: '8px' }}>
+                    Créer un compte
+                  </Link>
                 </div>
               </div>
-            )}
-
-            <div style={{ marginTop: '12px' }}>
-              <label style={styles.inputFieldLabel}>Votre message *</label>
-              <textarea
-                id="comment-textarea"
-                className="form-input"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Exprimez-vous de manière constructive (respect de la charte de modération)..."
-                rows="3"
-                required
-                disabled={submittingComment}
-                style={{ width: '100%', resize: 'vertical' }}
-              />
             </div>
-
-            <div style={styles.formFooterRow}>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                {user ? "Publication instantanée sous votre profil accrédité" : "Chaque intervention affiche votre nom et votre identifiant @ pour la clarté des échanges."}
-              </span>
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                style={{ padding: '9px 20px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '8px' }} 
-                disabled={submittingComment}
-              >
-                <Send size={14} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
-              </button>
-            </div>
-          </form>
+          )}
 
           {/* Liste des commentaires */}
           {commentsLoading ? (
@@ -865,6 +850,24 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s',
+  },
+  authPromptCard: {
+    padding: '24px',
+    marginBottom: '32px',
+    border: '1px solid var(--border-color)',
+    background: 'linear-gradient(135deg, rgba(107, 79, 56, 0.12) 0%, rgba(216, 180, 254, 0.06) 100%)',
+    borderRadius: '16px',
+  },
+  authLockIcon: {
+    width: '46px',
+    height: '46px',
+    borderRadius: '12px',
+    background: 'rgba(216, 180, 254, 0.12)',
+    border: '1px solid rgba(216, 180, 254, 0.25)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   }
 };
 

@@ -192,7 +192,9 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.username())
+        String identifier = loginRequest.username() != null ? loginRequest.username().trim() : "";
+        User user = userRepository.findByUsernameIgnoreCase(identifier)
+                .or(() -> userRepository.findByEmailIgnoreCase(identifier))
                 .orElse(null);
 
         if (user == null || !passwordEncoder.matches(loginRequest.password(), user.getPassword())) {

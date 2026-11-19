@@ -70,7 +70,7 @@ const Login = () => {
           <div className="form-group">
             <label className="form-label">
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <UserIcon size={14} /> Identifiant Agent
+                <UserIcon size={14} /> Identifiant ou Adresse E-mail
               </span>
             </label>
             <input
@@ -78,7 +78,7 @@ const Login = () => {
               className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Votre nom d'utilisateur"
+              placeholder="Ex: directeur1 ou direction1@lifechannelmedia.com"
               disabled={loading}
               required
             />

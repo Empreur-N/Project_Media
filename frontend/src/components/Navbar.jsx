@@ -359,7 +359,7 @@ const styles = {
   nav: {
     height: '66px',
     borderBottom: '1px solid var(--border-color)',
-    background: 'rgba(6, 9, 19, 0.85)',
+    background: 'rgba(15, 13, 12, 0.88)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     position: 'sticky',
@@ -477,10 +477,10 @@ const styles = {
   },
   roleBadge: {
     fontSize: '9px',
-    fontWeight: '700',
+    fontWeight: '800',
     backgroundColor: 'var(--primary)',
-    color: 'white',
-    padding: '2px 5px',
+    color: '#171311',
+    padding: '2px 6px',
     borderRadius: '8px',
     textTransform: 'uppercase',
   },
