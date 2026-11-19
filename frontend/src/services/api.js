@@ -43,6 +43,14 @@ export const register = (username, email, password, role = 'USER') => {
   return apiCall('/auth/register', 'POST', { username, email, password, role });
 };
 
+export const sendOtp = (email) => {
+  return apiCall('/auth/send-otp', 'POST', { email });
+};
+
+export const registerWithOtp = (registrationData) => {
+  return apiCall('/auth/register-with-otp', 'POST', registrationData);
+};
+
 export const getProfile = (token) => {
   return apiCall('/users/me', 'GET', null, token);
 };

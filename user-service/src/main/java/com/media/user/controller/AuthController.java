@@ -3,10 +3,13 @@ package com.media.user.controller;
 import com.media.user.dto.AuthResponse;
 import com.media.user.dto.LoginRequest;
 import com.media.user.dto.RegisterRequest;
+import com.media.user.dto.RegisterWithOtpRequest;
+import com.media.user.dto.SendOtpRequest;
 import com.media.user.model.Role;
 import com.media.user.model.User;
 import com.media.user.repository.UserRepository;
 import com.media.user.security.JwtUtils;
+import com.media.user.service.OtpService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +28,100 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final OtpService otpService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, OtpService otpService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.otpService = otpService;
+    }
+
+    // Étape 1 : Demande d'envoi du code OTP par e-mail
+    @PostMapping("/auth/send-otp")
+    public ResponseEntity<?> sendOtp(@Valid @RequestBody SendOtpRequest request) {
+        String email = request.email().trim().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Un compte actif est déjà associé à cette adresse e-mail."));
+        }
+        otpService.generateAndSendOtp(email);
+        return ResponseEntity.ok(Map.of(
+                "message", "Code de confirmation envoyé avec succès à votre adresse e-mail."
+        ));
+    }
+
+    // Étape 2 : Inscription autonome sécurisée avec validation du code OTP
+    @PostMapping("/auth/register-with-otp")
+    public ResponseEntity<?> registerWithOtp(@Valid @RequestBody RegisterWithOtpRequest req) {
+        String email = req.email().trim().toLowerCase();
+        String username = req.username().trim();
+
+        if (userRepository.existsByUsername(username)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Ce nom d'utilisateur est déjà utilisé."));
+        }
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Cette adresse e-mail est déjà associée à un compte."));
+        }
+
+        boolean otpValid = otpService.validateAndConsumeOtp(email, req.otpCode());
+        if (!otpValid) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Code OTP invalide ou expiré (durée de validité : 10 minutes)."));
+        }
+
+        // Détermination du rôle demandé
+        Role requestedRole = Role.USER;
+        if (req.role() != null && !req.role().isBlank()) {
+            try {
+                Role parsed = Role.valueOf(req.role().toUpperCase());
+                if (parsed == Role.JOURNALIST) {
+                    requestedRole = Role.JOURNALIST;
+                } else if (parsed == Role.SUPERVISOR) {
+                    requestedRole = Role.SUPERVISOR;
+                } else if (parsed == Role.EDITOR) {
+                    requestedRole = Role.EDITOR;
+                } else {
+                    requestedRole = Role.USER;
+                }
+            } catch (IllegalArgumentException e) {
+                requestedRole = Role.USER;
+            }
+        }
+
+        // Les comptes de rédaction/direction (Journaliste, Éditeur, Superviseur) sont créés inactifs (en attente d'approbation)
+        boolean isActive = (requestedRole == Role.USER || requestedRole == Role.VISITOR);
+
+        User user = User.builder()
+                .username(username)
+                .email(email)
+                .fullName(req.fullName() != null && !req.fullName().isBlank() ? req.fullName().trim() : username)
+                .password(passwordEncoder.encode(req.password()))
+                .role(requestedRole)
+                .emailVerified(true)
+                .active(isActive)
+                .build();
+
+        userRepository.save(user);
+
+        if (isActive) {
+            String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Inscription validée avec succès ! Bienvenue sur LIFE CHANNEL.",
+                    "active", true,
+                    "token", token,
+                    "username", user.getUsername(),
+                    "role", user.getRole().name()
+            ));
+        } else {
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Adresse e-mail vérifiée avec succès ! Votre demande d'accès Journaliste a été transmise à la rédaction en chef pour activation.",
+                    "active", false,
+                    "role", user.getRole().name()
+            ));
+        }
     }
 
     @PostMapping("/auth/register")
@@ -133,7 +225,9 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
+                "fullName", user.getFullName() != null ? user.getFullName() : user.getUsername(),
                 "email", user.getEmail(),
+                "emailVerified", user.isEmailVerified(),
                 "role", user.getRole().name(),
                 "createdAt", user.getCreatedAt()
         ));

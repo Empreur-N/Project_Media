@@ -19,7 +19,8 @@ const ManageUsers = () => {
   const [role, setRole] = useState('USER');
   const [creating, setCreating] = useState(false);
 
-  const rolesList = ['VISITOR', 'USER', 'JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN'];
+  const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'JOURNALISTS'
+  const rolesList = ['VISITOR', 'USER', 'JOURNALIST', 'EDITOR', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'];
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -122,12 +123,26 @@ const ManageUsers = () => {
     }
   };
 
-  // Filtrage de recherche
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtrage de recherche et statut
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = 
+      (u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (u.fullName && u.fullName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (u.role && u.role.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (!matchesSearch) return false;
+
+    if (activeFilter === 'PENDING') {
+      return !u.active;
+    }
+    if (activeFilter === 'JOURNALISTS') {
+      return u.role === 'JOURNALIST' || u.role === 'EDITOR';
+    }
+    return true;
+  });
+
+  const pendingCount = users.filter(u => !u.active).length;
 
   return (
     <div className="container animate-fade-in" style={styles.container}>
@@ -231,16 +246,52 @@ const ManageUsers = () => {
         </form>
       )}
 
-      {/* Barre de Recherche */}
-      <div style={styles.searchBar}>
-        <Search size={18} style={{ color: 'var(--text-muted)', marginLeft: '12px' }} />
-        <input 
-          type="text" 
-          placeholder="Rechercher par nom, email, rôle..." 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={styles.searchInput}
-        />
+      {/* Filtres Rapides & Barre de Recherche */}
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            type="button"
+            onClick={() => setActiveFilter('ALL')}
+            className={`btn ${activeFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ fontSize: '13px', padding: '8px 14px' }}
+          >
+            Tous les comptes ({users.length})
+          </button>
+          <button 
+            type="button"
+            onClick={() => setActiveFilter('PENDING')}
+            className={`btn ${activeFilter === 'PENDING' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ 
+              fontSize: '13px', 
+              padding: '8px 14px',
+              backgroundColor: activeFilter === 'PENDING' ? '#f59e0b' : 'rgba(245, 158, 11, 0.1)',
+              borderColor: '#f59e0b',
+              color: activeFilter === 'PENDING' ? '#000' : '#f59e0b',
+              fontWeight: 'bold'
+            }}
+          >
+            ⏳ En attente d'approbation ({pendingCount})
+          </button>
+          <button 
+            type="button"
+            onClick={() => setActiveFilter('JOURNALISTS')}
+            className={`btn ${activeFilter === 'JOURNALISTS' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ fontSize: '13px', padding: '8px 14px' }}
+          >
+            🎙️ Journalistes & Staff
+          </button>
+        </div>
+
+        <div style={{ ...styles.searchBar, flex: 1, margin: 0, minWidth: '240px' }}>
+          <Search size={18} style={{ color: 'var(--text-muted)', marginLeft: '12px' }} />
+          <input 
+            type="text" 
+            placeholder="Rechercher par nom, email, rôle..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={styles.searchInput}
+          />
+        </div>
       </div>
 
       {/* Table des Utilisateurs */}
@@ -256,11 +307,11 @@ const ManageUsers = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Utilisateur</th>
+                  <th style={styles.th}>Identité / Utilisateur</th>
                   <th style={styles.th}>Adresse Email</th>
                   <th style={styles.th}>Statut d'Activation</th>
                   <th style={styles.th}>Rôle Assigné</th>
-                  <th style={styles.th} style={{ textAlign: 'right' }}>Actions</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,19 +320,56 @@ const ManageUsers = () => {
                   return (
                     <tr key={u.id} style={styles.tr}>
                       <td style={styles.td}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{u.username}</span>
-                          {isSelf && <span style={styles.selfBadge}>Moi</span>}
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '14px' }}>
+                              {u.fullName || u.username}
+                            </span>
+                            {isSelf && <span style={styles.selfBadge}>Moi</span>}
+                          </div>
+                          {u.fullName && (
+                            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>@{u.username}</span>
+                          )}
                         </div>
                       </td>
                       <td style={styles.td}>
-                        <span style={styles.emailText}><Mail size={12} style={{ display: 'inline', marginRight: '6px' }} />{u.email}</span>
+                        <span style={styles.emailText}>
+                          <Mail size={12} style={{ display: 'inline', marginRight: '6px' }} />
+                          {u.email}
+                        </span>
+                        {u.emailVerified && (
+                          <span style={{ marginLeft: '6px', fontSize: '10px', color: '#10b981', fontWeight: 'bold' }}>
+                            ✓ OTP Vérifié
+                          </span>
+                        )}
                       </td>
                       <td style={styles.td}>
                         {u.active ? (
                           <span style={styles.statusActiveBadge}><UserCheck size={12} /> Actif</span>
                         ) : (
-                          <span style={styles.statusPendingBadge}><ShieldAlert size={12} /> En attente</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={styles.statusPendingBadge}><ShieldAlert size={12} /> En attente</span>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleActivation(u)}
+                              style={{
+                                background: '#10b981',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Valider l'accréditation du journaliste"
+                            >
+                              <CheckCircle size={12} /> Approuver
+                            </button>
+                          </div>
                         )}
                       </td>
                       <td style={styles.td}>
