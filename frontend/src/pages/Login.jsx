@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { login as loginApi } from '../services/api';
-import { Shield, Key, User as UserIcon, AlertCircle, Lock } from 'lucide-react';
+import { Shield, Key, User as UserIcon, AlertCircle, Lock, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Veuillez remplir tous les champs');
+      setError('Veuillez renseigner votre identifiant et votre mot de passe.');
       return;
     }
 
@@ -42,7 +42,7 @@ const Login = () => {
         navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Identifiants ou privilèges incorrects');
+      setError(err.message || 'Identifiants ou privilèges incorrects. Vérifiez votre saisie ou contactez la direction.');
     } finally {
       setLoading(false);
     }
@@ -53,24 +53,27 @@ const Login = () => {
       <div className="glass-card" style={styles.card}>
         <div style={styles.header}>
           <div style={styles.iconContainer}>
-            <Lock size={24} style={{ color: 'var(--primary)' }} />
+            <Lock size={22} style={{ color: 'var(--primary)' }} />
           </div>
-          <h2 style={styles.title}>Portail Rédaction & Administration</h2>
-          <p style={styles.subtitle}>Accès sécurisé réservé aux journalistes, éditeurs et administrateurs accrédités</p>
+          <span style={styles.preTitle}>ESPACE RESTREINT ACCRÉDITÉ</span>
+          <h2 style={styles.title}>Portail Rédaction & Direction</h2>
+          <p style={styles.subtitle}>
+            Accès sécurisé réservé aux journalistes, éditeurs et membres de la direction générale.
+          </p>
         </div>
 
         {error && (
           <div style={styles.errorAlert}>
-            <AlertCircle size={18} />
+            <AlertCircle size={18} style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label className="form-label" style={styles.formLabel}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <UserIcon size={14} /> Identifiant ou Adresse E-mail
+                <UserIcon size={13} style={{ color: 'var(--primary)' }} /> Identifiant ou E-mail accrédité
               </span>
             </label>
             <input
@@ -78,16 +81,17 @@ const Login = () => {
               className="form-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Ex: directeur1 ou direction1@lifechannelmedia.com"
+              placeholder="directeur1 ou direction1@lifechannelmedia.com"
               disabled={loading}
               required
+              style={styles.input}
             />
           </div>
 
-          <div className="form-group" style={{ marginBottom: '30px' }}>
-            <label className="form-label">
+          <div className="form-group" style={{ marginBottom: '28px' }}>
+            <label className="form-label" style={styles.formLabel}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <Key size={14} /> Mot de passe sécurisé
+                <Key size={13} style={{ color: 'var(--primary)' }} /> Mot de passe sécurisé
               </span>
             </label>
             <input
@@ -95,25 +99,33 @@ const Login = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="••••••••••••"
               disabled={loading}
               required
+              style={styles.input}
             />
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: '700' }}
+            className="btn-pill-lavande"
+            style={styles.submitBtn}
             disabled={loading}
           >
-            {loading ? 'Authentification...' : 'Connexion Espace Rédaction'}
+            {loading ? (
+              <span>Authentification en cours...</span>
+            ) : (
+              <>
+                <span>CONNEXION ESPACE SÉCURISÉ</span>
+                <ArrowRight size={15} />
+              </>
+            )}
           </button>
         </form>
 
         <div style={styles.securityNotice}>
-          <Shield size={14} style={{ color: 'var(--secondary)', flexShrink: 0 }} />
-          <span>Plateforme interne LIFE CHANNEL. Tout accès non autorisé est prohibé. Les comptes sont attribués exclusivement par la direction de publication.</span>
+          <Shield size={15} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          <span>Plateforme officielle LIFE CHANNEL RDC. Tout accès non autorisé est strictement prohibé. Les accès sont délivrés sous l'autorité exclusive de la direction.</span>
         </div>
       </div>
     </div>
@@ -125,65 +137,107 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '40px 24px',
+    padding: '60px 24px 80px',
     flex: 1,
+    minHeight: '75vh',
   },
   card: {
     width: '100%',
-    maxWidth: '450px',
-    padding: '40px',
+    maxWidth: '460px',
+    padding: '44px 38px',
+    background: 'linear-gradient(180deg, rgba(28, 21, 18, 0.92) 0%, rgba(14, 10, 9, 0.98) 100%)',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(216, 180, 254, 0.08)',
   },
   header: {
     textAlign: 'center',
-    marginBottom: '30px',
+    marginBottom: '28px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   iconContainer: {
-    width: '50px',
-    height: '50px',
+    width: '52px',
+    height: '52px',
     borderRadius: '50%',
-    background: 'rgba(0, 124, 255, 0.1)',
+    background: 'linear-gradient(135deg, rgba(107, 79, 56, 0.4) 0%, rgba(216, 180, 254, 0.15) 100%)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: '15px',
-    border: '1px solid var(--border-color)',
+    marginBottom: '16px',
+    border: '1px solid rgba(216, 180, 254, 0.35)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
   },
-  title: {
-    fontSize: '24px',
+  preTitle: {
+    fontSize: '10.5px',
+    fontWeight: '800',
+    letterSpacing: '0.14em',
+    color: 'var(--primary)',
+    textTransform: 'uppercase',
     marginBottom: '8px',
   },
+  title: {
+    fontSize: '25px',
+    fontFamily: 'var(--font-serif), Playfair Display, serif',
+    fontWeight: '800',
+    color: '#F5F3F0',
+    margin: '0 0 8px',
+    letterSpacing: '0.02em',
+  },
   subtitle: {
+    fontSize: '13px',
+    color: 'var(--argente)',
+    lineHeight: '1.5',
+    margin: 0,
+  },
+  formLabel: {
+    fontSize: '11px',
+    fontWeight: '700',
+    letterSpacing: '0.08em',
+    color: 'var(--argente)',
+    textTransform: 'uppercase',
+    marginBottom: '8px',
+  },
+  input: {
+    background: 'rgba(20, 15, 13, 0.9)',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
+    color: '#F5F3F0',
+    borderRadius: '12px',
+    padding: '14px 18px',
     fontSize: '14px',
-    color: 'var(--text-muted)',
+  },
+  submitBtn: {
+    width: '100%',
+    padding: '14px 24px',
+    fontSize: '12.5px',
+    marginTop: '6px',
   },
   errorAlert: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    background: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-    color: 'var(--error)',
+    gap: '12px',
+    background: 'rgba(239, 68, 68, 0.12)',
+    border: '1px solid rgba(239, 68, 68, 0.35)',
+    color: '#fca5a5',
     padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    fontSize: '14px',
+    borderRadius: '12px',
+    marginBottom: '22px',
+    fontSize: '13px',
+    lineHeight: '1.4',
   },
   securityNotice: {
     marginTop: '32px',
     padding: '14px 16px',
-    background: 'rgba(245, 158, 11, 0.05)',
-    border: '1px solid rgba(245, 158, 11, 0.2)',
-    borderRadius: '10px',
-    fontSize: '12px',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.5',
+    background: 'rgba(107, 79, 56, 0.16)',
+    border: '1px solid rgba(192, 192, 192, 0.18)',
+    borderRadius: '12px',
+    fontSize: '11px',
+    color: 'var(--argente)',
     display: 'flex',
-    alignItems: 'flex-start',
     gap: '10px',
-  }
+    alignItems: 'flex-start',
+    lineHeight: '1.5',
+  },
 };
 
 export default Login;

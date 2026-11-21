@@ -118,16 +118,15 @@ const ArticleDetail = () => {
 
   const getAvatarGradient = (role, handle) => {
     if (role === 'SUPERVISOR') return 'linear-gradient(135deg, #10b981 0%, #047857 100%)';
-    if (role === 'ADMIN' || role === 'SUPER_ADMIN') return 'linear-gradient(135deg, #007cff 0%, #1e40af 100%)';
-    if (role === 'JOURNALIST') return 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)';
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') return 'linear-gradient(135deg, #6B4F38 0%, #D8B4FE 100%)';
+    if (role === 'JOURNALIST') return 'linear-gradient(135deg, #8E684D 0%, #6B4F38 100%)';
     if (role === 'EDITOR') return 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)';
     
     const colors = [
-      'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-      'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
-      'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
-      'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)',
-      'linear-gradient(135deg, #84cc16 0%, #4d7c0f 100%)'
+      'linear-gradient(135deg, #6B4F38 0%, #8E684D 100%)',
+      'linear-gradient(135deg, #D8B4FE 0%, #C084FC 100%)',
+      'linear-gradient(135deg, #78716c 0%, #44403c 100%)',
+      'linear-gradient(135deg, #a16207 0%, #713f12 100%)'
     ];
     let hash = 0;
     const str = handle || 'default';
@@ -145,7 +144,7 @@ const ArticleDetail = () => {
     }
     if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
       return (
-        <span style={{ backgroundColor: 'rgba(0, 124, 255, 0.15)', color: 'var(--primary)', border: '1px solid rgba(0, 124, 255, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <span style={{ backgroundColor: 'rgba(216, 180, 254, 0.15)', color: 'var(--primary)', border: '1px solid rgba(216, 180, 254, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
           <ShieldCheck size={11} /> Rédaction en Chef
         </span>
       );
@@ -418,16 +417,16 @@ const ArticleDetail = () => {
               </div>
 
               <div style={styles.formFooterRow}>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                <span style={{ fontSize: '12px', color: 'var(--argente)' }}>
                   Publication instantanée sous votre profil vérifié
                 </span>
                 <button 
                   type="submit" 
-                  className="btn btn-primary" 
-                  style={{ padding: '9px 20px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '8px' }} 
+                  className="btn-pill-lavande" 
+                  style={{ padding: '9px 24px', fontSize: '12px' }} 
                   disabled={submittingComment}
                 >
-                  <Send size={14} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
+                  <Send size={13} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
                 </button>
               </div>
             </form>
@@ -435,21 +434,21 @@ const ArticleDetail = () => {
             <div className="glass-card" style={styles.authPromptCard}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 <div style={styles.authLockIcon}>
-                  <Lock size={22} style={{ color: 'var(--primary)' }} />
+                  <Lock size={20} style={{ color: 'var(--primary)' }} />
                 </div>
                 <div style={{ flex: 1, minWidth: '220px' }}>
-                  <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-main)', marginBottom: '4px' }}>
-                    Rejoignez les débats de LIFE CHANNEL
+                  <div style={{ fontWeight: '800', fontSize: '15px', color: '#F5F3F0', marginBottom: '4px', letterSpacing: '0.02em' }}>
+                    Rejoignez les débats citoyens de LIFE CHANNEL
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    L'accès aux commentaires est réservé aux membres connectés afin de garantir la qualité et la clarté des échanges.
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--argente)', lineHeight: '1.5' }}>
+                    L'accès aux réactions et débats est réservé aux membres connectés pour préserver l'authenticité et la rigueur des échanges.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Link to="/login" className="btn btn-primary" style={{ padding: '9px 18px', fontSize: '13px', borderRadius: '8px' }}>
+                  <Link to="/login" className="btn-pill-lavande" style={{ padding: '9px 20px', fontSize: '12px' }}>
                     Se connecter
                   </Link>
-                  <Link to="/register" className="btn btn-secondary" style={{ padding: '9px 18px', fontSize: '13px', borderRadius: '8px' }}>
+                  <Link to="/register" className="btn-pill-outline" style={{ padding: '9px 18px', fontSize: '12px' }}>
                     Créer un compte
                   </Link>
                 </div>
@@ -573,24 +572,28 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: 'var(--primary)',
+    fontSize: '13px',
+    fontWeight: '700',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: 'var(--argente)',
     marginBottom: '30px',
+    textDecoration: 'none',
+    transition: 'color 0.2s ease',
   },
   articleLayout: {
-    maxWidth: '800px',
+    maxWidth: '840px',
   },
   coverContainer: {
     position: 'relative',
-    height: '420px',
+    height: '440px',
     maxHeight: '55vh',
     width: '100%',
     borderRadius: 'var(--radius-lg)',
     overflow: 'hidden',
     marginBottom: '30px',
-    border: '1px solid var(--border-color)',
-    backgroundColor: 'rgba(13, 20, 38, 0.8)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    backgroundColor: 'rgba(20, 15, 13, 0.85)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -605,22 +608,25 @@ const styles = {
     position: 'absolute',
     bottom: '24px',
     left: '24px',
-    background: 'var(--primary)',
-    color: 'white',
-    padding: '6px 14px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '700',
+    background: 'linear-gradient(135deg, #6B4F38 0%, #8E684D 100%)',
+    color: '#F5F3F0',
+    padding: '6px 16px',
+    borderRadius: '9999px',
+    fontSize: '11px',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
+    border: '1px solid rgba(192, 192, 192, 0.25)',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
   },
   metaRow: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '24px',
-    fontSize: '14px',
-    color: 'var(--text-muted)',
+    fontSize: '13px',
+    color: 'var(--argente)',
     marginBottom: '20px',
-    borderBottom: '1px solid var(--border-color)',
+    borderBottom: '1px solid rgba(192, 192, 192, 0.14)',
     paddingBottom: '16px',
   },
   metaItem: {
@@ -629,30 +635,35 @@ const styles = {
     gap: '8px',
   },
   title: {
-    fontFamily: 'var(--font-serif)',
-    fontSize: '38px',
-    fontWeight: '700',
-    lineHeight: '1.2',
+    fontFamily: 'var(--font-serif), Playfair Display, serif',
+    fontSize: 'clamp(2rem, 3.5vw, 2.7rem)',
+    fontWeight: '800',
+    lineHeight: '1.25',
     marginBottom: '30px',
-    color: 'var(--text-main)',
+    color: '#F5F3F0',
+    letterSpacing: '0.01em',
   },
   summaryCard: {
-    padding: '20px 24px',
-    marginBottom: '30px',
-    borderLeft: '4px solid var(--secondary)',
+    padding: '24px 28px',
+    marginBottom: '34px',
+    borderLeft: '4px solid var(--marron)',
     borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+    background: 'linear-gradient(90deg, rgba(107, 79, 56, 0.15) 0%, rgba(20, 15, 13, 0.6) 100%)',
+    border: '1px solid rgba(192, 192, 192, 0.14)',
+    borderLeftWidth: '4px',
+    borderLeftColor: 'var(--marron)',
   },
   summaryText: {
-    fontSize: '16px',
+    fontSize: '16.5px',
     fontStyle: 'italic',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.5',
+    color: 'var(--argente)',
+    lineHeight: '1.6',
     textAlign: 'justify',
   },
   contentBody: {
     fontSize: '17px',
-    lineHeight: '1.8',
-    color: 'var(--text-secondary)',
+    lineHeight: '1.85',
+    color: '#E0DDD7',
     marginBottom: '40px',
   },
   paragraph: {
@@ -709,11 +720,11 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '10px 14px',
-    borderRadius: '10px',
-    backgroundColor: 'rgba(0, 124, 255, 0.08)',
-    border: '1px solid rgba(0, 124, 255, 0.2)',
-    marginBottom: '12px',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(216, 180, 254, 0.08)',
+    border: '1px solid rgba(216, 180, 254, 0.22)',
+    marginBottom: '14px',
   },
   avatarSmall: {
     width: '32px',

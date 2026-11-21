@@ -8,16 +8,16 @@
 // Embedded, 100% offline SVG fallback generators by category
 export const generateCategorySvgDataUri = (category = 'Actualité') => {
   const catColors = {
-    Sport: { bg1: '#0b1329', bg2: '#0369a1', accent: '#38bdf8', icon: '⚽' },
-    Société: { bg1: '#0b1329', bg2: '#047857', accent: '#34d399', icon: '👥' },
-    Économie: { bg1: '#0b1329', bg2: '#b45309', accent: '#fbbf24', icon: '📈' },
-    Culture: { bg1: '#0b1329', bg2: '#6d28d9', accent: '#a78bfa', icon: '🎭' },
-    Environnement: { bg1: '#0b1329', bg2: '#15803d', accent: '#4ade80', icon: '🌱' },
-    Politique: { bg1: '#0b1329', bg2: '#991b1b', accent: '#f87171', icon: '🏛️' },
-    Technologie: { bg1: '#0b1329', bg2: '#1d4ed8', accent: '#60a5fa', icon: '💻' },
-    Santé: { bg1: '#0b1329', bg2: '#0f766e', accent: '#2dd4bf', icon: '🏥' },
+    Sport: { bg1: '#140f0c', bg2: '#2b1b14', accent: '#D8B4FE', icon: '⚽' },
+    Société: { bg1: '#140f0c', bg2: '#241a15', accent: '#C0C0C0', icon: '👥' },
+    Économie: { bg1: '#140f0c', bg2: '#352115', accent: '#D8B4FE', icon: '📈' },
+    Culture: { bg1: '#140f0c', bg2: '#2e1925', accent: '#D8B4FE', icon: '🎭' },
+    Environnement: { bg1: '#140f0c', bg2: '#1f2618', accent: '#C0C0C0', icon: '🌱' },
+    Politique: { bg1: '#140f0c', bg2: '#2c1414', accent: '#D8B4FE', icon: '🏛️' },
+    Technologie: { bg1: '#140f0c', bg2: '#1e1b2e', accent: '#D8B4FE', icon: '💻' },
+    Santé: { bg1: '#140f0c', bg2: '#182422', accent: '#C0C0C0', icon: '🏥' },
   };
-  const theme = catColors[category] || { bg1: '#060913', bg2: '#1e293b', accent: '#f59e0b', icon: '📰' };
+  const theme = catColors[category] || { bg1: '#140f0c', bg2: '#281c16', accent: '#D8B4FE', icon: '📰' };
   const label = category ? category.toUpperCase() : 'ACTUALITÉ';
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">

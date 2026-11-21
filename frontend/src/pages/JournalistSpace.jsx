@@ -208,7 +208,7 @@ const JournalistSpace = () => {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'DRAFT': return { color: '#94a3b8', background: 'rgba(148,163,184,0.1)' };
-      case 'SUBMITTED': return { color: '#007cff', background: 'rgba(0,124,255,0.1)' };
+      case 'SUBMITTED': return { color: '#D8B4FE', background: 'rgba(216,180,254,0.15)' };
       case 'REVISION_REQUIRED': return { color: '#ef4444', background: 'rgba(239,68,68,0.1)' };
       case 'PUBLISHED': return { color: '#10b981', background: 'rgba(16,185,129,0.1)' };
       default: return { color: 'white', background: 'rgba(255,255,255,0.1)' };

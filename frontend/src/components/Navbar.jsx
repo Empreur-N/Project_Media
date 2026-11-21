@@ -100,16 +100,16 @@ const Navbar = () => {
           {/* Main Navigation Links */}
           <div className="nav-links-container" style={styles.navLinks}>
             <Link to="/" style={styles.navLink} onClick={handleLinkClick}>
-              <Newspaper size={18} /> Actualités
+              <Newspaper size={15} style={{ opacity: 0.8 }} /> Actualités
             </Link>
             <Link to="/search" style={styles.navLink} onClick={handleLinkClick}>
-              <Search size={18} /> Recherche
+              <Search size={15} style={{ opacity: 0.8 }} /> Recherche
             </Link>
             <Link to="/podcasts" style={styles.navLink} onClick={handleLinkClick}>
-              <Radio size={18} /> Podcasts
+              <Radio size={15} style={{ opacity: 0.8 }} /> Podcasts
             </Link>
             <Link to="/live" style={styles.navLink} onClick={handleLinkClick}>
-              <Radio size={18} /> Direct
+              <Radio size={15} style={{ opacity: 0.8 }} /> Direct
             </Link>
             <button 
               onClick={() => {
@@ -119,27 +119,34 @@ const Navbar = () => {
               className="nav-radio-btn"
               style={{
                 ...styles.navLink,
-                background: isRadioLive && isPlaying ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                border: isRadioLive && isPlaying ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid var(--border-color)',
-                borderRadius: '20px',
-                padding: '4px 10px',
+                background: isRadioLive && isPlaying 
+                  ? 'linear-gradient(135deg, rgba(216, 180, 254, 0.22) 0%, rgba(107, 79, 56, 0.28) 100%)' 
+                  : 'rgba(255, 255, 255, 0.03)',
+                border: isRadioLive && isPlaying 
+                  ? '1px solid rgba(216, 180, 254, 0.5)' 
+                  : '1px solid var(--border-color)',
+                borderRadius: '9999px',
+                padding: '5px 12px',
                 cursor: 'pointer',
-                color: isRadioLive && isPlaying ? '#ef4444' : 'var(--text-secondary)',
+                color: isRadioLive && isPlaying ? 'var(--primary)' : 'var(--text-secondary)',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px',
-                fontSize: '13px'
+                gap: '6px',
+                fontSize: '11px',
+                fontWeight: '800',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase'
               }}
               title="Écouter la radio 24h/24 en direct"
             >
-              <Radio size={15} /> 
+              <Radio size={14} /> 
               <span>Radio 24/7</span>
               {isRadioLive && isPlaying && (
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444', animation: 'pulse 1.2s infinite' }} />
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)', boxShadow: '0 0 8px var(--primary)', animation: 'pulse 1.2s infinite' }} />
               )}
             </button>
             <Link to="/faq" style={styles.navLink} onClick={handleLinkClick}>
-              <HelpCircle size={16} /> FAQ
+              <HelpCircle size={15} style={{ opacity: 0.8 }} /> FAQ
             </Link>
 
             {/* Quick settings: Mode Éco et Fuseau RDC */}
@@ -155,20 +162,20 @@ const Navbar = () => {
                   alignItems: 'center',
                   gap: '5px',
                   padding: '4px 10px',
-                  borderRadius: '20px',
-                  background: dataSaver ? 'rgba(34, 197, 94, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-                  border: dataSaver ? '1px solid rgba(34, 197, 94, 0.5)' : '1px solid var(--border-color)',
-                  color: dataSaver ? '#22c55e' : 'var(--text-muted)',
-                  fontSize: '11px',
+                  borderRadius: '9999px',
+                  background: dataSaver ? 'rgba(216, 180, 254, 0.18)' : 'rgba(107, 79, 56, 0.15)',
+                  border: dataSaver ? '1px solid rgba(216, 180, 254, 0.5)' : '1px solid var(--border-color)',
+                  color: dataSaver ? 'var(--primary)' : 'var(--text-muted)',
+                  fontSize: '10.5px',
                   fontWeight: '800',
-                  letterSpacing: '0.5px',
+                  letterSpacing: '0.06em',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   marginLeft: '2px'
                 }}
                 title={dataSaver ? "Mode Économie RDC activé (images allégées, flux basse conso)" : "Activer le Mode Économie de données (réseau lent RDC)"}
               >
-                <Zap size={13} fill={dataSaver ? "#22c55e" : "none"} />
+                <Zap size={12} fill={dataSaver ? "var(--primary)" : "none"} />
                 <span>{dataSaver ? "ÉCO" : "MODE ÉCO"}</span>
               </button>
               <button
@@ -179,20 +186,20 @@ const Navbar = () => {
                   alignItems: 'center',
                   gap: '4px',
                   padding: '4px 10px',
-                  borderRadius: '20px',
-                  background: 'rgba(217, 119, 6, 0.12)',
-                  border: '1px solid rgba(217, 119, 6, 0.4)',
-                  color: '#f59e0b',
-                  fontSize: '11px',
+                  borderRadius: '9999px',
+                  background: 'rgba(107, 79, 56, 0.18)',
+                  border: '1px solid rgba(192, 192, 192, 0.22)',
+                  color: 'var(--argente)',
+                  fontSize: '10.5px',
                   fontWeight: '800',
-                  letterSpacing: '0.5px',
+                  letterSpacing: '0.06em',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   marginLeft: '2px'
                 }}
                 title="Fuseau RDC (Cliquez pour basculer entre Kinshasa GMT+1 et Lubumbashi GMT+2)"
               >
-                <Clock size={13} />
+                <Clock size={12} />
                 <span>{currentDetails.shortBadge} ({currentDetails.key === 'KINSHASA' ? 'Kin' : "L'shi"})</span>
               </button>
 
@@ -205,33 +212,33 @@ const Navbar = () => {
                   alignItems: 'center',
                   gap: '4px',
                   padding: '4px 10px',
-                  borderRadius: '20px',
-                  background: pushActive ? 'rgba(239, 68, 68, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-                  border: pushActive ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid var(--border-color)',
-                  color: pushActive ? '#ef4444' : 'var(--text-muted)',
-                  fontSize: '11px',
+                  borderRadius: '9999px',
+                  background: pushActive ? 'rgba(216, 180, 254, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                  border: pushActive ? '1px solid rgba(216, 180, 254, 0.5)' : '1px solid var(--border-color)',
+                  color: pushActive ? 'var(--primary)' : 'var(--text-muted)',
+                  fontSize: '10.5px',
                   fontWeight: '800',
-                  letterSpacing: '0.5px',
+                  letterSpacing: '0.06em',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   marginLeft: '2px'
                 }}
                 title={pushActive ? "Alertes Flash Info activées sur votre navigateur" : "Activer les notifications push pour recevoir les alertes d'urgence"}
               >
-                <Bell size={13} fill={pushActive ? "#ef4444" : "none"} />
+                <Bell size={12} fill={pushActive ? "var(--primary)" : "none"} />
                 <span>{pushActive ? "ALERTES ON" : "ALERTES"}</span>
               </button>
             </div>
           </div>
 
-          {/* Authentication & User Spaces Section (Exclusif aux agents connectés - Modèle Africanews) */}
-          {user && user.role !== 'USER' && (
+          {/* Authentication & User Spaces Section */}
+          {user && user.role !== 'USER' ? (
             <div className="nav-auth-container" style={styles.authSection}>
               <div className="nav-user-menu" style={styles.userMenu}>
                 {/* Ligne Profil Utilisateur + Notification Bell intégrée */}
                 <div className="nav-user-header" style={styles.userHeader}>
                   <div style={styles.userInfo}>
-                    <UserIcon size={15} style={{ color: 'var(--primary)' }} />
+                    <UserIcon size={14} style={{ color: 'var(--primary)' }} />
                     <span style={styles.username}>{user.username}</span>
                     <span style={styles.roleBadge}>{user.role}</span>
                   </div>
@@ -342,10 +349,23 @@ const Navbar = () => {
                   style={styles.logoutBtn} 
                   title="Se déconnecter (Déconnexion)"
                 >
-                  <LogOut size={15} style={{ color: '#ef4444' }} />
+                  <LogOut size={14} style={{ color: '#ef4444' }} />
                   <span style={styles.logoutText} className="nav-logout-text">Déconnexion</span>
                 </button>
               </div>
+            </div>
+          ) : (
+            /* Espace Agent discret pour visiteurs */
+            <div className="nav-auth-container" style={styles.authSection}>
+              <Link 
+                to="/login" 
+                style={styles.agentPillBtn}
+                title="Accès réservé aux journalistes, éditeurs et à la direction"
+                onClick={handleLinkClick}
+              >
+                <UserIcon size={13} style={{ color: 'var(--primary)' }} />
+                <span>ESPACE AGENT</span>
+              </Link>
             </div>
           )}
 
@@ -395,10 +415,11 @@ const styles = {
     filter: 'drop-shadow(0 2px 10px rgba(245, 158, 11, 0.3))',
   },
   logoText: {
-    fontSize: '17px',
+    fontSize: '18px',
     fontWeight: '800',
-    letterSpacing: '0.5px',
-    fontFamily: 'var(--font-sans)',
+    letterSpacing: '0.12em',
+    fontFamily: 'var(--font-luxury), Playfair Display, serif',
+    textTransform: 'uppercase',
   },
   mobileToggle: {
     display: 'none',
@@ -432,12 +453,15 @@ const styles = {
   navLink: {
     display: 'flex',
     alignItems: 'center',
-    gap: '5px',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: 'var(--text-secondary)',
+    gap: '6px',
+    fontSize: '11.5px',
+    fontWeight: '700',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: 'var(--argente)',
     whiteSpace: 'nowrap',
-    padding: '4px 6px',
+    padding: '6px 8px',
+    transition: 'all 0.2s ease',
   },
   authSection: {
     display: 'flex',
@@ -460,20 +484,21 @@ const styles = {
   userInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '5px',
-    background: 'rgba(255,255,255,0.03)',
-    padding: '3px 8px',
-    borderRadius: '30px',
-    border: '1px solid var(--border-color)',
+    gap: '6px',
+    background: 'rgba(107, 79, 56, 0.2)',
+    padding: '4px 10px',
+    borderRadius: '9999px',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
     flexShrink: 0,
   },
   username: {
     fontSize: '12px',
-    fontWeight: '600',
+    fontWeight: '700',
     maxWidth: '90px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    color: '#F5F3F0',
   },
   roleBadge: {
     fontSize: '9px',
@@ -490,24 +515,26 @@ const styles = {
     flexShrink: 0,
   },
   dropdownBtn: {
-    padding: '4px 10px',
-    fontSize: '12px',
+    padding: '4px 12px',
+    fontSize: '11px',
     height: '30px',
     display: 'flex',
     alignItems: 'center',
-    gap: '5px',
-    borderRadius: '20px',
+    gap: '6px',
+    borderRadius: '9999px',
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
   },
   dropdownMenu: {
     position: 'absolute',
-    top: '36px',
+    top: '38px',
     right: 0,
-    backgroundColor: '#0a0f1d',
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+    background: 'linear-gradient(180deg, rgba(34, 26, 22, 0.98) 0%, rgba(20, 15, 13, 0.98) 100%)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    borderRadius: '12px',
+    boxShadow: '0 14px 35px rgba(0,0,0,0.6), 0 0 20px rgba(216, 180, 254, 0.12)',
     padding: '8px 0',
-    minWidth: '200px',
+    minWidth: '220px',
     zIndex: 1002,
     display: 'flex',
     flexDirection: 'column',
@@ -516,7 +543,7 @@ const styles = {
   logoutBtn: {
     padding: '4px 10px',
     height: '30px',
-    borderRadius: '20px',
+    borderRadius: '9999px',
     display: 'inline-flex',
     alignItems: 'center',
     gap: '5px',
@@ -524,15 +551,33 @@ const styles = {
     border: '1px solid rgba(239, 68, 68, 0.35)',
     color: '#ef4444',
     cursor: 'pointer',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: '700',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
     transition: 'all 0.2s ease',
     flexShrink: 0,
   },
   logoutText: {
     color: '#ef4444',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: '700',
+  },
+  agentPillBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 14px',
+    borderRadius: '9999px',
+    background: 'rgba(107, 79, 56, 0.22)',
+    border: '1px solid rgba(192, 192, 192, 0.28)',
+    color: '#F5F3F0',
+    fontSize: '11px',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    textDecoration: 'none',
+    transition: 'all 0.25s ease',
   },
   guestMenu: {
     display: 'flex',
@@ -549,11 +594,11 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '5px',
-    background: 'rgba(245, 158, 11, 0.08)',
-    border: '1px solid rgba(245, 158, 11, 0.28)',
-    color: 'var(--secondary)',
+    background: 'rgba(107, 79, 56, 0.12)',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
+    color: 'var(--argente)',
     padding: '4px 9px',
-    borderRadius: '20px',
+    borderRadius: '9999px',
     fontSize: '11px',
     fontWeight: '700',
     letterSpacing: '0.3px',

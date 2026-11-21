@@ -135,9 +135,10 @@ const Footer = () => {
 
 const styles = {
   footer: {
-    backgroundColor: '#0a0f1d',
-    borderTop: '1px solid var(--border-color)',
-    padding: '40px 0',
+    backgroundColor: '#0e0a09',
+    background: 'linear-gradient(180deg, rgba(20, 15, 13, 0.95) 0%, rgba(11, 8, 7, 1) 100%)',
+    borderTop: '1px solid rgba(192, 192, 192, 0.16)',
+    padding: '48px 0 36px',
     marginTop: 'auto',
     width: '100%',
   },
@@ -163,13 +164,14 @@ const styles = {
     objectFit: 'contain',
     borderRadius: 0,
     border: 'none',
-    filter: 'drop-shadow(0 2px 10px rgba(245, 158, 11, 0.3))',
+    filter: 'drop-shadow(0 2px 10px rgba(216, 180, 254, 0.25))',
   },
   logoText: {
     fontSize: '20px',
     fontWeight: '800',
-    letterSpacing: '1px',
-    fontFamily: 'var(--font-sans)',
+    letterSpacing: '0.12em',
+    fontFamily: 'var(--font-luxury), Playfair Display, serif',
+    textTransform: 'uppercase',
   },
   description: {
     fontSize: '14px',

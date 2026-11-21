@@ -144,8 +144,8 @@ const Dashboard = () => {
       {/* Header Administration */}
       {user?.role === 'SUPERVISOR' && (
         <div style={{
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(0, 124, 255, 0.12))',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
+          background: 'linear-gradient(135deg, rgba(107, 79, 56, 0.25), rgba(216, 180, 254, 0.12))',
+          border: '1px solid rgba(216, 180, 254, 0.35)',
           borderRadius: '12px',
           padding: '18px 22px',
           marginBottom: '24px',
@@ -155,7 +155,7 @@ const Dashboard = () => {
         }}>
           <div style={{ fontSize: '32px' }}>🏛️</div>
           <div>
-            <div style={{ fontWeight: '700', fontSize: '1.1rem', color: '#10b981' }}>
+            <div style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--primary)' }}>
               Cockpit de Supervision & Direction Fondatrice (Mode Consultation & Audit)
             </div>
             <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -216,7 +216,7 @@ const Dashboard = () => {
       {/* Raccourcis Modules Administration */}
       <div style={styles.shortcutsGrid}>
         <Link to="/admin/journalist" className="glass-card" style={styles.shortcutCard}>
-          <div style={{ ...styles.shortcutIcon, background: 'rgba(0, 124, 255, 0.12)', color: 'var(--primary)' }}>
+          <div style={{ ...styles.shortcutIcon, background: 'rgba(216, 180, 254, 0.12)', color: 'var(--primary)' }}>
             <Edit size={20} />
           </div>
           <div>
@@ -715,14 +715,15 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    background: 'rgba(0, 124, 255, 0.15)',
-    border: '1px solid rgba(0, 124, 255, 0.3)',
+    background: 'rgba(216, 180, 254, 0.15)',
+    border: '1px solid rgba(216, 180, 254, 0.35)',
     color: 'var(--primary)',
-    padding: '4px 12px',
-    borderRadius: '20px',
+    padding: '4px 14px',
+    borderRadius: '9999px',
     fontSize: '11px',
     fontWeight: '800',
-    letterSpacing: '0.5px',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
   },
   tzBadge: {
     display: 'inline-flex',
@@ -978,8 +979,8 @@ const styles = {
     height: '42px',
     borderRadius: '6px',
     overflow: 'hidden',
-    backgroundColor: '#0a0f1d',
-    border: '1px solid var(--border-color)',
+    backgroundColor: 'rgba(20, 15, 13, 0.9)',
+    border: '1px solid rgba(192, 192, 192, 0.16)',
     flexShrink: 0,
   },
   thumbnail: {
@@ -1018,8 +1019,8 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    background: 'rgba(0, 124, 255, 0.08)',
-    border: '1px solid rgba(0, 124, 255, 0.2)',
+    background: 'rgba(107, 79, 56, 0.18)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
     padding: '5px 10px',
     borderRadius: '6px',
   },
@@ -1039,7 +1040,8 @@ const styles = {
     fontSize: '11px',
     fontWeight: '700',
     color: 'var(--primary)',
-    background: 'rgba(0, 124, 255, 0.08)',
+    background: 'rgba(216, 180, 254, 0.1)',
+    border: '1px solid rgba(216, 180, 254, 0.25)',
     padding: '2px 8px',
     borderRadius: '4px',
     width: 'fit-content',

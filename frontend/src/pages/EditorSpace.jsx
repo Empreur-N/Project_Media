@@ -439,10 +439,10 @@ const EditorSpace = () => {
                             fontWeight: '600',
                             backgroundColor: log.action && log.action.includes('REVISION_REQUIRED') ? 'rgba(239,68,68,0.15)' :
                                            log.action && log.action.includes('PUBLISHED') ? 'rgba(16,185,129,0.15)' :
-                                           'rgba(0,124,255,0.15)',
+                                           'rgba(216,180,254,0.15)',
                             color: log.action && log.action.includes('REVISION_REQUIRED') ? '#ef4444' :
                                    log.action && log.action.includes('PUBLISHED') ? '#10b981' :
-                                   '#007cff'
+                                   '#D8B4FE'
                           }}>
                             {log.action}
                           </span>

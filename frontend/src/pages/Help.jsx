@@ -324,10 +324,10 @@ const styles = {
     transition: 'all 0.2s ease',
   },
   activeTab: {
-    background: 'rgba(0, 124, 255, 0.12)',
+    background: 'linear-gradient(135deg, rgba(107, 79, 56, 0.4) 0%, rgba(216, 180, 254, 0.15) 100%)',
     borderColor: 'var(--primary)',
     color: '#fff',
-    boxShadow: '0 0 15px rgba(0, 124, 255, 0.2)',
+    boxShadow: '0 0 15px rgba(216, 180, 254, 0.25)',
   },
   faqList: {
     display: 'flex',
@@ -342,8 +342,8 @@ const styles = {
     borderRadius: '12px',
   },
   expandedFaqCard: {
-    borderColor: 'rgba(0, 124, 255, 0.35)',
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+    borderColor: 'rgba(216, 180, 254, 0.45)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(216, 180, 254, 0.12)',
   },
   faqHeader: {
     display: 'flex',

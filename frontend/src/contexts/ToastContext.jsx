@@ -45,7 +45,7 @@ export const ToastProvider = ({ children }) => {
             <div style={styles.iconContainer}>
               {toast.type === 'success' && <CheckCircle size={18} style={{ color: '#10b981' }} />}
               {toast.type === 'error' && <AlertCircle size={18} style={{ color: '#ef4444' }} />}
-              {toast.type === 'info' && <Info size={18} style={{ color: '#007cff' }} />}
+              {toast.type === 'info' && <Info size={18} style={{ color: 'var(--primary)' }} />}
             </div>
             <div style={styles.message}>{toast.message}</div>
             <button 
@@ -93,7 +93,7 @@ const styles = {
     borderLeft: '4px solid #ef4444',
   },
   info: {
-    borderLeft: '4px solid #007cff',
+    borderLeft: '4px solid var(--primary)',
   },
   iconContainer: {
     display: 'flex',

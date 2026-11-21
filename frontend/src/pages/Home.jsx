@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { getArticles, getPopularArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search, Radio, Play, Pause, Zap } from 'lucide-react';
+import { Calendar, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search } from 'lucide-react';
 import { useTimezone } from '../contexts/TimezoneContext';
-import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 
-// --- Composant Ticker (Fil d'Info continu) ---
+// --- Composant Ticker (Fil d'Info Continu) ---
 const Ticker = ({ items }) => {
   if (!items || items.length === 0) return null;
   return (
@@ -17,7 +16,7 @@ const Ticker = ({ items }) => {
       <div style={styles.tickerBadge}>FLASH INFO</div>
       <div style={styles.tickerTextWrapper}>
         <div style={styles.tickerText} className="marquee">
-          {items.slice(0, 5).map((art, idx) => (
+          {items.slice(0, 8).map((art, idx) => (
             <span key={art.id} style={styles.tickerItem}>
               <span style={styles.tickerTime}>
                 {new Date(art.publicationDate || art.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
@@ -25,7 +24,7 @@ const Ticker = ({ items }) => {
               <Link to={`/articles/${art.id}`} style={styles.tickerLink}>
                 {art.title}
               </Link>
-              {idx < Math.min(items.length, 5) - 1 && <span style={styles.tickerSeparator}>•</span>}
+              {idx < Math.min(items.length, 8) - 1 && <span style={styles.tickerSeparator}>◆</span>}
             </span>
           ))}
         </div>
@@ -34,7 +33,7 @@ const Ticker = ({ items }) => {
   );
 };
 
-// --- Composant Météo des Régions ---
+// --- Composant Météo des Régions (Édition Éditoriale) ---
 const WeatherWidget = () => {
   const weatherData = {
     "Kinshasa": { temp: "30°C", condition: "Orageux", humidity: "75%", wind: "14 km/h", icon: "⛈️" },
@@ -48,7 +47,7 @@ const WeatherWidget = () => {
   return (
     <div className="glass-card" style={styles.weatherCard}>
       <div style={styles.weatherHeader}>
-        <span style={styles.widgetTitle}>Météo RDC</span>
+        <span style={styles.widgetTitle}>MÉTÉO DES PROVINCES</span>
         <select 
           value={city} 
           onChange={(e) => setCity(e.target.value)}
@@ -65,8 +64,8 @@ const WeatherWidget = () => {
         </div>
       </div>
       <div style={styles.weatherDetails}>
-        <span style={styles.weatherDetailItem}>Hum: {current.humidity}</span>
-        <span style={styles.weatherDetailItem}>Vent: {current.wind}</span>
+        <span style={styles.weatherDetailItem}>Humidité : {current.humidity}</span>
+        <span style={styles.weatherDetailItem}>Vent : {current.wind}</span>
       </div>
     </div>
   );
@@ -74,7 +73,6 @@ const WeatherWidget = () => {
 
 const Home = () => {
   const { timezone } = useTimezone();
-  const { playRadio, togglePlay, isPlaying, isRadioLive, radioQuality, toggleRadioQuality } = useAudioPlayer();
   const [articles, setArticles] = useState([]);
   const [popularArticles, setPopularArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,8 +84,8 @@ const Home = () => {
   const regions = ["Kinshasa", "Haut-Katanga", "Lualaba", "Nord-Kivu", "Sud-Kivu", "Kongo-Central"];
 
   const filteredArticles = articles.filter(art => 
-    art.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    art.summary?.toLowerCase().includes(searchQuery.toLowerCase())
+    (art.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     art.summary?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const getFallbackArticles = (cat, reg) => {
@@ -133,7 +131,7 @@ const Home = () => {
             articleId: art.id,
             id: art.id,
             title: art.title,
-            viewCount: (4 - idx) * 1420 + 350
+            views: (4 - idx) * 1420 + 350
           }));
           setPopularArticles(fallbackPop);
         }
@@ -143,7 +141,7 @@ const Home = () => {
           articleId: art.id,
           id: art.id,
           title: art.title,
-          viewCount: (4 - idx) * 1420 + 350
+          views: (4 - idx) * 1420 + 350
         }));
         setPopularArticles(fallbackPop);
       }
@@ -169,7 +167,11 @@ const Home = () => {
           animation-play-state: paused;
         }
       `}} />
-      {/* Hero Header - Compact & Élégant */}
+
+      {/* ========================================================
+          1. HERO HEADER - Exactement selon le contenu d'origine
+          Logo Officiel, Badge d'Accès, Titre LIFE CHANNEL & Slogan
+          ======================================================== */}
       <div style={styles.hero}>
         <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <img 
@@ -179,23 +181,31 @@ const Home = () => {
             onError={(e) => handleImageError(e, null, '/logo.png')}
           />
           <span style={styles.badge}>PORTAIL D'INFORMATION • RDC • ACCÈS LIBRE EN LECTURE SEULE</span>
-          <h1 style={styles.heroTitle}>LIFE <span style={{ color: 'var(--secondary)' }}>CHANNEL</span></h1>
+          <h1 style={styles.heroTitle}>
+            LIFE <span style={styles.heroTitleAccent}>CHANNEL</span>
+          </h1>
           <p style={styles.heroSubtitle}>
             make every life count • L'actualité en continu, podcasts et direct 24h/24 en libre consultation sans inscription
           </p>
         </div>
       </div>
 
-      {/* Ticker Défilant (Fil d'Info continu) - Heuristique #1 Visibilité de l'état */}
+      {/* ========================================================
+          2. FIL D'INFO CONTINU (FLASH INFO DÉFILANT)
+          ======================================================== */}
       <Ticker items={articles} />
 
-      {/* Feed Title and Subtitle - UB Medias Style */}
+      {/* ========================================================
+          3. TITRE DE LA SECTION DU FLUX D'ACTUALITÉS
+          ======================================================== */}
       <div className="container" style={styles.feedHeaderContainer}>
         <h2 style={styles.feedHeading}>Toutes les actualités</h2>
         <p style={styles.feedSubheading}>Découvrez l'ensemble des articles publiés par nos rédactions</p>
       </div>
 
-      {/* Modern Filter & Search Bar - UB Medias Style */}
+      {/* ========================================================
+          4. BARRE DE RECHERCHE & FILTRES EN CAPSULES
+          ======================================================== */}
       <div className="container" style={styles.searchFilterWrapper}>
         {/* Search Bar Input */}
         <div style={styles.searchBarContainer}>
@@ -249,127 +259,11 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Articles Feed */}
+      {/* ========================================================
+          5. GRILLE PRINCIPALE DES ARTICLES & SIDEBAR
+          ======================================================== */}
       <div className="container" style={{ marginTop: '20px' }}>
         <AdPlacement placement="HEADER" style={{ marginBottom: '30px' }} />
-
-        {/* Banner Radio En Direct 24/7 */}
-        <div className="glass-card" style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.95) 100%)',
-          border: '1px solid rgba(239, 68, 68, 0.35)',
-          borderRadius: '16px',
-          padding: '18px 24px',
-          marginBottom: '28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '20px',
-          flexWrap: 'wrap',
-          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(239, 68, 68, 0.15)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: '260px' }}>
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
-              flexShrink: 0
-            }}>
-              <Radio size={26} className={isRadioLive && isPlaying ? "pulse" : ""} />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                  color: '#ef4444',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderRadius: '10px',
-                  padding: '2px 8px',
-                  fontSize: '10px',
-                  fontWeight: '900',
-                  letterSpacing: '0.6px'
-                }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444', animation: 'pulse 1.2s infinite' }} />
-                  DIRECT CONTINU 24/7
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Kinshasa & Provinces</span>
-              </div>
-              <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#ffffff', marginTop: '3px' }}>
-                Life Channel Radio — Le Grand Débat & L'Info en Continu
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Écoutez en direct sans coupure pendant que vous parcourez l'actualité.
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              onClick={toggleRadioQuality}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--secondary)',
-                padding: '8px 14px',
-                borderRadius: '24px',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}
-              title="Changer la qualité audio"
-            >
-              <Zap size={13} /> {radioQuality === 'standard' ? 'HD (128 kbps)' : 'Éco (48 kbps)'}
-            </button>
-
-            <button
-              onClick={() => {
-                if (isRadioLive) {
-                  togglePlay();
-                } else {
-                  playRadio();
-                }
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: isRadioLive && isPlaying ? 'rgba(239, 68, 68, 0.2)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                border: isRadioLive && isPlaying ? '1px solid #ef4444' : 'none',
-                color: '#ffffff',
-                padding: '10px 22px',
-                borderRadius: '30px',
-                fontWeight: '800',
-                fontSize: '13px',
-                cursor: 'pointer',
-                boxShadow: isRadioLive && isPlaying ? 'none' : '0 4px 15px rgba(239, 68, 68, 0.4)',
-                transition: 'all 0.2s'
-              }}
-            >
-              {isRadioLive && isPlaying ? (
-                <>
-                  <Pause size={16} fill="currentColor" />
-                  <span>Mettre en Pause</span>
-                </>
-              ) : (
-                <>
-                  <Play size={16} fill="currentColor" />
-                  <span>Écouter le Direct Radio</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
 
         <div className="home-layout" style={styles.mainLayout}>
           <div className="feed-column" style={styles.feedColumn}>
@@ -383,20 +277,16 @@ const Home = () => {
                       <div className="skeleton-title skeleton-pulse" />
                       <div className="skeleton-text skeleton-pulse" />
                       <div className="skeleton-text short skeleton-pulse" />
-                      <div className="skeleton-footer">
-                        <div className="skeleton-meta skeleton-pulse" style={{ width: '80px', margin: 0 }} />
-                        <div className="skeleton-btn skeleton-pulse" />
-                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-            ) : filteredArticles.length === 0 ? (
+            ) : (!filteredArticles || filteredArticles.length === 0) ? (
               <div className="glass-card" style={styles.emptyState}>
                 <BookOpen size={48} style={{ color: 'var(--text-muted)', marginBottom: '16px' }} />
-                <h3>Aucun article disponible</h3>
-                <p style={{ color: 'var(--text-muted)' }}>
-                  Aucun article publié ne correspond aux filtres sélectionnés pour le moment.
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px' }}>Aucun article disponible</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '400px', margin: '8px auto 0' }}>
+                  Aucun article publié ne correspond aux filtres sélectionnés. Essayez de réinitialiser les critères.
                 </p>
               </div>
             ) : (
@@ -418,22 +308,31 @@ const Home = () => {
                     <div className="article-card-body" style={styles.cardBody}>
                       <div style={styles.cardMeta}>
                         <span style={styles.metaItem}>
-                          <Calendar size={13} /> {formatDate(article.publicationDate || article.createdAt)}
+                          <Calendar size={13} style={{ color: 'var(--primary)' }} />
+                          {formatDate(article.publicationDate || article.createdAt)}
                         </span>
                         {article.region && (
                           <span style={styles.metaItem}>
-                            <MapPin size={13} /> {article.region}
+                            <MapPin size={13} style={{ color: 'var(--primary)' }} />
+                            {article.region}
                           </span>
                         )}
                       </div>
                       
-                      <h3 className="article-card-title" style={styles.cardTitle}>{article.title}</h3>
-                      <p className="article-card-summary" style={styles.cardSummary}>{article.summary}</p>
+                      <h3 className="article-card-title" style={styles.cardTitle}>
+                        <Link to={`/articles/${article.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {article.title}
+                        </Link>
+                      </h3>
+                      
+                      <p className="article-card-summary" style={styles.cardSummary}>
+                        {article.summary}
+                      </p>
                       
                       <div className="article-card-footer" style={styles.cardFooter}>
-                        <span style={styles.author}>Par {article.authorUsername}</span>
-                        <Link to={`/articles/${article.id}`} className="btn btn-secondary" style={styles.readBtn}>
-                          Lire <ArrowRight size={14} />
+                        <span style={styles.authorName}>Par {article.authorUsername}</span>
+                        <Link to={`/articles/${article.id}`} className="btn-pill-outline" style={{ padding: '6px 16px', fontSize: '11px' }}>
+                          Lire <ArrowRight size={13} />
                         </Link>
                       </div>
                     </div>
@@ -443,12 +342,12 @@ const Home = () => {
             )}
           </div>
 
-          {/* Sidebar */}
+          {/* Colonne Latérale (Tendances, Météo Régionale, Publicité) */}
           <div className="sidebar-column" style={styles.sidebarColumn}>
             {/* Widget Tendances */}
             <div className="glass-card" style={styles.sidebarWidget}>
               <h3 style={styles.widgetTitle}>
-                <TrendingUp size={15} /> Tendances
+                <TrendingUp size={15} style={{ color: 'var(--primary)' }} /> Tendances
               </h3>
               {popularArticles.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
@@ -461,7 +360,7 @@ const Home = () => {
                       <span style={styles.popularRank}>0{index + 1}</span>
                       <div style={styles.popularInfo}>
                         <span style={styles.popularTitle}>{pop.title}</span>
-                        <span style={styles.popularCount}>{pop.viewCount} lectures</span>
+                        <span style={styles.popularCount}>{pop.views || 0} lectures</span>
                       </div>
                     </Link>
                   ))}
@@ -469,10 +368,10 @@ const Home = () => {
               )}
             </div>
 
-            {/* Widget Météo Régionale RDC - Heuristique #2 Correspondance réel */}
+            {/* Widget Météo Régionale RDC */}
             <WeatherWidget />
 
-            {/* Pub Sidebar */}
+            {/* Publicité Latérale */}
             <AdPlacement placement="SIDEBAR" />
           </div>
         </div>
@@ -485,66 +384,144 @@ const styles = {
   page: {
     paddingBottom: '80px',
   },
+
+  // --- Hero Section Styles (Fidèle à l'origine avec finition haute couture) ---
   hero: {
-    background: 'linear-gradient(180deg, rgba(0, 124, 255, 0.08) 0%, rgba(6, 9, 19, 0) 100%)',
-    padding: '24px 0 16px',
+    background: 'linear-gradient(180deg, rgba(28, 21, 18, 0.85) 0%, rgba(11, 8, 7, 0) 100%)',
+    padding: '32px 0 24px',
     textAlign: 'center',
-    borderBottom: '1px solid var(--border-color)',
+    borderBottom: '1px solid rgba(192, 192, 192, 0.12)',
   },
   heroLogo: {
-    height: '80px',
+    height: '84px',
     width: 'auto',
     maxWidth: '240px',
     objectFit: 'contain',
-    marginBottom: '12px',
-    filter: 'drop-shadow(0 4px 20px rgba(245, 158, 11, 0.4))',
+    marginBottom: '14px',
+    filter: 'drop-shadow(0 4px 20px rgba(216, 180, 254, 0.25))',
   },
   badge: {
-    fontSize: '10px',
-    fontWeight: '700',
-    letterSpacing: '1.5px',
-    color: 'var(--secondary)',
-    background: 'rgba(245, 158, 11, 0.12)',
-    padding: '4px 14px',
-    borderRadius: '30px',
-    border: '1px solid rgba(245, 158, 11, 0.25)',
+    fontSize: '10.5px',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
+    color: 'var(--marron-light)',
+    background: 'rgba(107, 79, 56, 0.16)',
+    padding: '5px 16px',
+    borderRadius: '9999px',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+    textTransform: 'uppercase',
+    display: 'inline-block',
   },
   heroTitle: {
-    fontSize: '32px',
+    fontSize: 'clamp(2rem, 3.5vw, 2.5rem)',
     fontWeight: '900',
-    marginTop: '10px',
-    marginBottom: '4px',
-    letterSpacing: '1.5px',
+    marginTop: '12px',
+    marginBottom: '6px',
+    letterSpacing: '0.04em',
+    fontFamily: 'var(--font-sans)',
+    color: '#F5F3F0',
+  },
+  heroTitleAccent: {
+    color: '#E5A93C', // Accent doré d'origine selon la charte Life Channel
+    display: 'inline-block',
   },
   heroSubtitle: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-    maxWidth: '550px',
+    color: 'var(--argente)',
+    fontSize: '13.5px',
+    maxWidth: '680px',
     margin: '0 auto',
+    lineHeight: '1.6',
+    fontWeight: '500',
   },
+
+  // --- Ticker Défilant (Flash Info) ---
+  tickerContainer: {
+    background: 'linear-gradient(90deg, rgba(18, 14, 12, 0.98) 0%, rgba(26, 20, 17, 0.98) 100%)',
+    borderBottom: '1px solid rgba(192, 192, 192, 0.14)',
+    display: 'flex',
+    alignItems: 'center',
+    height: '42px',
+    overflow: 'hidden',
+    position: 'relative',
+    zIndex: 10,
+  },
+  tickerBadge: {
+    background: '#ef4444',
+    color: '#ffffff',
+    padding: '0 16px',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '11px',
+    fontWeight: '900',
+    letterSpacing: '0.08em',
+    flexShrink: 0,
+    zIndex: 2,
+    boxShadow: '2px 0 10px rgba(0,0,0,0.4)',
+    textTransform: 'uppercase',
+  },
+  tickerTextWrapper: {
+    flex: 1,
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  tickerText: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    willChange: 'transform',
+  },
+  tickerItem: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    fontSize: '13px',
+    marginRight: '20px',
+  },
+  tickerTime: {
+    color: 'var(--argente)',
+    marginRight: '8px',
+    fontWeight: '800',
+    fontSize: '11.5px',
+  },
+  tickerLink: {
+    color: '#F5F3F0',
+    textDecoration: 'none',
+    fontWeight: '600',
+  },
+  tickerSeparator: {
+    color: 'var(--marron)',
+    marginLeft: '16px',
+    fontSize: '10px',
+  },
+
+  // --- Section En-Tête du Feed ---
   feedHeaderContainer: {
-    marginTop: '20px',
-    marginBottom: '12px',
+    marginTop: '28px',
+    marginBottom: '14px',
     textAlign: 'left',
   },
   feedHeading: {
-    fontSize: '24px',
+    fontSize: '26px',
     fontWeight: '800',
-    letterSpacing: '-0.3px',
+    letterSpacing: '-0.02em',
     margin: '0 0 4px',
-    color: 'var(--text-main)',
+    color: '#F5F3F0',
     fontFamily: 'var(--font-sans)',
   },
   feedSubheading: {
-    fontSize: '13px',
-    color: 'var(--text-muted)',
+    fontSize: '13.5px',
+    color: 'var(--argente)',
     margin: 0,
   },
+
+  // --- Filtres & Barre de Recherche ---
   searchFilterWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-    marginBottom: '20px',
+    gap: '14px',
+    marginBottom: '26px',
   },
   searchBarContainer: {
     position: 'relative',
@@ -554,26 +531,26 @@ const styles = {
   },
   searchIcon: {
     position: 'absolute',
-    left: '16px',
-    color: 'var(--text-muted)',
+    left: '18px',
+    color: 'var(--argente)',
     pointerEvents: 'none',
   },
   searchInput: {
     width: '100%',
-    padding: '10px 18px 10px 44px',
-    borderRadius: '30px',
-    background: 'rgba(255, 255, 255, 0.02)',
-    border: '1px solid var(--border-color)',
-    color: 'var(--text-main)',
+    padding: '11px 20px 11px 48px',
+    borderRadius: '9999px',
+    background: 'rgba(26, 20, 17, 0.75)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    color: '#F5F3F0',
     fontSize: '14px',
     outline: 'none',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
   },
   pillsRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '20px',
+    gap: '18px',
     width: '100%',
   },
   pillsScroll: {
@@ -581,26 +558,27 @@ const styles = {
     gap: '10px',
     overflowX: 'auto',
     flex: 1,
-    paddingRight: '10px',
+    paddingBottom: '4px',
   },
   pillBtn: {
     padding: '8px 18px',
-    borderRadius: '30px',
-    border: '1px solid var(--border-color)',
-    background: 'rgba(255, 255, 255, 0.02)',
-    color: 'var(--text-secondary)',
+    borderRadius: '9999px',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    background: 'rgba(107, 79, 56, 0.14)',
+    color: 'var(--argente)',
     cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '13px',
+    fontWeight: '700',
+    fontSize: '12px',
+    letterSpacing: '0.04em',
     whiteSpace: 'nowrap',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.25s ease',
     outline: 'none',
   },
   activePillBtn: {
-    background: 'var(--primary)',
+    background: 'linear-gradient(135deg, #6B4F38 0%, #8E684D 100%)',
     borderColor: 'var(--primary)',
-    color: '#fff',
-    boxShadow: '0 0 15px rgba(0, 124, 255, 0.3)',
+    color: '#ffffff',
+    boxShadow: '0 4px 16px rgba(216, 180, 254, 0.28)',
   },
   regionSelectorContainer: {
     position: 'relative',
@@ -608,15 +586,25 @@ const styles = {
   },
   regionSelect: {
     padding: '8px 20px',
-    borderRadius: '30px',
-    background: 'rgba(255, 255, 255, 0.02)',
-    border: '1px solid var(--border-color)',
-    color: 'var(--text-secondary)',
+    borderRadius: '9999px',
+    background: 'rgba(107, 79, 56, 0.16)',
+    border: '1px solid rgba(192, 192, 192, 0.25)',
+    color: '#F5F3F0',
     cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '13px',
+    fontWeight: '700',
+    fontSize: '12px',
+    letterSpacing: '0.04em',
     outline: 'none',
     transition: 'all 0.2s ease',
+  },
+
+  // --- Grille Principale & Cartes ---
+  mainLayout: {
+    width: '100%',
+  },
+  feedColumn: {
+    minWidth: 0,
+    width: '100%',
   },
   articlesGrid: {
     width: '100%',
@@ -626,13 +614,14 @@ const styles = {
     flexDirection: 'column',
     overflow: 'hidden',
     height: '100%',
+    border: '1px solid rgba(192, 192, 192, 0.16)',
   },
   cardImageContainer: {
     position: 'relative',
-    height: '210px',
+    height: '220px',
     width: '100%',
     overflow: 'hidden',
-    backgroundColor: 'rgba(13, 20, 38, 0.8)',
+    backgroundColor: 'rgba(20, 15, 13, 0.85)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -648,19 +637,19 @@ const styles = {
     position: 'absolute',
     top: '16px',
     left: '16px',
-    background: 'linear-gradient(135deg, #6B4F38 0%, #8D6A4E 100%)',
-    color: '#ffffff',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
+    background: 'linear-gradient(135deg, #6B4F38 0%, #8E684D 100%)',
+    color: '#F5F3F0',
+    padding: '4px 12px',
+    borderRadius: '9999px',
+    fontSize: '10.5px',
     fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(192,192,192,0.2)'
+    letterSpacing: '0.06em',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    border: '1px solid rgba(192,192,192,0.22)',
   },
   cardBody: {
-    padding: '20px',
+    padding: '22px',
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
@@ -669,7 +658,7 @@ const styles = {
     display: 'flex',
     gap: '16px',
     fontSize: '12px',
-    color: 'var(--text-muted)',
+    color: 'var(--argente)',
     marginBottom: '12px',
   },
   metaItem: {
@@ -678,174 +667,99 @@ const styles = {
     gap: '6px',
   },
   cardTitle: {
-    fontSize: '20px',
-    marginBottom: '10px',
-    lineHeight: '1.3',
-    fontFamily: 'var(--font-sans)',
+    fontSize: '19px',
+    fontWeight: '700',
+    fontFamily: 'var(--font-serif), Playfair Display, serif',
+    lineHeight: '1.35',
+    margin: '0 0 10px',
+    color: '#F5F3F0',
   },
   cardSummary: {
-    fontSize: '14px',
-    color: 'var(--text-secondary)',
-    marginBottom: '20px',
+    fontSize: '13.5px',
+    color: 'var(--argente)',
+    lineHeight: '1.6',
+    margin: '0 0 20px',
     flex: 1,
-    display: '-webkit-box',
-    WebkitLineClamp: '3',
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-    textAlign: 'justify',
   },
   cardFooter: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderTop: '1px solid rgba(255,255,255,0.03)',
+    borderTop: '1px solid rgba(192, 192, 192, 0.12)',
     paddingTop: '16px',
   },
-  author: {
-    fontSize: '13px',
-    fontWeight: '600',
+  authorName: {
+    fontSize: '12px',
     color: 'var(--text-muted)',
-  },
-  readBtn: {
-    padding: '6px 12px',
-    fontSize: '13px',
-    borderRadius: '6px',
-  },
-  infoState: {
-    textAlign: 'center',
-    padding: '60px 0',
-    color: 'var(--text-muted)',
+    fontWeight: '500',
   },
   emptyState: {
+    padding: '60px 20px',
     textAlign: 'center',
-    padding: '80px 40px',
-    maxWidth: '500px',
-    margin: '0 auto',
+    borderRadius: '16px',
   },
-  mainLayout: {
-    width: '100%',
-  },
-  feedColumn: {
-    minWidth: 0,
-    width: '100%',
-  },
+
+  // --- Sidebar Styles ---
   sidebarColumn: {
     display: 'flex',
     flexDirection: 'column',
     gap: '24px',
-    width: '100%',
   },
   sidebarWidget: {
-    padding: '24px',
+    padding: '22px',
+    borderRadius: '16px',
   },
   widgetTitle: {
-    fontSize: '15px',
-    fontWeight: '700',
+    fontSize: '13px',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    letterSpacing: '1px',
-    marginBottom: '20px',
+    color: '#F5F3F0',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '10px',
+    margin: '0 0 16px',
   },
   popularList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
+    gap: '14px',
   },
   popularItem: {
     display: 'flex',
-    gap: '14px',
-    textDecoration: 'none',
     alignItems: 'flex-start',
+    gap: '12px',
+    textDecoration: 'none',
   },
   popularRank: {
-    fontSize: '22px',
+    fontSize: '18px',
     fontWeight: '900',
     color: 'var(--primary)',
     lineHeight: '1',
-    opacity: 0.8,
+    minWidth: '24px',
+    fontFamily: 'var(--font-serif), Playfair Display, serif',
   },
   popularInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
+    flex: 1,
   },
   popularTitle: {
-    fontSize: '13px',
-    fontWeight: '700',
-    color: 'var(--text-main)',
-    lineHeight: '1.4',
-    display: '-webkit-box',
-    WebkitLineClamp: '2',
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
+    fontSize: '13.5px',
+    fontWeight: '600',
+    color: '#F5F3F0',
+    lineHeight: '1.35',
+    display: 'block',
+    marginBottom: '2px',
+    transition: 'color 0.2s',
   },
   popularCount: {
     fontSize: '11px',
-    color: 'var(--text-muted)',
-    marginTop: '4px',
-  },
-  // --- Style Ticker Défilant ---
-  tickerContainer: {
-    display: 'flex',
-    backgroundColor: '#0a0f1d',
-    borderBottom: '1px solid var(--border-color)',
-    height: '40px',
-    alignItems: 'center',
-    overflow: 'hidden',
-    fontSize: '13px',
-  },
-  tickerBadge: {
-    backgroundColor: 'var(--error)',
-    color: 'white',
-    padding: '0 16px',
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    fontWeight: '900',
-    letterSpacing: '1px',
-    fontSize: '11px',
-    zIndex: 2,
-    boxShadow: '4px 0 10px rgba(0,0,0,0.5)',
-  },
-  tickerTextWrapper: {
-    flex: 1,
-    overflow: 'hidden',
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  tickerText: {
-    display: 'inline-flex',
-    whiteSpace: 'nowrap',
-    paddingLeft: '100%',
-    gap: '24px',
-  },
-  tickerItem: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  tickerTime: {
-    color: 'var(--secondary)',
-    fontWeight: '700',
-  },
-  tickerLink: {
-    color: 'var(--text-main)',
-    textDecoration: 'none',
-    fontWeight: '600',
-  },
-  tickerSeparator: {
-    color: 'var(--text-muted)',
-    marginLeft: '16px',
+    color: 'var(--argente)',
   },
 
-  // --- Style Weather Card ---
+  // --- Weather Widget Styles ---
   weatherCard: {
-    padding: '20px',
+    padding: '22px',
+    borderRadius: '16px',
   },
   weatherHeader: {
     display: 'flex',
@@ -854,45 +768,49 @@ const styles = {
     marginBottom: '16px',
   },
   weatherSelect: {
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '4px',
-    color: 'var(--text-main)',
-    padding: '3px 8px',
-    fontSize: '12px',
-    cursor: 'pointer',
+    background: 'rgba(107, 79, 56, 0.2)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    color: '#F5F3F0',
+    borderRadius: '9999px',
+    padding: '4px 10px',
+    fontSize: '11px',
+    fontWeight: '600',
     outline: 'none',
   },
   weatherBody: {
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
-    marginBottom: '16px',
+    marginBottom: '14px',
   },
   weatherIcon: {
-    fontSize: '32px',
+    fontSize: '36px',
   },
   weatherInfo: {
     display: 'flex',
     flexDirection: 'column',
   },
   weatherTemp: {
-    fontSize: '24px',
+    fontSize: '26px',
     fontWeight: '800',
-    color: 'var(--text-main)',
+    color: '#F5F3F0',
+    lineHeight: '1.1',
   },
   weatherCondition: {
     fontSize: '12px',
-    color: 'var(--text-secondary)',
+    color: 'var(--argente)',
   },
   weatherDetails: {
     display: 'flex',
     justifyContent: 'space-between',
-    borderTop: '1px solid rgba(255,255,255,0.03)',
-    paddingTop: '10px',
     fontSize: '11px',
     color: 'var(--text-muted)',
-  }
+    borderTop: '1px solid rgba(192, 192, 192, 0.12)',
+    paddingTop: '12px',
+  },
+  weatherDetailItem: {
+    display: 'inline-block',
+  },
 };
 
 export default Home;
