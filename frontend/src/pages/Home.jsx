@@ -180,7 +180,7 @@ const Home = () => {
             style={styles.heroLogo} 
             onError={(e) => handleImageError(e, null, '/logo.png')}
           />
-          <span style={styles.badge}>PORTAIL D'INFORMATION • RDC • ACCÈS LIBRE EN LECTURE SEULE</span>
+          <span style={styles.badge}>PORTAIL D'INFORMATION • RDC • ACCÈS LIBRE ET SANS INSCRIPTION</span>
           <h1 style={styles.heroTitle}>
             LIFE <span style={styles.heroTitleAccent}>CHANNEL</span>
           </h1>
@@ -199,8 +199,8 @@ const Home = () => {
           3. TITRE DE LA SECTION DU FLUX D'ACTUALITÉS
           ======================================================== */}
       <div className="container" style={styles.feedHeaderContainer}>
-        <h2 style={styles.feedHeading}>Toutes les actualités</h2>
-        <p style={styles.feedSubheading}>Découvrez l'ensemble des articles publiés par nos rédactions</p>
+        <h2 style={styles.feedHeading}>Toute l’actualité</h2>
+        <p style={styles.feedSubheading}>Découvrez l'ensemble des articles publiés par notre rédaction</p>
       </div>
 
       {/* ========================================================
