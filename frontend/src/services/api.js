@@ -22,10 +22,22 @@ export const apiCall = async (endpoint, method = 'GET', body = null, token = nul
   
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    const data = await response.json();
+    
+    let data = {};
+    const text = await response.text();
+    if (text && text.trim().length > 0) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { message: text };
+      }
+    }
     
     if (!response.ok) {
-      throw new Error(data.message || 'Une erreur est survenue');
+      const fallbackMsg = (response.status === 401 || response.status === 403)
+        ? 'Identifiants ou privilèges incorrects. Vérifiez votre saisie.'
+        : `Erreur serveur (${response.status})`;
+      throw new Error(data.message || fallbackMsg);
     }
     
     return data;

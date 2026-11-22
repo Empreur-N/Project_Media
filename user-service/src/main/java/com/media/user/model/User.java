@@ -30,7 +30,7 @@ public class User {
 
     @Column(name = "email_verified")
     @Builder.Default
-    private boolean emailVerified = false;
+    private Boolean emailVerified = true;
 
     @Column(nullable = false)
     private String password;
@@ -40,7 +40,15 @@ public class User {
     private Role role;
 
     @Builder.Default
-    private boolean active = true;
+    private Boolean active = true;
+
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(emailVerified);
+    }
+
+    public boolean isActive() {
+        return active == null || Boolean.TRUE.equals(active);
+    }
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
