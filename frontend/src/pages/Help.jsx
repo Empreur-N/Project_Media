@@ -224,16 +224,50 @@ const Help = () => {
 
       {/* Additional Assistance Block */}
       <div className="glass-card" style={styles.assistanceBlock}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-          <Mail size={32} style={{ color: 'var(--secondary)' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={styles.iconCircle}>
+            <PhoneCall size={22} style={{ color: 'var(--secondary)' }} />
+          </div>
+          <div style={styles.iconCircle}>
+            <Mail size={22} style={{ color: 'var(--secondary)' }} />
+          </div>
         </div>
-        <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Vous n'avez pas trouvé votre réponse ?</h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: '1.6' }}>
-          Notre équipe technique et le secrétariat de rédaction de LIFE CHANNEL sont à votre disposition pour vous assister.
+
+        <h3 style={styles.assistanceTitle}>Vous n'avez pas trouvé votre réponse ?</h3>
+        <p style={styles.assistanceSubtitle}>
+          Notre équipe technique, la direction et le secrétariat de rédaction de LIFE CHANNEL sont à votre disposition pour vous répondre directement :
         </p>
-        <a href="mailto:contact@lifechannel.cd" style={styles.supportLink}>
-          Contacter la rédaction : contact@lifechannel.cd
-        </a>
+
+        {/* Contact Numbers Row */}
+        <div style={styles.contactRow}>
+          <a href="tel:+243979208109" style={styles.contactCard} title="Appeler la ligne RDC">
+            <div style={styles.contactIconWrap}>
+              <PhoneCall size={18} />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <span style={styles.contactLabel}>Ligne RDC & WhatsApp</span>
+              <strong style={styles.contactValue}>+243 979 208 109</strong>
+            </div>
+          </a>
+
+          <a href="tel:+14033621837" style={styles.contactCard} title="Appeler la ligne Internationale / Amérique">
+            <div style={styles.contactIconWrap}>
+              <PhoneCall size={18} />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <span style={styles.contactLabel}>Ligne Internationale & Amérique</span>
+              <strong style={styles.contactValue}>+1 403 362-1837</strong>
+            </div>
+          </a>
+        </div>
+
+        {/* Email Contact */}
+        <div style={{ marginTop: '18px' }}>
+          <a href="mailto:contact@lifechannelmedia.com" style={styles.supportLink}>
+            <Mail size={15} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
+            Contacter la rédaction : contact@lifechannelmedia.com
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -396,15 +430,94 @@ const styles = {
   assistanceBlock: {
     padding: '36px 24px',
     textAlign: 'center',
-    border: '1px dashed rgba(245, 158, 11, 0.25)',
+    border: '1px solid rgba(216, 180, 254, 0.25)',
     borderRadius: '16px',
-    background: 'rgba(245, 158, 11, 0.02)',
+    background: 'linear-gradient(180deg, rgba(30, 22, 20, 0.6) 0%, rgba(18, 13, 11, 0.9) 100%)',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4)',
+  },
+  iconCircle: {
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    background: 'rgba(216, 180, 254, 0.12)',
+    border: '1px solid rgba(216, 180, 254, 0.2)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  assistanceTitle: {
+    fontSize: '20px',
+    fontFamily: 'var(--font-luxury), Playfair Display, serif',
+    color: '#ffffff',
+    marginBottom: '8px',
+    letterSpacing: '0.02em',
+  },
+  assistanceSubtitle: {
+    color: 'var(--text-secondary)',
+    fontSize: '14px',
+    maxWidth: '560px',
+    margin: '0 auto 24px',
+    lineHeight: '1.6',
+  },
+  contactRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '14px',
+    marginBottom: '10px',
+  },
+  contactCard: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 20px',
+    borderRadius: '12px',
+    background: 'rgba(255, 255, 255, 0.04)',
+    border: '1px solid rgba(216, 180, 254, 0.22)',
+    color: '#ffffff',
+    textDecoration: 'none',
+    transition: 'all 0.25s ease',
+  },
+  contactIconWrap: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    background: 'rgba(216, 180, 254, 0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--secondary)',
+    flexShrink: 0,
+  },
+  contactLabel: {
+    display: 'block',
+    fontSize: '11px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    color: 'var(--text-muted)',
+    fontWeight: '600',
+    lineHeight: '1.3',
+  },
+  contactValue: {
+    display: 'block',
+    fontSize: '15px',
+    letterSpacing: '0.03em',
+    color: '#ffffff',
+    fontWeight: '700',
+    lineHeight: '1.4',
   },
   supportLink: {
     color: 'var(--secondary)',
-    fontWeight: '700',
+    fontWeight: '600',
     fontSize: '14px',
-    textDecoration: 'underline',
+    textDecoration: 'none',
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    background: 'rgba(216, 180, 254, 0.08)',
+    border: '1px solid rgba(216, 180, 254, 0.15)',
+    transition: 'all 0.2s ease',
   }
 };
 
