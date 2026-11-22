@@ -1,13 +1,14 @@
 // Service d'authentification sociale OAuth 2.0 réelle (Google Identity Services & Facebook SDK)
 
 export const DEFAULT_GOOGLE_CLIENT_ID = '1068659789768-bq0ee4rci31g58e89c4ellm53tj9snst.apps.googleusercontent.com';
+export const DEFAULT_FACEBOOK_APP_ID = '1165712492820625';
 
 export const getGoogleClientId = () => {
   return import.meta.env.VITE_GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID || localStorage.getItem('lifechannel_google_client_id') || DEFAULT_GOOGLE_CLIENT_ID;
 };
 
 export const getFacebookAppId = () => {
-  return import.meta.env.VITE_FACEBOOK_APP_ID || window.FACEBOOK_APP_ID || localStorage.getItem('lifechannel_facebook_app_id') || '';
+  return import.meta.env.VITE_FACEBOOK_APP_ID || window.FACEBOOK_APP_ID || localStorage.getItem('lifechannel_facebook_app_id') || DEFAULT_FACEBOOK_APP_ID;
 };
 
 export const GOOGLE_CLIENT_ID = getGoogleClientId();
@@ -102,23 +103,35 @@ export const loginWithGoogleOAuth = async (clientId = getGoogleClientId()) => {
 /**
  * Initialise le SDK Facebook JavaScript
  */
-export const initFacebookAuth = (appId = FACEBOOK_APP_ID) => {
+export const initFacebookAuth = (appId = getFacebookAppId()) => {
   return new Promise((resolve) => {
-    if (window.FB) {
+    const applyInit = () => {
+      try {
+        if (window.FB && appId) {
+          window.FB.init({
+            appId: appId,
+            cookie: true,
+            xfbml: false,
+            version: 'v19.0'
+          });
+        }
+      } catch (e) {
+        console.warn("Facebook SDK init:", e);
+      }
       resolve(window.FB);
+    };
+
+    if (window.FB) {
+      applyInit();
       return;
     }
 
+    const prevAsyncInit = window.fbAsyncInit;
     window.fbAsyncInit = function() {
-      if (appId) {
-        window.FB.init({
-          appId: appId,
-          cookie: true,
-          xfbml: true,
-          version: 'v19.0'
-        });
+      if (typeof prevAsyncInit === 'function') {
+        try { prevAsyncInit(); } catch (e) {}
       }
-      resolve(window.FB);
+      applyInit();
     };
 
     const existingScript = document.getElementById('facebook-jssdk');
@@ -128,6 +141,9 @@ export const initFacebookAuth = (appId = FACEBOOK_APP_ID) => {
       script.src = 'https://connect.facebook.net/fr_FR/sdk.js';
       script.async = true;
       script.defer = true;
+      script.onload = () => {
+        setTimeout(applyInit, 50);
+      };
       document.head.appendChild(script);
     }
   });
@@ -150,26 +166,30 @@ export const loginWithFacebookOAuth = async (appId = getFacebookAppId()) => {
       return;
     }
 
-    window.FB.login((response) => {
-      if (response.authResponse) {
-        window.FB.api('/me', { fields: 'id,name,email,picture' }, (profile) => {
-          if (!profile || profile.error) {
-            reject(new Error(profile?.error?.message || "Erreur lors de la récupération du profil Facebook."));
-            return;
-          }
+    try {
+      window.FB.login((response) => {
+        if (response && response.authResponse) {
+          window.FB.api('/me', { fields: 'id,name,email,picture' }, (profile) => {
+            if (!profile || profile.error) {
+              reject(new Error(profile?.error?.message || "Erreur lors de la récupération du profil Facebook."));
+              return;
+            }
 
-          resolve({
-            provider: 'FACEBOOK',
-            socialId: profile.id,
-            fullName: profile.name || 'Lecteur Facebook',
-            email: profile.email || `${profile.id}@facebook.user`,
-            picture: profile.picture?.data?.url,
-            token: response.authResponse.accessToken
+            resolve({
+              provider: 'FACEBOOK',
+              socialId: profile.id,
+              fullName: profile.name || 'Lecteur Facebook',
+              email: profile.email || `lecteur.fb.${profile.id}@lifechannelmedia.com`,
+              picture: profile.picture?.data?.url,
+              token: response.authResponse.accessToken
+            });
           });
-        });
-      } else {
-        reject(new Error("Connexion Facebook annulée par l'utilisateur."));
-      }
-    }, { scope: 'public_profile,email' });
+        } else {
+          reject(new Error("POPUP_CLOSED_BY_USER"));
+        }
+      }, { scope: 'public_profile,email' });
+    } catch (err) {
+      reject(err);
+    }
   });
 };

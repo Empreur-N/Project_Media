@@ -221,8 +221,8 @@ const ArticleDetail = () => {
           socialProfile = await loginWithFacebookOAuth();
         }
       } catch (sdkErr) {
-        if (sdkErr.message === 'POPUP_CLOSED_BY_USER') {
-          // L'utilisateur a simplement fermé la popup Google
+        if (sdkErr.message === 'POPUP_CLOSED_BY_USER' || sdkErr.message?.includes('annulée')) {
+          // L'utilisateur a simplement fermé la popup
           return;
         }
         if (provider === 'GOOGLE') {
@@ -230,13 +230,11 @@ const ArticleDetail = () => {
           showToast("Connexion Google : " + (sdkErr.message || "vérifiez l'autorisation dans Google Cloud"), "error");
           return;
         }
-        // Pour Facebook sans App ID, activation directe 1-clic
-        socialProfile = {
-          provider: provider,
-          fullName: 'Lecteur Facebook',
-          email: `lecteur.facebook.${Date.now()}@lifechannelmedia.com`,
-          socialId: `facebook_${Date.now()}`
-        };
+        if (provider === 'FACEBOOK') {
+          console.error("Erreur Facebook OAuth:", sdkErr);
+          showToast("Connexion Facebook : " + (sdkErr.message || "vérifiez la configuration dans Meta for Developers"), "error");
+          return;
+        }
       }
 
       if (socialProfile) {
