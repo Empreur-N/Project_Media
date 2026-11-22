@@ -28,6 +28,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './contexts/ToastContext';
 import { DataSaverProvider } from './contexts/DataSaverContext';
 import { TimezoneProvider } from './contexts/TimezoneContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 // Composant pour protéger les routes selon l'authentification et les rôles
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -58,12 +60,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 function App() {
   return (
-    <ToastProvider>
-      <DataSaverProvider>
-        <TimezoneProvider>
-          <AudioPlayerProvider>
-            <AuthProvider>
-              <Router>
+    <ThemeProvider>
+      <LanguageProvider>
+        <ToastProvider>
+          <DataSaverProvider>
+            <TimezoneProvider>
+              <AudioPlayerProvider>
+                <AuthProvider>
+                  <Router>
           <div className="app-container">
             <BreakingNewsBanner />
             <Navbar />
@@ -155,11 +159,13 @@ function App() {
             <FloatingLivePlayer />
           </div>
         </Router>
-      </AuthProvider>
-    </AudioPlayerProvider>
-  </TimezoneProvider>
-</DataSaverProvider>
+        </AuthProvider>
+      </AudioPlayerProvider>
+    </TimezoneProvider>
+  </DataSaverProvider>
 </ToastProvider>
+</LanguageProvider>
+</ThemeProvider>
   );
 }
 

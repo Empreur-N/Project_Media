@@ -38,6 +38,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const updateUser = (newUserData) => {
+    setUser(prev => {
+      const updated = { ...prev, ...newUserData };
+      localStorage.setItem('user_data', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_data');
@@ -49,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   const role = user ? user.role : 'VISITOR';
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login: loginUser, logout, isVisitor, role, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, token, loading, login: loginUser, logout, updateUser, isVisitor, role, isLoggedIn: !!user }}>
       {children}
     </AuthContext.Provider>
   );

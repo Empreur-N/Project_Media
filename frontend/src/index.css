@@ -50,6 +50,55 @@
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 28px rgba(216, 180, 254, 0.3);
+  --navbar-bg: rgba(15, 13, 12, 0.88);
+}
+
+/* ========================================================
+   THÈME CLAIR LUXE (Light Mode Éditorial Haute Lisibilité)
+   Ivoire chaud, papier d'art noble & accents ambrés
+   ======================================================== */
+[data-theme="light"] {
+  --bg-main: #FAF8F5;
+  --bg-surface: #F2EDE6;
+  --bg-card: rgba(255, 255, 255, 0.94);
+  --bg-card-hover: #FFFFFF;
+  --navbar-bg: rgba(250, 248, 245, 0.94);
+  --border-color: rgba(107, 79, 56, 0.22);
+  --border-glow: rgba(107, 79, 56, 0.35);
+
+  --primary: #8A48D4;
+  --primary-hover: #7334B8;
+  --primary-glow: rgba(138, 72, 212, 0.3);
+
+  --marron: #6B4F38;
+  --marron-light: #8E684D;
+  --marron-dark: #4A3423;
+  --marron-glow: rgba(107, 79, 56, 0.25);
+
+  --secondary: #6B4F38;
+  --argente: #574E47;
+  --argente-light: #2C2520;
+  --argente-muted: #786F67;
+  --accent: #8A48D4;
+
+  --text-main: #181411;
+  --text-secondary: #4A4038;
+  --text-muted: #786E66;
+
+  --shadow-sm: 0 4px 12px rgba(107, 79, 56, 0.08);
+  --shadow-md: 0 12px 32px rgba(107, 79, 56, 0.12);
+  --shadow-glow: 0 0 24px rgba(138, 72, 212, 0.2);
+}
+
+[data-theme="light"] body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+[data-theme="light"] .glass-card,
+[data-theme="light"] article,
+[data-theme="light"] .article-card {
+  box-shadow: 0 8px 24px rgba(107, 79, 56, 0.08) !important;
 }
 
 /* Global Reset & Base */
@@ -464,10 +513,42 @@ table {
     padding: 0 !important;
     width: auto !important;
   }
+
+  .nav-settings-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 12px !important;
+    height: 32px !important;
+    border-radius: 9999px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .nav-settings-btn:hover {
+    background: rgba(216, 180, 254, 0.15) !important;
+    border-color: var(--primary) !important;
+    transform: translateY(-1px);
+  }
 }
 
 /* Écrans PC compacts & Laptops (993px à 1320px) : Zéro chevauchement, alignement parfait */
 @media (min-width: 993px) and (max-width: 1320px) {
+  .nav-settings-label {
+    display: none !important;
+  }
+
+  .nav-settings-btn {
+    padding: 0 8px !important;
+    min-width: 32px !important;
+    justify-content: center !important;
+  }
   .navbar .container {
     padding: 0 10px !important;
   }
@@ -690,6 +771,23 @@ table {
     width: 100% !important;
     gap: 12px !important;
     margin-top: 8px !important;
+  }
+
+  .nav-settings-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+    height: auto !important;
+    background: rgba(216, 180, 254, 0.08) !important;
+    border: 1px solid rgba(216, 180, 254, 0.25) !important;
+    color: var(--text-main) !important;
+    margin-top: 4px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
   }
 
   /* Quick Settings (Mode Éco & Fuseaux RDC) sur Smartphone */

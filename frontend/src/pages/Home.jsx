@@ -11,20 +11,24 @@ import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 // --- Composant Ticker (Fil d'Info Continu) ---
 const Ticker = ({ items }) => {
   if (!items || items.length === 0) return null;
+  const displayItems = items.slice(0, 10);
+  // Dupliquer la liste pour un défilement infini et continu
+  const loopItems = [...displayItems, ...displayItems];
+
   return (
     <div style={styles.tickerContainer}>
       <div style={styles.tickerBadge}>FLASH INFO</div>
       <div style={styles.tickerTextWrapper}>
         <div style={styles.tickerText} className="marquee">
-          {items.slice(0, 8).map((art, idx) => (
-            <span key={art.id} style={styles.tickerItem}>
+          {loopItems.map((art, idx) => (
+            <span key={`${art.id}-${idx}`} style={styles.tickerItem}>
               <span style={styles.tickerTime}>
                 {new Date(art.publicationDate || art.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </span>
               <Link to={`/articles/${art.id}`} style={styles.tickerLink}>
                 {art.title}
               </Link>
-              {idx < Math.min(items.length, 8) - 1 && <span style={styles.tickerSeparator}>◆</span>}
+              <span style={styles.tickerSeparator}>◆</span>
             </span>
           ))}
         </div>
@@ -241,10 +245,12 @@ const Home = () => {
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
           0% { transform: translate3d(0, 0, 0); }
-          100% { transform: translate3d(-100%, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
         }
         .marquee {
-          animation: marquee 30s linear infinite;
+          display: inline-flex;
+          white-space: nowrap;
+          animation: marquee 85s linear infinite;
         }
         .marquee:hover {
           animation-play-state: paused;

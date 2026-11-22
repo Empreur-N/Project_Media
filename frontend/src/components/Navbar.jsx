@@ -4,20 +4,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useDataSaver } from '../contexts/DataSaverContext';
 import { useTimezone } from '../contexts/TimezoneContext';
-import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Zap, Clock, Bell } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Settings, UserCheck } from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import SettingsModal from './SettingsModal';
+import AgentProfileModal from './AgentProfileModal';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { playRadio, isRadioLive, isPlaying } = useAudioPlayer();
-  const { dataSaver, toggleDataSaver } = useDataSaver();
-  const { toggleTimezone, currentDetails } = useTimezone();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [pushActive, setPushActive] = useState(
-    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
-  );
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleTogglePush = async () => {
@@ -100,16 +101,16 @@ const Navbar = () => {
           {/* Main Navigation Links */}
           <div className="nav-links-container" style={styles.navLinks}>
             <Link to="/" style={styles.navLink} onClick={handleLinkClick}>
-              <Newspaper size={15} style={{ opacity: 0.8 }} /> Actualités
+              <Newspaper size={15} style={{ opacity: 0.8 }} /> {t('news')}
             </Link>
             <Link to="/search" style={styles.navLink} onClick={handleLinkClick}>
-              <Search size={15} style={{ opacity: 0.8 }} /> Recherche
+              <Search size={15} style={{ opacity: 0.8 }} /> {t('search')}
             </Link>
             <Link to="/podcasts" style={styles.navLink} onClick={handleLinkClick}>
-              <Radio size={15} style={{ opacity: 0.8 }} /> Podcasts
+              <Radio size={15} style={{ opacity: 0.8 }} /> {t('podcasts')}
             </Link>
             <Link to="/live" style={styles.navLink} onClick={handleLinkClick}>
-              <Radio size={15} style={{ opacity: 0.8 }} /> Direct
+              <Radio size={15} style={{ opacity: 0.8 }} /> {t('live')}
             </Link>
             <button 
               onClick={() => {
@@ -140,98 +141,32 @@ const Navbar = () => {
               title="Écouter la radio 24h/24 en direct"
             >
               <Radio size={14} /> 
-              <span>Radio 24/7</span>
+              <span>{t('radio')}</span>
               {isRadioLive && isPlaying && (
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)', boxShadow: '0 0 8px var(--primary)', animation: 'pulse 1.2s infinite' }} />
               )}
             </button>
             <Link to="/faq" style={styles.navLink} onClick={handleLinkClick}>
-              <HelpCircle size={15} style={{ opacity: 0.8 }} /> FAQ
+              <HelpCircle size={15} style={{ opacity: 0.8 }} /> {t('faq')}
             </Link>
           </div>
 
           {/* Right Action & User Controls Cluster */}
           <div className="nav-right-container" style={styles.navRight}>
-            {/* Quick settings: Mode Éco et Fuseau RDC */}
-            <div className="nav-settings-group" style={styles.settingsGroup}>
-              <button
-                onClick={() => {
-                  toggleDataSaver();
-                  handleLinkClick();
-                }}
-                className="nav-setting-btn"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '4px 9px',
-                  borderRadius: '9999px',
-                  background: dataSaver ? 'rgba(216, 180, 254, 0.18)' : 'rgba(107, 79, 56, 0.15)',
-                  border: dataSaver ? '1px solid rgba(216, 180, 254, 0.5)' : '1px solid var(--border-color)',
-                  color: dataSaver ? 'var(--primary)' : 'var(--text-muted)',
-                  fontSize: '10.5px',
-                  fontWeight: '800',
-                  letterSpacing: '0.06em',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  flexShrink: 0
-                }}
-                title={dataSaver ? "Mode Économie RDC activé (images allégées, flux basse conso)" : "Activer le Mode Économie de données (réseau lent RDC)"}
-              >
-                <Zap size={12} fill={dataSaver ? "var(--primary)" : "none"} />
-                <span className="nav-eco-text">{dataSaver ? "ÉCO" : "MODE ÉCO"}</span>
-              </button>
-              <button
-                onClick={toggleTimezone}
-                className="nav-setting-btn"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 9px',
-                  borderRadius: '9999px',
-                  background: 'rgba(107, 79, 56, 0.18)',
-                  border: '1px solid rgba(192, 192, 192, 0.22)',
-                  color: 'var(--argente)',
-                  fontSize: '10.5px',
-                  fontWeight: '800',
-                  letterSpacing: '0.06em',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  flexShrink: 0
-                }}
-                title="Fuseau RDC (Cliquez pour basculer entre Kinshasa GMT+1 et Lubumbashi GMT+2)"
-              >
-                <Clock size={12} />
-                <span className="nav-tz-text">{currentDetails.shortBadge} ({currentDetails.key === 'KINSHASA' ? 'Kin' : "L'shi"})</span>
-              </button>
-
-              {/* Bouton Alertes Flash Web Push */}
-              <button
-                onClick={handleTogglePush}
-                className="nav-setting-btn nav-alert-btn"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 9px',
-                  borderRadius: '9999px',
-                  background: pushActive ? 'rgba(216, 180, 254, 0.18)' : 'rgba(255, 255, 255, 0.03)',
-                  border: pushActive ? '1px solid rgba(216, 180, 254, 0.5)' : '1px solid var(--border-color)',
-                  color: pushActive ? 'var(--primary)' : 'var(--text-muted)',
-                  fontSize: '10.5px',
-                  fontWeight: '800',
-                  letterSpacing: '0.06em',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  flexShrink: 0
-                }}
-                title={pushActive ? "Alertes Flash Info activées sur votre navigateur" : "Activer les notifications push pour recevoir les alertes d'urgence"}
-              >
-                <Bell size={12} fill={pushActive ? "var(--primary)" : "none"} />
-                <span className="nav-alert-text">{pushActive ? "FLASH ON" : "ALERTES"}</span>
-              </button>
-            </div>
+            {/* Bouton Paramètres Centralisé (⚙️) */}
+            <button
+              onClick={() => {
+                setSettingsOpen(true);
+                handleLinkClick();
+              }}
+              className="nav-settings-btn"
+              style={styles.settingsBtn}
+              title={t('settings')}
+              aria-label={t('settings')}
+            >
+              <Settings size={14} style={{ color: 'var(--primary)' }} />
+              <span className="nav-settings-label">{t('settings')}</span>
+            </button>
 
             {/* Authentication & User Spaces Section */}
             {user && user.role !== 'USER' ? (
@@ -239,9 +174,22 @@ const Navbar = () => {
                 <div className="nav-user-menu" style={styles.userMenu}>
                   {/* Ligne Profil Utilisateur Staff + Cloche */}
                   <div className="nav-user-header" style={styles.userHeader}>
-                    <div style={styles.userInfo} title={`Connecté en tant que ${user.username} (${user.role})`}>
-                      <UserIcon size={13} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                      <span style={styles.username}>{user.username}</span>
+                    <div 
+                      style={{ ...styles.userInfo, cursor: 'pointer' }} 
+                      onClick={() => setProfileModalOpen(true)}
+                      title="Modifier ma photo et signature d'agent"
+                    >
+                      {user.picture ? (
+                        <img
+                          src={user.picture}
+                          alt=""
+                          style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <UserIcon size={13} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                      )}
+                      <span style={styles.username}>{user.fullName || user.username}</span>
                       <span style={styles.roleBadge}>{user.role}</span>
                     </div>
                     <NotificationBell />
@@ -255,10 +203,21 @@ const Navbar = () => {
                       style={styles.dropdownBtn}
                       title="Console Agent & Outils"
                     >
-                      <LayoutDashboard size={13} /> <span className="nav-console-text">Console</span> <ChevronDown size={12} />
+                      <LayoutDashboard size={13} /> <span className="nav-console-text">{t('console')}</span> <ChevronDown size={12} />
                     </button>
                     {dropdownOpen && (
                       <div className="console-dropdown-menu" style={styles.dropdownMenu}>
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            setProfileModalOpen(true);
+                          }}
+                          className="dropdown-item"
+                          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--primary)', fontWeight: '700' }}
+                        >
+                          <UserCheck size={14} /> {t('agentProfile')}
+                        </button>
+                        <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
                         
                         {/* Journalist shortcuts */}
                         {user.role === 'JOURNALIST' && (
@@ -350,10 +309,10 @@ const Navbar = () => {
                     onClick={handleLogout} 
                     className="btn btn-secondary logout-action-btn" 
                     style={styles.logoutBtn} 
-                    title="Se déconnecter (Déconnexion)"
+                    title={t('logout')}
                   >
                     <LogOut size={13} style={{ color: '#ef4444' }} />
-                    <span style={styles.logoutText} className="nav-logout-text">Déconnexion</span>
+                    <span style={styles.logoutText} className="nav-logout-text">{t('logout')}</span>
                   </button>
                 </div>
               </div>
@@ -384,14 +343,14 @@ const Navbar = () => {
                       {user.fullName || user.username}
                     </span>
                     <span style={styles.readerBadge}>
-                      Lecteur Vérifié
+                      {t('verifiedReader')}
                     </span>
                   </div>
                   <button 
                     onClick={handleLogout} 
                     style={styles.readerLogoutBtn}
-                    title="Se déconnecter (Lecteur)"
-                    aria-label="Se déconnecter"
+                    title={t('logout')}
+                    aria-label={t('logout')}
                   >
                     <LogOut size={12} />
                   </button>
@@ -402,6 +361,12 @@ const Navbar = () => {
 
         </div>
       </div>
+
+      {/* Centre de Contrôle & Paramètres (Langue, Thème, Fuseau, Éco, Flash) */}
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* Profil Agent & Photo */}
+      <AgentProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </nav>
   );
 };
@@ -410,7 +375,7 @@ const styles = {
   nav: {
     height: '66px',
     borderBottom: '1px solid var(--border-color)',
-    background: 'rgba(15, 13, 12, 0.88)',
+    background: 'var(--navbar-bg, rgba(15, 13, 12, 0.88))',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     position: 'sticky',
@@ -480,6 +445,24 @@ const styles = {
     gap: '8px',
     flexShrink: 0,
     marginLeft: 'auto',
+  },
+  settingsBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '0 12px',
+    height: '32px',
+    borderRadius: '9999px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid var(--border-color)',
+    color: 'var(--text-main)',
+    fontSize: '11px',
+    fontWeight: '700',
+    letterSpacing: '0.04em',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    flexShrink: 0,
+    boxSizing: 'border-box',
   },
   settingsGroup: {
     display: 'flex',
