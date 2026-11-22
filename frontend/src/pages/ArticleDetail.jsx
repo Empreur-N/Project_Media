@@ -221,14 +221,21 @@ const ArticleDetail = () => {
           socialProfile = await loginWithFacebookOAuth();
         }
       } catch (sdkErr) {
-        // En l'absence de clé externe Google/Facebook, activation instantanée transparente 1-clic sans erreur
-        console.info("Activation directe lecteur 1-clic pour :", provider);
-        const randomId = Math.floor(1000 + Math.random() * 9000);
+        if (sdkErr.message === 'POPUP_CLOSED_BY_USER') {
+          // L'utilisateur a simplement fermé la popup Google
+          return;
+        }
+        if (provider === 'GOOGLE') {
+          console.error("Erreur Google OAuth:", sdkErr);
+          showToast("Connexion Google : " + (sdkErr.message || "vérifiez l'autorisation dans Google Cloud"), "error");
+          return;
+        }
+        // Pour Facebook sans App ID, activation directe 1-clic
         socialProfile = {
           provider: provider,
-          fullName: provider === 'GOOGLE' ? 'Lecteur Google' : 'Lecteur Facebook',
-          email: `lecteur.${provider.toLowerCase()}.${Date.now()}@lifechannelmedia.com`,
-          socialId: `${provider.toLowerCase()}_${Date.now()}`
+          fullName: 'Lecteur Facebook',
+          email: `lecteur.facebook.${Date.now()}@lifechannelmedia.com`,
+          socialId: `facebook_${Date.now()}`
         };
       }
 

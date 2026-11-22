@@ -1,7 +1,9 @@
 // Service d'authentification sociale OAuth 2.0 réelle (Google Identity Services & Facebook SDK)
 
+export const DEFAULT_GOOGLE_CLIENT_ID = '1068659789768-bq0ee4rci31g58e89c4ellm53tj9snst.apps.googleusercontent.com';
+
 export const getGoogleClientId = () => {
-  return import.meta.env.VITE_GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID || localStorage.getItem('lifechannel_google_client_id') || '';
+  return import.meta.env.VITE_GOOGLE_CLIENT_ID || window.GOOGLE_CLIENT_ID || localStorage.getItem('lifechannel_google_client_id') || DEFAULT_GOOGLE_CLIENT_ID;
 };
 
 export const getFacebookAppId = () => {
@@ -56,6 +58,10 @@ export const loginWithGoogleOAuth = async (clientId = getGoogleClientId()) => {
         scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email openid',
         callback: async (tokenResponse) => {
           if (tokenResponse.error) {
+            if (tokenResponse.error === 'popup_closed_by_user') {
+              reject(new Error("POPUP_CLOSED_BY_USER"));
+              return;
+            }
             reject(new Error(tokenResponse.error_description || tokenResponse.error));
             return;
           }
