@@ -354,6 +354,52 @@ const Navbar = () => {
                 </button>
               </div>
             </div>
+          ) : user && user.role === 'USER' ? (
+            /* Profil Lecteur Citoyen connecté (Google / Facebook style Opera News) */
+            <div className="nav-auth-container" style={styles.authSection}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(192, 192, 192, 0.2)' }}>
+                <div style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #6B4F38 0%, #D8B4FE 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '800',
+                  fontSize: '11px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                }}>
+                  {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#F5F3F0', lineHeight: 1.1 }}>
+                    {user.fullName || user.username}
+                  </span>
+                  <span style={{ fontSize: '9px', color: '#D8B4FE', fontWeight: '600' }}>
+                    Lecteur Vérifié
+                  </span>
+                </div>
+                <button 
+                  onClick={handleLogout} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    padding: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginLeft: '4px',
+                    opacity: 0.85
+                  }}
+                  title="Déconnexion lecteur"
+                >
+                  <LogOut size={13} />
+                </button>
+              </div>
+            </div>
           ) : (
             /* Espace Agent discret pour visiteurs */
             <div className="nav-auth-container" style={styles.authSection}>

@@ -51,6 +51,10 @@ export const registerWithOtp = (registrationData) => {
   return apiCall('/auth/register-with-otp', 'POST', registrationData);
 };
 
+export const socialLogin = (socialData) => {
+  return apiCall('/auth/social-login', 'POST', socialData);
+};
+
 export const getProfile = (token) => {
   return apiCall('/users/me', 'GET', null, token);
 };

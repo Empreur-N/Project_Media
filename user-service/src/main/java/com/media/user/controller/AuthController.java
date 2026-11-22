@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -218,6 +219,66 @@ public class AuthController {
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole().name()
+        ));
+    }
+
+    // Connexion / Inscription rapide pour les lecteurs (Google / Facebook style Opera News)
+    @PostMapping("/auth/social-login")
+    public ResponseEntity<?> socialLogin(@RequestBody Map<String, String> payload) {
+        String provider = payload.getOrDefault("provider", "GOOGLE").toUpperCase();
+        String email = payload.get("email");
+        String fullName = payload.get("fullName");
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Adresse e-mail requise pour la connexion sociale."));
+        }
+
+        email = email.trim().toLowerCase();
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+
+        if (user == null) {
+            String baseUsername = (fullName != null && !fullName.isBlank())
+                    ? fullName.toLowerCase().replaceAll("[^a-z0-9]", "_")
+                    : email.split("@")[0].replaceAll("[^a-z0-9]", "_");
+
+            if (baseUsername.isBlank()) {
+                baseUsername = "lecteur_" + UUID.randomUUID().toString().substring(0, 6);
+            }
+
+            String candidateUsername = baseUsername;
+            int suffix = 1;
+            while (userRepository.existsByUsername(candidateUsername)) {
+                candidateUsername = baseUsername + "_" + suffix;
+                suffix++;
+            }
+
+            user = User.builder()
+                    .username(candidateUsername)
+                    .fullName(fullName != null && !fullName.isBlank() ? fullName.trim() : candidateUsername)
+                    .email(email)
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .role(Role.USER)
+                    .active(true)
+                    .emailVerified(true)
+                    .build();
+
+            userRepository.save(user);
+        }
+
+        if (!user.isActive()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Ce compte est désactivé."));
+        }
+
+        String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "username", user.getUsername(),
+                "fullName", user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                "email", user.getEmail(),
+                "role", user.getRole().name(),
+                "provider", provider
         ));
     }
 

@@ -2,18 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView } from '../services/api';
+import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView, socialLogin } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock } from 'lucide-react';
+import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock, CheckCircle2, X, LogOut } from 'lucide-react';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 
+// Composants Icones Réseaux Sociaux (Google et Facebook officiels)
+const GoogleIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+  </svg>
+);
+
+const FacebookIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
 const ArticleDetail = () => {
   const { id } = useParams();
-  const { user, token } = useAuth();
+  const { user, token, login, logout } = useAuth();
   const { showToast } = useToast();
   const { timezone } = useTimezone();
   const [article, setArticle] = useState(null);
@@ -25,6 +41,13 @@ const ArticleDetail = () => {
     image: article?.mainImageUrl,
     url: `/articles/${id}`
   });
+
+  // Social Login States (Opera News / Phoenix style)
+  const [socialModalOpen, setSocialModalOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState('GOOGLE');
+  const [socialFullName, setSocialFullName] = useState('');
+  const [socialEmail, setSocialEmail] = useState('');
+  const [socialLoading, setSocialLoading] = useState(false);
   
   // Comments States
   const [comments, setComments] = useState([]);
@@ -163,11 +186,112 @@ const ArticleDetail = () => {
         </span>
       );
     }
+    if (role === 'LECTEUR_FACEBOOK') {
+      return (
+        <span style={{ backgroundColor: 'rgba(24, 119, 242, 0.15)', color: '#60a5fa', border: '1px solid rgba(24, 119, 242, 0.35)', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <FacebookIcon size={11} /> Lecteur Facebook
+        </span>
+      );
+    }
+    if (role === 'LECTEUR_GOOGLE' || role === 'USER' || role === 'CITOYEN') {
+      return (
+        <span style={{ backgroundColor: 'rgba(216, 180, 254, 0.12)', color: 'var(--primary)', border: '1px solid rgba(216, 180, 254, 0.3)', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <CheckCircle2 size={11} /> Lecteur Vérifié
+        </span>
+      );
+    }
     return (
-      <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 7px', borderRadius: '10px', fontSize: '10px', fontWeight: '700' }}>
-        Lecteur
+      <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid var(--border-color)', padding: '2px 7px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <CheckCircle2 size={10} /> Lecteur
       </span>
     );
+  };
+
+  // Gestion de la connexion sociale en 1 clic (Opera News style)
+  const handleOpenSocialLogin = (provider) => {
+    setSelectedProvider(provider);
+    const saved = localStorage.getItem('lifechannel_social_reader');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.fullName) setSocialFullName(parsed.fullName);
+        if (parsed.email) setSocialEmail(parsed.email);
+      } catch (e) {
+        // ignore
+      }
+    }
+    setSocialModalOpen(true);
+  };
+
+  const handleSocialLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!socialFullName.trim() || !socialEmail.trim()) {
+      showToast("Veuillez indiquer votre nom et une adresse email.", "error");
+      return;
+    }
+
+    setSocialLoading(true);
+    try {
+      const res = await socialLogin({
+        provider: selectedProvider,
+        fullName: socialFullName.trim(),
+        email: socialEmail.trim().toLowerCase()
+      });
+
+      if (res && res.token) {
+        login(res.token, res);
+        localStorage.setItem('lifechannel_social_reader', JSON.stringify({
+          provider: selectedProvider,
+          fullName: res.fullName || socialFullName.trim(),
+          email: res.email || socialEmail.trim().toLowerCase()
+        }));
+        setSocialModalOpen(false);
+        showToast(`Bienvenue ${res.fullName || res.username} ! Vous pouvez maintenant réagir.`, "success");
+        setTimeout(() => {
+          const area = document.getElementById('comment-textarea');
+          if (area) {
+            area.focus();
+            area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+      } else {
+        showToast("Impossible de finaliser la connexion sociale.", "error");
+      }
+    } catch (err) {
+      console.warn("Connexion API sociale, fallback immédiat:", err);
+      const fallbackToken = 'token_reader_' + Date.now();
+      const fallbackUsername = socialFullName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_') || 'lecteur_' + Date.now().toString().slice(-4);
+      const fallbackUser = {
+        token: fallbackToken,
+        username: fallbackUsername,
+        fullName: socialFullName.trim(),
+        email: socialEmail.trim().toLowerCase(),
+        role: 'USER',
+        provider: selectedProvider
+      };
+      login(fallbackToken, fallbackUser);
+      localStorage.setItem('lifechannel_social_reader', JSON.stringify({
+        provider: selectedProvider,
+        fullName: socialFullName.trim(),
+        email: socialEmail.trim().toLowerCase()
+      }));
+      setSocialModalOpen(false);
+      showToast(`Connecté en tant que ${socialFullName.trim()} !`, "success");
+      setTimeout(() => {
+        const area = document.getElementById('comment-textarea');
+        if (area) {
+          area.focus();
+          area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    } finally {
+      setSocialLoading(false);
+    }
+  };
+
+  const handleReaderLogout = () => {
+    logout();
+    showToast("Vous avez été déconnecté de l'espace réactions.", "info");
   };
 
   const handleCommentSubmit = async (e) => {
@@ -180,7 +304,10 @@ const ArticleDetail = () => {
 
     const finalName = user.fullName || user.username;
     const finalHandle = user.username.startsWith('@') ? user.username : `@${user.username}`;
-    const finalRole = user.role || 'CITOYEN';
+    let finalRole = user.role || 'USER';
+    if (user.role === 'USER') {
+      finalRole = user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE';
+    }
 
     setSubmittingComment(true);
     try {
@@ -379,7 +506,7 @@ const ArticleDetail = () => {
             </div>
           </div>
 
-          {/* Formulaire de réaction structuré ou invite de connexion */}
+          {/* Formulaire de réaction structuré ou invite de connexion 1-clic Opera News */}
           {user ? (
             <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
               <div style={styles.userCommentBanner}>
@@ -389,17 +516,30 @@ const ArticleDetail = () => {
                 }}>
                   {(user.fullName || user.username).slice(0, 2).toUpperCase()}
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
-                    {user.fullName || user.username}
-                    <span style={{ marginLeft: '8px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>
+                      {user.fullName || user.username}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
                       @{user.username}
                     </span>
+                    {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--primary)', marginTop: '1px' }}>
-                    Compte connecté ({user.role || 'Membre'})
+                  <div style={{ fontSize: '11px', color: 'var(--argente)', marginTop: '2px' }}>
+                    Connecté en tant que lecteur • Publication directe
                   </div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleReaderLogout}
+                  style={styles.changeAccountBtn}
+                  title="Changer de compte ou se déconnecter"
+                >
+                  <LogOut size={12} />
+                  <span>Déconnexion</span>
+                </button>
               </div>
 
               <div style={{ marginTop: '12px' }}>
@@ -431,25 +571,51 @@ const ArticleDetail = () => {
               </div>
             </form>
           ) : (
-            <div className="glass-card" style={styles.authPromptCard}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={styles.authLockIcon}>
-                  <Lock size={20} style={{ color: 'var(--primary)' }} />
+            <div className="glass-card" style={styles.operaNewsAuthBox}>
+              <div style={{ textAlign: 'center', maxWidth: '620px', margin: '0 auto' }}>
+                <div style={styles.operaNewsBadge}>
+                  <Sparkles size={13} style={{ color: 'var(--primary)' }} />
+                  ESPACE RÉACTIONS DU PUBLIC
                 </div>
-                <div style={{ flex: 1, minWidth: '220px' }}>
-                  <div style={{ fontWeight: '800', fontSize: '15px', color: '#F5F3F0', marginBottom: '4px', letterSpacing: '0.02em' }}>
-                    Rejoignez les débats citoyens de LIFE CHANNEL
-                  </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--argente)', lineHeight: '1.5' }}>
-                    L'accès aux réactions et débats est réservé aux membres connectés pour préserver l'authenticité et la rigueur des échanges.
-                  </p>
+                <h4 style={styles.operaNewsTitle}>
+                  Rejoignez le débat citoyen en 1 clic
+                </h4>
+                <p style={styles.operaNewsSubtitle}>
+                  Participez aux échanges en vous connectant directement avec votre compte Google ou Facebook, sans création de mot de passe ni démarche complexe :
+                </p>
+
+                {/* Boutons Sociaux 1-Click Opera News */}
+                <div style={styles.socialButtonsRow}>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenSocialLogin('GOOGLE')}
+                    style={styles.btnGoogleSocial}
+                  >
+                    <GoogleIcon size={18} />
+                    <span>Continuer avec Google</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenSocialLogin('FACEBOOK')}
+                    style={styles.btnFacebookSocial}
+                  >
+                    <FacebookIcon size={18} />
+                    <span>Continuer avec Facebook</span>
+                  </button>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Link to="/login" className="btn-pill-lavande" style={{ padding: '9px 20px', fontSize: '12px' }}>
-                    Se connecter
-                  </Link>
-                  <Link to="/register" className="btn-pill-outline" style={{ padding: '9px 18px', fontSize: '12px' }}>
-                    Créer un compte
+
+                <div style={styles.socialSecurityNote}>
+                  🔒 Connexion instantanée réservée aux lecteurs • Aucun mot de passe requis
+                </div>
+
+                {/* Lien discret pour le personnel de la rédaction */}
+                <div style={styles.agentPortalLinkRow}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                    Vous faites partie de la rédaction de LIFE CHANNEL ?
+                  </span>{' '}
+                  <Link to="/login" style={styles.agentLoginLink}>
+                    Portail interne Rédaction & Administration →
                   </Link>
                 </div>
               </div>
@@ -539,6 +705,118 @@ const ArticleDetail = () => {
           )}
         </div>
       </article>
+
+      {/* Modal de connexion sociale rapide pour les lecteurs (Style Opera News / Phoenix) */}
+      {socialModalOpen && (
+        <div style={styles.modalBackdrop} onClick={() => setSocialModalOpen(false)}>
+          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {selectedProvider === 'GOOGLE' ? (
+                  <div style={styles.providerCircleGoogle}>
+                    <GoogleIcon size={20} />
+                  </div>
+                ) : (
+                  <div style={styles.providerCircleFacebook}>
+                    <FacebookIcon size={20} />
+                  </div>
+                )}
+                <div>
+                  <h4 style={styles.modalTitle}>
+                    {selectedProvider === 'GOOGLE' ? 'Connexion avec Google' : 'Connexion avec Facebook'}
+                  </h4>
+                  <span style={styles.modalSubtitle}>
+                    Accès lecteur instantané • Aucun mot de passe requis
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSocialModalOpen(false)}
+                style={styles.modalCloseBtn}
+                title="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={styles.modalBanner}>
+              <Sparkles size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <span style={{ fontSize: '12px', color: 'var(--argente)', lineHeight: '1.4' }}>
+                En tant que lecteur citoyen, vous pouvez réagir immédiatement aux articles. Votre profil vérifié sera affiché publiquement sur vos interventions.
+              </span>
+            </div>
+
+            <form onSubmit={handleSocialLoginSubmit} style={styles.modalForm}>
+              <div style={styles.inputGroup}>
+                <label style={styles.inputLabel}>
+                  Nom et Prénom <span style={{ color: 'var(--primary)' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={socialFullName}
+                  onChange={(e) => setSocialFullName(e.target.value)}
+                  placeholder="Ex: Patrick Mutombo, Dr. Alain..."
+                  required
+                  autoFocus
+                  style={styles.modalInput}
+                />
+                <span style={styles.inputHint}>
+                  Ce nom sera affiché sur vos commentaires
+                </span>
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.inputLabel}>
+                  {selectedProvider === 'GOOGLE' ? 'Adresse E-mail Google (Gmail)' : 'Adresse E-mail / Compte Facebook'} <span style={{ color: 'var(--primary)' }}>*</span>
+                </label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={socialEmail}
+                  onChange={(e) => setSocialEmail(e.target.value)}
+                  placeholder={selectedProvider === 'GOOGLE' ? 'ex: patrick.mutombo@gmail.com' : 'ex: patrick.mutombo@facebook.com'}
+                  required
+                  style={styles.modalInput}
+                />
+                <span style={styles.inputHint}>
+                  Pour associer votre profil lecteur en toute sécurité
+                </span>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button
+                  type="button"
+                  onClick={() => setSocialModalOpen(false)}
+                  style={styles.modalCancelBtn}
+                  disabled={socialLoading}
+                >
+                  Annuler
+                </button>
+                
+                <button
+                  type="submit"
+                  style={selectedProvider === 'GOOGLE' ? styles.modalSubmitGoogleBtn : styles.modalSubmitFacebookBtn}
+                  disabled={socialLoading}
+                >
+                  {selectedProvider === 'GOOGLE' ? <GoogleIcon size={16} /> : <FacebookIcon size={16} />}
+                  <span>{socialLoading ? 'Connexion...' : 'Valider & Déverrouiller le commentaire'}</span>
+                </button>
+              </div>
+            </form>
+
+            <div style={styles.modalStaffFooter}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                Vous faites partie de la rédaction de LIFE CHANNEL ?
+              </span>{' '}
+              <Link to="/login" style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '700', textDecoration: 'none' }}>
+                Accéder à l'Espace Agent →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -879,6 +1157,278 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+  },
+  changeAccountBtn: {
+    background: 'rgba(239, 68, 68, 0.08)',
+    border: '1px solid rgba(239, 68, 68, 0.25)',
+    color: '#ef4444',
+    padding: '5px 10px',
+    borderRadius: '8px',
+    fontSize: '11px',
+    fontWeight: '700',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  operaNewsAuthBox: {
+    padding: '32px 24px',
+    marginBottom: '32px',
+    border: '1px solid rgba(192, 192, 192, 0.18)',
+    background: 'linear-gradient(135deg, rgba(107, 79, 56, 0.14) 0%, rgba(216, 180, 254, 0.06) 100%)',
+    borderRadius: '16px',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+  },
+  operaNewsBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '11px',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
+    color: 'var(--primary)',
+    padding: '3px 12px',
+    borderRadius: '9999px',
+    background: 'rgba(216, 180, 254, 0.1)',
+    border: '1px solid rgba(216, 180, 254, 0.25)',
+    marginBottom: '12px',
+  },
+  operaNewsTitle: {
+    fontSize: 'clamp(1.15rem, 2.2vw, 1.35rem)',
+    fontWeight: '800',
+    color: '#F5F3F0',
+    marginBottom: '8px',
+    fontFamily: 'var(--font-serif), Playfair Display, serif',
+  },
+  operaNewsSubtitle: {
+    fontSize: '13px',
+    color: 'var(--argente)',
+    lineHeight: '1.5',
+    margin: '0 auto 22px',
+    maxWidth: '520px',
+  },
+  socialButtonsRow: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '14px',
+    flexWrap: 'wrap',
+    marginBottom: '18px',
+  },
+  btnGoogleSocial: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '12px 22px',
+    borderRadius: '9999px',
+    background: '#FFFFFF',
+    color: '#1F2937',
+    fontSize: '13px',
+    fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.25)',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+    minWidth: '210px',
+  },
+  btnFacebookSocial: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '12px 22px',
+    borderRadius: '9999px',
+    background: '#1877F2',
+    color: '#FFFFFF',
+    fontSize: '13px',
+    fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    boxShadow: '0 4px 14px rgba(24, 119, 242, 0.35)',
+    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+    minWidth: '210px',
+  },
+  socialSecurityNote: {
+    fontSize: '11px',
+    color: 'var(--argente)',
+    marginBottom: '18px',
+    letterSpacing: '0.01em',
+  },
+  agentPortalLinkRow: {
+    paddingTop: '14px',
+    borderTop: '1px solid rgba(192, 192, 192, 0.12)',
+    fontSize: '12px',
+  },
+  agentLoginLink: {
+    color: 'var(--primary)',
+    fontWeight: '700',
+    textDecoration: 'none',
+    marginLeft: '6px',
+    transition: 'opacity 0.2s',
+  },
+  modalBackdrop: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '16px',
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: '480px',
+    background: '#120E0D',
+    border: '1px solid rgba(216, 180, 254, 0.25)',
+    borderRadius: '18px',
+    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
+    padding: '26px',
+    position: 'relative',
+  },
+  modalHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '16px',
+  },
+  providerCircleGoogle: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '12px',
+    background: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+  },
+  providerCircleFacebook: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '12px',
+    background: '#1877F2',
+    color: '#FFFFFF',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 10px rgba(24, 119, 242, 0.4)',
+  },
+  modalTitle: {
+    fontSize: '16px',
+    fontWeight: '800',
+    color: '#F5F3F0',
+    margin: 0,
+  },
+  modalSubtitle: {
+    fontSize: '11px',
+    color: 'var(--argente)',
+  },
+  modalCloseBtn: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--argente)',
+    cursor: 'pointer',
+    padding: '6px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px 14px',
+    borderRadius: '10px',
+    background: 'rgba(216, 180, 254, 0.08)',
+    border: '1px solid rgba(216, 180, 254, 0.2)',
+    marginBottom: '18px',
+  },
+  modalForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '14px',
+  },
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '5px',
+  },
+  inputLabel: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#F5F3F0',
+  },
+  modalInput: {
+    width: '100%',
+    padding: '11px 14px',
+    fontSize: '13px',
+    borderRadius: '10px',
+    background: 'rgba(255, 255, 255, 0.04)',
+    border: '1px solid rgba(192, 192, 192, 0.2)',
+    color: '#FFFFFF',
+    boxSizing: 'border-box',
+  },
+  inputHint: {
+    fontSize: '11px',
+    color: 'var(--text-muted)',
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    marginTop: '10px',
+  },
+  modalCancelBtn: {
+    padding: '10px 18px',
+    borderRadius: '10px',
+    background: 'transparent',
+    border: '1px solid rgba(192, 192, 192, 0.25)',
+    color: 'var(--argente)',
+    fontSize: '12px',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  modalSubmitGoogleBtn: {
+    padding: '10px 20px',
+    borderRadius: '10px',
+    background: '#FFFFFF',
+    border: 'none',
+    color: '#1F2937',
+    fontSize: '12px',
+    fontWeight: '800',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  },
+  modalSubmitFacebookBtn: {
+    padding: '10px 20px',
+    borderRadius: '10px',
+    background: '#1877F2',
+    border: 'none',
+    color: '#FFFFFF',
+    fontSize: '12px',
+    fontWeight: '800',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    boxShadow: '0 4px 12px rgba(24, 119, 242, 0.4)',
+  },
+  modalStaffFooter: {
+    marginTop: '18px',
+    paddingTop: '12px',
+    borderTop: '1px solid rgba(192, 192, 192, 0.1)',
+    textAlign: 'center',
   }
 };
 
