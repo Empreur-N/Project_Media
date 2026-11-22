@@ -8,5 +8,10 @@ public record RegisterRequest(
     @NotBlank @Size(min = 3, max = 50) String username,
     @NotBlank @Email String email,
     @NotBlank @Size(min = 6, max = 100) String password,
-    String role
-) {}
+    String role,
+    String fullName
+) {
+    public RegisterRequest(String username, String email, String password, String role) {
+        this(username, email, password, role, null);
+    }
+}

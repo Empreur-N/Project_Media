@@ -39,8 +39,11 @@ export const login = (username, password) => {
   return apiCall('/auth/login', 'POST', { username, password });
 };
 
-export const register = (username, email, password, role = 'USER') => {
-  return apiCall('/auth/register', 'POST', { username, email, password, role });
+export const register = (usernameOrData, email, password, role = 'USER', fullName = '') => {
+  if (typeof usernameOrData === 'object' && usernameOrData !== null) {
+    return apiCall('/auth/register', 'POST', usernameOrData);
+  }
+  return apiCall('/auth/register', 'POST', { username: usernameOrData, email, password, role, fullName });
 };
 
 export const sendOtp = (email) => {

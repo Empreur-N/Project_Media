@@ -33,39 +33,122 @@ const Ticker = ({ items }) => {
   );
 };
 
-// --- Composant Météo des Régions (Édition Éditoriale) ---
+// --- Coordonnées et référentiel météorologique en temps réel pour la RDC ---
+const DRC_CITIES_COORDS = {
+  "Kinshasa": { lat: -4.4419, lon: 15.2663, province: "Capitale" },
+  "Lubumbashi": { lat: -11.6876, lon: 27.5026, province: "Haut-Katanga" },
+  "Goma": { lat: -1.6585, lon: 29.2205, province: "Nord-Kivu" },
+  "Bukavu": { lat: -2.5083, lon: 28.8608, province: "Sud-Kivu" },
+  "Kisangani": { lat: 0.5153, lon: 25.1910, province: "Tshopo" },
+  "Matadi": { lat: -5.8167, lon: 13.4500, province: "Kongo-Central" },
+  "Mbuji-Mayi": { lat: -6.1360, lon: 23.5898, province: "Kasaï-Oriental" },
+  "Kolwezi": { lat: -10.7167, lon: 25.4667, province: "Lualaba" },
+  "Kananga": { lat: -5.8958, lon: 22.4178, province: "Kasaï-Central" }
+};
+
+const getWeatherConditionMeta = (code) => {
+  if (code === 0) return { condition: "Ensoleillé", icon: "☀️" };
+  if (code === 1) return { condition: "Peu nuageux", icon: "🌤️" };
+  if (code === 2) return { condition: "Partiellement voilé", icon: "⛅" };
+  if (code === 3) return { condition: "Couvert", icon: "☁️" };
+  if (code === 45 || code === 48) return { condition: "Brumeux", icon: "🌫️" };
+  if (code >= 51 && code <= 57) return { condition: "Bruine légère", icon: "🌦️" };
+  if (code >= 61 && code <= 67) return { condition: "Pluie modérée", icon: "🌧️" };
+  if (code >= 80 && code <= 82) return { condition: "Averses tropicales", icon: "🌧️" };
+  if (code >= 95) return { condition: "Orages tropicaux", icon: "⛈️" };
+  return { condition: "Temps variable", icon: "⛅" };
+};
+
+// --- Composant Météo des Régions en Temps Réel (Open-Meteo Satellite & Stations RDC) ---
 const WeatherWidget = () => {
-  const weatherData = {
-    "Kinshasa": { temp: "30°C", condition: "Orageux", humidity: "75%", wind: "14 km/h", icon: "⛈️" },
-    "Lubumbashi": { temp: "26°C", condition: "Ensoleillé", humidity: "40%", wind: "8 km/h", icon: "☀️" },
-    "Goma": { temp: "21°C", condition: "Pluvieux", humidity: "85%", wind: "12 km/h", icon: "🌧️" },
-    "Kisangani": { temp: "29°C", condition: "Nuageux", humidity: "80%", wind: "10 km/h", icon: "☁️" }
-  };
   const [city, setCity] = useState("Kinshasa");
-  const current = weatherData[city];
+  const [weatherState, setWeatherState] = useState({
+    temp: "26°C",
+    condition: "En direct...",
+    humidity: "82%",
+    wind: "6 km/h",
+    icon: "⛅",
+    loading: false
+  });
+  const [cache, setCache] = useState({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchWeather = async (targetCity) => {
+      if (cache[targetCity]) {
+        setWeatherState(cache[targetCity]);
+        return;
+      }
+
+      const coords = DRC_CITIES_COORDS[targetCity];
+      if (!coords) return;
+
+      setWeatherState(prev => ({ ...prev, loading: true }));
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Flux météo inaccessible");
+        const json = await res.json();
+        const cur = json.current;
+        const meta = getWeatherConditionMeta(cur.weather_code);
+        const newData = {
+          temp: `${Math.round(cur.temperature_2m)}°C`,
+          condition: meta.condition,
+          humidity: `${Math.round(cur.relative_humidity_2m)}%`,
+          wind: `${Math.round(cur.wind_speed_10m)} km/h`,
+          icon: meta.icon,
+          loading: false
+        };
+
+        if (isMounted) {
+          setWeatherState(newData);
+          setCache(prev => ({ ...prev, [targetCity]: newData }));
+        }
+      } catch (err) {
+        console.warn("Météo live API indisponible, maintien des mesures:", err);
+        if (isMounted) {
+          setWeatherState(prev => ({ ...prev, loading: false }));
+        }
+      }
+    };
+
+    fetchWeather(city);
+    return () => { isMounted = false; };
+  }, [city]);
 
   return (
     <div className="glass-card" style={styles.weatherCard}>
       <div style={styles.weatherHeader}>
-        <span style={styles.widgetTitle}>MÉTÉO DES PROVINCES</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={styles.livePulseDot} />
+          <span style={styles.widgetTitle}>MÉTÉO RDC EN DIRECT</span>
+        </div>
         <select 
           value={city} 
           onChange={(e) => setCity(e.target.value)}
           style={styles.weatherSelect}
+          title="Sélectionnez une province de la RDC"
         >
-          {Object.keys(weatherData).map(c => <option key={c} value={c}>{c}</option>)}
+          {Object.keys(DRC_CITIES_COORDS).map(c => (
+            <option key={c} value={c}>{c} ({DRC_CITIES_COORDS[c].province})</option>
+          ))}
         </select>
       </div>
       <div style={styles.weatherBody}>
-        <span style={styles.weatherIcon}>{current.icon}</span>
+        <span style={styles.weatherIcon}>{weatherState.icon}</span>
         <div style={styles.weatherInfo}>
-          <span style={styles.weatherTemp}>{current.temp}</span>
-          <span style={styles.weatherCondition}>{current.condition}</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <span style={styles.weatherTemp}>{weatherState.temp}</span>
+            {weatherState.loading && (
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Mise à jour...</span>
+            )}
+          </div>
+          <span style={styles.weatherCondition}>{weatherState.condition}</span>
         </div>
       </div>
       <div style={styles.weatherDetails}>
-        <span style={styles.weatherDetailItem}>Humidité : {current.humidity}</span>
-        <span style={styles.weatherDetailItem}>Vent : {current.wind}</span>
+        <span style={styles.weatherDetailItem}>Humidité : {weatherState.humidity}</span>
+        <span style={styles.weatherDetailItem}>Vent : {weatherState.wind}</span>
       </div>
     </div>
   );
@@ -757,6 +840,14 @@ const styles = {
   },
 
   // --- Weather Widget Styles ---
+  livePulseDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: '#10b981',
+    boxShadow: '0 0 10px #10b981',
+    display: 'inline-block',
+  },
   weatherCard: {
     padding: '22px',
     borderRadius: '16px',

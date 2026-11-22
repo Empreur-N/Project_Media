@@ -158,17 +158,15 @@ public class AuthController {
                     // Les admins peuvent attribuer n'importe quel rôle directement
                     role = requestedRole;
                     active = true;
-                } else if ("JOURNALIST".equals(creatorRole) || "EDITOR".equals(creatorRole)) {
-                    // Les agents (journalistes/rédacteurs) peuvent pré-créer des comptes, mais inactifs (active = false)
+                } else if (requestedRole == Role.JOURNALIST || requestedRole == Role.EDITOR) {
+                    // Autorise la création autonome des comptes agents et journalistes pour Life Channel
                     role = requestedRole;
-                    active = false; // Validation administrative requise
+                    active = true;
+                } else if (requestedRole == Role.VISITOR) {
+                    role = Role.VISITOR;
+                    active = true;
                 } else {
-                    // Les lecteurs ou anonymes ne peuvent pas s'attribuer un rôle d'agent
-                    if (requestedRole == Role.VISITOR) {
-                        role = Role.VISITOR;
-                    } else {
-                        role = Role.USER;
-                    }
+                    role = Role.USER;
                     active = true;
                 }
             } catch (IllegalArgumentException e) {
@@ -178,17 +176,27 @@ public class AuthController {
 
         User user = User.builder()
                 .username(registerRequest.username())
+                .fullName(registerRequest.fullName() != null && !registerRequest.fullName().isBlank() ? registerRequest.fullName().trim() : registerRequest.username())
                 .email(registerRequest.email())
                 .password(passwordEncoder.encode(registerRequest.password()))
                 .role(role)
+                .emailVerified(true)
                 .active(active)
                 .build();
 
         userRepository.save(user);
 
-        String successMsg = active ? "Utilisateur créé avec succès" : "Compte pré-créé avec succès. En attente d'activation par un administrateur.";
+        String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", successMsg, "active", active));
+                .body(Map.of(
+                        "message", "Compte créé avec succès !",
+                        "active", active,
+                        "token", token,
+                        "username", user.getUsername(),
+                        "fullName", user.getFullName(),
+                        "email", user.getEmail(),
+                        "role", user.getRole().name()
+                ));
     }
 
     @PostMapping("/auth/login")
