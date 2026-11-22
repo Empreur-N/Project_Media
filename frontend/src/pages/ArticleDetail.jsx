@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView, socialLogin } from '../services/api';
+import { loginWithGoogleOAuth, loginWithFacebookOAuth } from '../services/socialAuth';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
 import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock, CheckCircle2, X, LogOut } from 'lucide-react';
@@ -42,11 +43,7 @@ const ArticleDetail = () => {
     url: `/articles/${id}`
   });
 
-  // Social Login States (Opera News / Phoenix style)
-  const [socialModalOpen, setSocialModalOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState('GOOGLE');
-  const [socialFullName, setSocialFullName] = useState('');
-  const [socialEmail, setSocialEmail] = useState('');
+  // État de chargement de l'authentification sociale directe (Google / Facebook)
   const [socialLoading, setSocialLoading] = useState(false);
   
   // Comments States
@@ -207,83 +204,47 @@ const ArticleDetail = () => {
     );
   };
 
-  // Gestion de la connexion sociale en 1 clic (Opera News style)
-  const handleOpenSocialLogin = (provider) => {
-    setSelectedProvider(provider);
-    const saved = localStorage.getItem('lifechannel_social_reader');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.fullName) setSocialFullName(parsed.fullName);
-        if (parsed.email) setSocialEmail(parsed.email);
-      } catch (e) {
-        // ignore
-      }
-    }
-    setSocialModalOpen(true);
-  };
-
-  const handleSocialLoginSubmit = async (e) => {
-    e.preventDefault();
-    if (!socialFullName.trim() || !socialEmail.trim()) {
-      showToast("Veuillez indiquer votre nom et une adresse email.", "error");
-      return;
-    }
-
+  // Authentification directe via la vraie page Google / Facebook (style Phoenix) sans aucun formulaire
+  const handleRealSocialLogin = async (provider) => {
     setSocialLoading(true);
     try {
-      const res = await socialLogin({
-        provider: selectedProvider,
-        fullName: socialFullName.trim(),
-        email: socialEmail.trim().toLowerCase()
-      });
+      let socialProfile = null;
+      if (provider === 'GOOGLE') {
+        socialProfile = await loginWithGoogleOAuth();
+      } else if (provider === 'FACEBOOK') {
+        socialProfile = await loginWithFacebookOAuth();
+      }
 
-      if (res && res.token) {
-        login(res.token, res);
-        localStorage.setItem('lifechannel_social_reader', JSON.stringify({
-          provider: selectedProvider,
-          fullName: res.fullName || socialFullName.trim(),
-          email: res.email || socialEmail.trim().toLowerCase()
-        }));
-        setSocialModalOpen(false);
-        showToast(`Bienvenue ${res.fullName || res.username} ! Vous pouvez maintenant réagir.`, "success");
-        setTimeout(() => {
-          const area = document.getElementById('comment-textarea');
-          if (area) {
-            area.focus();
-            area.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 150);
-      } else {
-        showToast("Impossible de finaliser la connexion sociale.", "error");
+      if (socialProfile) {
+        // Enregistre ou connecte automatiquement le lecteur sur le backend avec son profil vérifié
+        const res = await socialLogin({
+          provider: socialProfile.provider,
+          fullName: socialProfile.fullName,
+          email: socialProfile.email,
+          socialId: socialProfile.socialId
+        });
+
+        if (res && res.token) {
+          login(res.token, res);
+          showToast(`Bienvenue ${res.fullName || res.username} ! Vous êtes connecté via ${provider === 'GOOGLE' ? 'Google' : 'Facebook'}.`, "success");
+          setTimeout(() => {
+            const area = document.getElementById('comment-textarea');
+            if (area) {
+              area.focus();
+              area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 150);
+        }
       }
     } catch (err) {
-      console.warn("Connexion API sociale, fallback immédiat:", err);
-      const fallbackToken = 'token_reader_' + Date.now();
-      const fallbackUsername = socialFullName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_') || 'lecteur_' + Date.now().toString().slice(-4);
-      const fallbackUser = {
-        token: fallbackToken,
-        username: fallbackUsername,
-        fullName: socialFullName.trim(),
-        email: socialEmail.trim().toLowerCase(),
-        role: 'USER',
-        provider: selectedProvider
-      };
-      login(fallbackToken, fallbackUser);
-      localStorage.setItem('lifechannel_social_reader', JSON.stringify({
-        provider: selectedProvider,
-        fullName: socialFullName.trim(),
-        email: socialEmail.trim().toLowerCase()
-      }));
-      setSocialModalOpen(false);
-      showToast(`Connecté en tant que ${socialFullName.trim()} !`, "success");
-      setTimeout(() => {
-        const area = document.getElementById('comment-textarea');
-        if (area) {
-          area.focus();
-          area.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 150);
+      console.error("Erreur connexion sociale:", err);
+      if (err.message === 'GOOGLE_CLIENT_ID_MISSING') {
+        showToast("Configuration Google : ajoutez votre Google Client ID pour ouvrir la vraie fenêtre.", "error");
+      } else if (err.message === 'FACEBOOK_APP_ID_MISSING') {
+        showToast("Configuration Facebook : ajoutez votre Facebook App ID pour ouvrir la vraie fenêtre.", "error");
+      } else {
+        showToast("Authentification interrompue : " + (err.message || "fenêtre fermée"), "error");
+      }
     } finally {
       setSocialLoading(false);
     }
@@ -584,24 +545,26 @@ const ArticleDetail = () => {
                   Participez aux échanges en vous connectant directement avec votre compte Google ou Facebook, sans création de mot de passe ni démarche complexe :
                 </p>
 
-                {/* Boutons Sociaux 1-Click Opera News */}
+                {/* Boutons Sociaux 1-Click Authentification Directe Google / Facebook */}
                 <div style={styles.socialButtonsRow}>
                   <button
                     type="button"
-                    onClick={() => handleOpenSocialLogin('GOOGLE')}
+                    onClick={() => handleRealSocialLogin('GOOGLE')}
                     style={styles.btnGoogleSocial}
+                    disabled={socialLoading}
                   >
                     <GoogleIcon size={18} />
-                    <span>Continuer avec Google</span>
+                    <span>{socialLoading ? 'Connexion en cours...' : 'Continuer avec Google'}</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => handleOpenSocialLogin('FACEBOOK')}
+                    onClick={() => handleRealSocialLogin('FACEBOOK')}
                     style={styles.btnFacebookSocial}
+                    disabled={socialLoading}
                   >
                     <FacebookIcon size={18} />
-                    <span>Continuer avec Facebook</span>
+                    <span>{socialLoading ? 'Connexion en cours...' : 'Continuer avec Facebook'}</span>
                   </button>
                 </div>
 
@@ -695,109 +658,6 @@ const ArticleDetail = () => {
           )}
         </div>
       </article>
-
-      {/* Modal de connexion sociale rapide pour les lecteurs (Style Opera News / Phoenix) */}
-      {socialModalOpen && (
-        <div style={styles.modalBackdrop} onClick={() => setSocialModalOpen(false)}>
-          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {selectedProvider === 'GOOGLE' ? (
-                  <div style={styles.providerCircleGoogle}>
-                    <GoogleIcon size={20} />
-                  </div>
-                ) : (
-                  <div style={styles.providerCircleFacebook}>
-                    <FacebookIcon size={20} />
-                  </div>
-                )}
-                <div>
-                  <h4 style={styles.modalTitle}>
-                    {selectedProvider === 'GOOGLE' ? 'Connexion avec Google' : 'Connexion avec Facebook'}
-                  </h4>
-                  <span style={styles.modalSubtitle}>
-                    Accès lecteur instantané • Aucun mot de passe requis
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSocialModalOpen(false)}
-                style={styles.modalCloseBtn}
-                title="Fermer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={styles.modalBanner}>
-              <Sparkles size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', color: 'var(--argente)', lineHeight: '1.4' }}>
-                En tant que lecteur citoyen, vous pouvez réagir immédiatement aux articles. Votre profil vérifié sera affiché publiquement sur vos interventions.
-              </span>
-            </div>
-
-            <form onSubmit={handleSocialLoginSubmit} style={styles.modalForm}>
-              <div style={styles.inputGroup}>
-                <label style={styles.inputLabel}>
-                  Nom et Prénom <span style={{ color: 'var(--primary)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={socialFullName}
-                  onChange={(e) => setSocialFullName(e.target.value)}
-                  placeholder="Ex: Patrick Mutombo, Dr. Alain..."
-                  required
-                  autoFocus
-                  style={styles.modalInput}
-                />
-                <span style={styles.inputHint}>
-                  Ce nom sera affiché sur vos commentaires
-                </span>
-              </div>
-
-              <div style={styles.inputGroup}>
-                <label style={styles.inputLabel}>
-                  {selectedProvider === 'GOOGLE' ? 'Adresse E-mail Google (Gmail)' : 'Adresse E-mail / Compte Facebook'} <span style={{ color: 'var(--primary)' }}>*</span>
-                </label>
-                <input
-                  type="email"
-                  className="form-input"
-                  value={socialEmail}
-                  onChange={(e) => setSocialEmail(e.target.value)}
-                  placeholder={selectedProvider === 'GOOGLE' ? 'ex: patrick.mutombo@gmail.com' : 'ex: patrick.mutombo@facebook.com'}
-                  required
-                  style={styles.modalInput}
-                />
-                <span style={styles.inputHint}>
-                  Pour associer votre profil lecteur en toute sécurité
-                </span>
-              </div>
-
-              <div style={styles.modalActions}>
-                <button
-                  type="button"
-                  onClick={() => setSocialModalOpen(false)}
-                  style={styles.modalCancelBtn}
-                  disabled={socialLoading}
-                >
-                  Annuler
-                </button>
-                
-                <button
-                  type="submit"
-                  style={selectedProvider === 'GOOGLE' ? styles.modalSubmitGoogleBtn : styles.modalSubmitFacebookBtn}
-                  disabled={socialLoading}
-                >
-                  {selectedProvider === 'GOOGLE' ? <GoogleIcon size={16} /> : <FacebookIcon size={16} />}
-                  <span>{socialLoading ? 'Connexion...' : 'Valider & Déverrouiller le commentaire'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -1236,180 +1096,6 @@ const styles = {
     color: 'var(--argente)',
     marginBottom: '18px',
     letterSpacing: '0.01em',
-  },
-  agentPortalLinkRow: {
-    paddingTop: '14px',
-    borderTop: '1px solid rgba(192, 192, 192, 0.12)',
-    fontSize: '12px',
-  },
-  agentLoginLink: {
-    color: 'var(--primary)',
-    fontWeight: '700',
-    textDecoration: 'none',
-    marginLeft: '6px',
-    transition: 'opacity 0.2s',
-  },
-  modalBackdrop: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    padding: '16px',
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: '480px',
-    background: '#120E0D',
-    border: '1px solid rgba(216, 180, 254, 0.25)',
-    borderRadius: '18px',
-    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
-    padding: '26px',
-    position: 'relative',
-  },
-  modalHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '16px',
-  },
-  providerCircleGoogle: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '12px',
-    background: '#FFFFFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-  },
-  providerCircleFacebook: {
-    width: '38px',
-    height: '38px',
-    borderRadius: '12px',
-    background: '#1877F2',
-    color: '#FFFFFF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 10px rgba(24, 119, 242, 0.4)',
-  },
-  modalTitle: {
-    fontSize: '16px',
-    fontWeight: '800',
-    color: '#F5F3F0',
-    margin: 0,
-  },
-  modalSubtitle: {
-    fontSize: '11px',
-    color: 'var(--argente)',
-  },
-  modalCloseBtn: {
-    background: 'none',
-    border: 'none',
-    color: 'var(--argente)',
-    cursor: 'pointer',
-    padding: '6px',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalBanner: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '10px 14px',
-    borderRadius: '10px',
-    background: 'rgba(216, 180, 254, 0.08)',
-    border: '1px solid rgba(216, 180, 254, 0.2)',
-    marginBottom: '18px',
-  },
-  modalForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-  },
-  inputLabel: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#F5F3F0',
-  },
-  modalInput: {
-    width: '100%',
-    padding: '11px 14px',
-    fontSize: '13px',
-    borderRadius: '10px',
-    background: 'rgba(255, 255, 255, 0.04)',
-    border: '1px solid rgba(192, 192, 192, 0.2)',
-    color: '#FFFFFF',
-    boxSizing: 'border-box',
-  },
-  inputHint: {
-    fontSize: '11px',
-    color: 'var(--text-muted)',
-  },
-  modalActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    marginTop: '10px',
-  },
-  modalCancelBtn: {
-    padding: '10px 18px',
-    borderRadius: '10px',
-    background: 'transparent',
-    border: '1px solid rgba(192, 192, 192, 0.25)',
-    color: 'var(--argente)',
-    fontSize: '12px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  modalSubmitGoogleBtn: {
-    padding: '10px 20px',
-    borderRadius: '10px',
-    background: '#FFFFFF',
-    border: 'none',
-    color: '#1F2937',
-    fontSize: '12px',
-    fontWeight: '800',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-  },
-  modalSubmitFacebookBtn: {
-    padding: '10px 20px',
-    borderRadius: '10px',
-    background: '#1877F2',
-    border: 'none',
-    color: '#FFFFFF',
-    fontSize: '12px',
-    fontWeight: '800',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 4px 12px rgba(24, 119, 242, 0.4)',
-  },
-  modalStaffFooter: {
-    marginTop: '18px',
-    paddingTop: '12px',
-    borderTop: '1px solid rgba(192, 192, 192, 0.1)',
-    textAlign: 'center',
   }
 };
 
