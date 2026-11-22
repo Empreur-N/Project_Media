@@ -13,7 +13,9 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const profile = await getProfile(token);
-          setUser(profile);
+          const savedData = localStorage.getItem('user_data');
+          const parsedSaved = savedData ? JSON.parse(savedData) : {};
+          setUser({ ...profile, ...parsedSaved });
         } catch (error) {
           console.error("Erreur lors de la récupération du profil:", error);
           logout();
@@ -29,12 +31,16 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = (newToken, userData) => {
     localStorage.setItem('token', newToken);
+    if (userData) {
+      localStorage.setItem('user_data', JSON.stringify(userData));
+    }
     setToken(newToken);
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user_data');
     setToken(null);
     setUser(null);
   };

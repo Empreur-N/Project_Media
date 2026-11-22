@@ -357,10 +357,19 @@ const Navbar = () => {
           ) : user && user.role === 'USER' ? (
             /* Profil Lecteur Citoyen connecté (Google / Facebook style Opera News) */
             <div className="nav-auth-container" style={styles.authSection}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(192, 192, 192, 0.2)' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '9px',
+                padding: '4px 12px 4px 5px',
+                borderRadius: '24px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(216, 180, 254, 0.25)',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.25)'
+              }}>
                 <div style={{
-                  width: '26px',
-                  height: '26px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #6B4F38 0%, #D8B4FE 100%)',
                   color: '#ffffff',
@@ -369,12 +378,32 @@ const Navbar = () => {
                   justifyContent: 'center',
                   fontWeight: '800',
                   fontSize: '11px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  flexShrink: 0,
+                  overflow: 'hidden'
                 }}>
-                  {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : null}
+                  <span style={user.picture ? { display: 'none' } : {}}>
+                    {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#F5F3F0', lineHeight: 1.1 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left', minWidth: 0, lineHeight: 1.15 }}>
+                  <span style={{
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    color: '#F5F3F0',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '120px'
+                  }}>
                     {user.fullName || user.username}
                   </span>
                   <span style={{ fontSize: '9px', color: '#D8B4FE', fontWeight: '600' }}>
@@ -389,9 +418,9 @@ const Navbar = () => {
                     color: '#ef4444',
                     cursor: 'pointer',
                     padding: '2px 4px',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    marginLeft: '4px',
+                    marginLeft: '2px',
                     opacity: 0.85
                   }}
                   title="Déconnexion lecteur"

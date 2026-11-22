@@ -247,7 +247,10 @@ const ArticleDetail = () => {
         });
 
         if (res && res.token) {
-          login(res.token, res);
+          login(res.token, {
+            ...res,
+            picture: socialProfile.picture
+          });
           showToast(`Connecté avec succès via ${provider === 'GOOGLE' ? 'Google' : 'Facebook'} ! Vous pouvez publier votre avis.`, "success");
           setTimeout(() => {
             const area = document.getElementById('comment-textarea');
@@ -510,16 +513,33 @@ const ArticleDetail = () => {
           {user ? (
             <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
               <div style={styles.userCommentBanner}>
+                {/* Photo de profil / Avatar circulaire */}
                 <div style={{
                   ...styles.avatarSmall,
                   background: getAvatarGradient(user.role, user.username)
                 }}>
-                  {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt={user.fullName || user.username}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : null}
+                  <span style={user.picture ? { display: 'none' } : {}}>
+                    {(user.fullName || user.username).slice(0, 2).toUpperCase()}
+                  </span>
                 </div>
-                <div style={{ flex: 1, minWidth: '180px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' }}>
+
+                {/* Données d'identité alignées */}
+                <div style={styles.userCommentInfo}>
+                  <div style={styles.userCommentTopRow}>
+                    <strong style={styles.userCommentName}>
                       {customReaderName.trim() || user.fullName || user.username}
+                    </strong>
+                    {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
+                    <span style={styles.userCommentHandle}>
+                      @{user.username}
                     </span>
                     {user.role === 'USER' && (
                       <button
@@ -530,31 +550,19 @@ const ArticleDetail = () => {
                             setCustomReaderName(n.trim());
                           }
                         }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--argente)',
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                          padding: '0 4px',
-                          opacity: 0.8
-                        }}
+                        style={styles.editNameBtn}
                         title="Personnaliser votre nom affiché publiquement"
                       >
                         (Modifier)
                       </button>
                     )}
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
-                      @{user.username}
-                    </span>
-                    {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--argente)', marginTop: '2px' }}>
-                    Connecté en tant que lecteur • Publication directe
+                  <div style={styles.userCommentStatus}>
+                    Connecté via {user.provider === 'FACEBOOK' ? 'Facebook' : user.provider === 'GOOGLE' ? 'Google' : 'Life Channel'} • Publication directe
                   </div>
                 </div>
 
+                {/* Bouton de déconnexion aligné à droite */}
                 <button
                   type="button"
                   onClick={handleReaderLogout}
@@ -655,7 +663,7 @@ const ArticleDetail = () => {
                   <div key={com.id} className="glass-card animate-fade-in" style={styles.modernCommentCard}>
                     {/* Header de l'intervention */}
                     <div style={styles.commentHeaderRow}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                           ...styles.avatarCircle,
                           background: getAvatarGradient(meta.role, meta.handle)
@@ -663,7 +671,7 @@ const ArticleDetail = () => {
                           {meta.initials}
                         </div>
 
-                        <div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={styles.authorFullName}>{meta.name}</span>
                             <span style={styles.authorHandle}>{meta.handle}</span>
@@ -901,23 +909,71 @@ const styles = {
   userCommentBanner: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '12px 16px',
-    borderRadius: '12px',
+    gap: '14px',
+    padding: '12px 18px',
+    borderRadius: '14px',
     backgroundColor: 'rgba(216, 180, 254, 0.08)',
     border: '1px solid rgba(216, 180, 254, 0.22)',
-    marginBottom: '14px',
+    marginBottom: '16px',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
   },
   avatarSmall: {
-    width: '32px',
-    height: '32px',
+    width: '42px',
+    height: '42px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: '800',
-    fontSize: '12px',
+    fontSize: '13px',
     color: '#ffffff',
+    flexShrink: 0,
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+    border: '1.5px solid rgba(216, 180, 254, 0.35)',
+  },
+  userCommentInfo: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    gap: '4px',
+  },
+  userCommentTopRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+    lineHeight: 1.2,
+  },
+  userCommentName: {
+    fontSize: '14px',
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: '0.01em',
+  },
+  userCommentHandle: {
+    fontSize: '12px',
+    color: 'var(--text-muted)',
+    fontWeight: '500',
+  },
+  editNameBtn: {
+    background: 'none',
+    border: 'none',
+    color: 'var(--secondary)',
+    fontSize: '11px',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: '0 2px',
+    opacity: 0.85,
+    lineHeight: 1,
+  },
+  userCommentStatus: {
+    fontSize: '11px',
+    color: 'var(--argente)',
+    letterSpacing: '0.02em',
+    lineHeight: 1.2,
   },
   visitorInputsRow: {
     display: 'flex',
@@ -961,7 +1017,7 @@ const styles = {
   commentHeaderRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: '12px',
   },
   avatarCircle: {
