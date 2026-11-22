@@ -238,9 +238,9 @@ const Help = () => {
           Notre équipe technique, la direction et le secrétariat de rédaction de LIFE CHANNEL sont à votre disposition pour vous répondre directement :
         </p>
 
-        {/* Contact Numbers Row */}
+        {/* Contact Channels Row */}
         <div style={styles.contactRow}>
-          <a href="tel:+243979208109" style={styles.contactCard} title="Appeler la ligne RDC">
+          <a href="tel:+243979208109" style={styles.contactCard} title="Appeler la ligne RDC & WhatsApp">
             <div style={styles.contactIconWrap}>
               <PhoneCall size={18} />
             </div>
@@ -259,13 +259,15 @@ const Help = () => {
               <strong style={styles.contactValue}>+1 403 362-1837</strong>
             </div>
           </a>
-        </div>
 
-        {/* Email Contact */}
-        <div style={{ marginTop: '18px' }}>
-          <a href="mailto:contact@lifechannelmedia.com" style={styles.supportLink}>
-            <Mail size={15} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />
-            Contacter la rédaction : contact@lifechannelmedia.com
+          <a href="mailto:lifechannelactualites@gmail.com" style={styles.contactCard} title="Envoyer un e-mail à la rédaction">
+            <div style={styles.contactIconWrap}>
+              <Mail size={18} />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <span style={styles.contactLabel}>Email Rédaction & Actualités</span>
+              <strong style={styles.contactValue}>lifechannelactualites@gmail.com</strong>
+            </div>
           </a>
         </div>
       </div>
