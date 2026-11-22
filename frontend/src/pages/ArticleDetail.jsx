@@ -608,16 +608,6 @@ const ArticleDetail = () => {
                 <div style={styles.socialSecurityNote}>
                   🔒 Connexion instantanée réservée aux lecteurs • Aucun mot de passe requis
                 </div>
-
-                {/* Lien discret pour le personnel de la rédaction */}
-                <div style={styles.agentPortalLinkRow}>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                    Vous faites partie de la rédaction de LIFE CHANNEL ?
-                  </span>{' '}
-                  <Link to="/login" style={styles.agentLoginLink}>
-                    Portail interne Rédaction & Administration →
-                  </Link>
-                </div>
               </div>
             </div>
           )}
@@ -805,15 +795,6 @@ const ArticleDetail = () => {
                 </button>
               </div>
             </form>
-
-            <div style={styles.modalStaffFooter}>
-              <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-                Vous faites partie de la rédaction de LIFE CHANNEL ?
-              </span>{' '}
-              <Link to="/login" style={{ color: 'var(--primary)', fontSize: '11px', fontWeight: '700', textDecoration: 'none' }}>
-                Accéder à l'Espace Agent →
-              </Link>
-            </div>
           </div>
         </div>
       )}

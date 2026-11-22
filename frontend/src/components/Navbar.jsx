@@ -400,20 +400,7 @@ const Navbar = () => {
                 </button>
               </div>
             </div>
-          ) : (
-            /* Espace Agent discret pour visiteurs */
-            <div className="nav-auth-container" style={styles.authSection}>
-              <Link 
-                to="/login" 
-                style={styles.agentPillBtn}
-                title="Accès réservé aux journalistes, éditeurs et à la direction"
-                onClick={handleLinkClick}
-              >
-                <UserIcon size={13} style={{ color: 'var(--primary)' }} />
-                <span>ESPACE AGENT</span>
-              </Link>
-            </div>
-          )}
+          ) : null}
 
         </div>
       </div>

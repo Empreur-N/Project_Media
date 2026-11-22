@@ -76,6 +76,7 @@ function App() {
                   <Route path="/podcasts" element={<Podcasts />} />
                   <Route path="/live" element={<LiveStream />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/log" element={<Login />} />
                   <Route path="/staff" element={<Login />} />
                   <Route path="/admin/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
