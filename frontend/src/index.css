@@ -378,14 +378,103 @@ table {
 
 /* --- Media Queries --- */
 
-/* Adaptation écran PC compact & Laptops (993px à 1280px) */
-@media (min-width: 993px) and (max-width: 1280px) {
+/* ==========================================================================
+   Navigation Responsive Layout (Ultra-High-End, No Overlap Across All Screens)
+   ========================================================================== */
+
+/* Structure commune PC (>= 993px) */
+@media (min-width: 993px) {
+  .navbar .container {
+    max-width: 100% !important;
+    padding: 0 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .nav-menu-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    margin-left: 16px !important;
+    background: transparent !important;
+    position: static !important;
+    height: auto !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  .nav-links-container {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    gap: 8px !important;
+  }
+
+  .nav-right-container {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    gap: 8px !important;
+    margin-left: auto !important;
+  }
+
+  .nav-settings-group {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    gap: 5px !important;
+  }
+
+  .nav-auth-container {
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    width: auto !important;
+  }
+
+  .nav-user-menu {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+    width: auto !important;
+  }
+
+  .nav-user-header {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
+    gap: 6px !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    width: auto !important;
+  }
+}
+
+/* Écrans PC compacts & Laptops (993px à 1320px) : Zéro chevauchement, alignement parfait */
+@media (min-width: 993px) and (max-width: 1320px) {
   .navbar .container {
     padding: 0 10px !important;
   }
 
   .nav-menu-wrapper {
-    margin-left: 10px !important;
+    margin-left: 8px !important;
+    gap: 6px !important;
   }
 
   .nav-links-container {
@@ -394,39 +483,96 @@ table {
 
   .nav-links-container a,
   .nav-links-container .nav-radio-btn {
-    padding: 3px 5px !important;
-    font-size: 12px !important;
+    padding: 4px 6px !important;
+    font-size: 11px !important;
     gap: 3px !important;
+    letter-spacing: 0.04em !important;
   }
 
-  /* Cacher les icônes des liens sur PC compact pour préserver la largeur de l'écran */
+  /* Cacher les icônes des liens éditoriaux sur écran compact pour préserver ~120px */
   .nav-links-container a svg {
     display: none !important;
   }
 
+  .nav-right-container {
+    gap: 5px !important;
+  }
+
   .nav-setting-btn {
-    padding: 3px 5px !important;
+    padding: 3px 6px !important;
     font-size: 10px !important;
+    gap: 3px !important;
   }
 
-  .nav-user-header {
-    gap: 4px !important;
+  /* Sur écran compact, cacher le libellé texte Alertes et Déconnexion : icônes épurées */
+  .nav-alert-text {
+    display: none !important;
   }
 
-  /* Sur PC compact, bouton Déconnexion avec icône rouge compacte pour garantir 100% de visibilité */
   .nav-logout-text {
     display: none !important;
   }
 
   .logout-action-btn {
-    padding: 5px 8px !important;
-    min-width: 30px !important;
+    padding: 4px 8px !important;
+    min-width: 32px !important;
+    height: 32px !important;
     justify-content: center !important;
   }
 
   .console-dropdown-btn {
-    padding: 4px 7px !important;
+    padding: 4px 8px !important;
     font-size: 11px !important;
+    height: 32px !important;
+  }
+}
+
+/* Écrans moyens (1321px à 1500px) */
+@media (min-width: 1321px) and (max-width: 1500px) {
+  .navbar .container {
+    padding: 0 16px !important;
+  }
+
+  .nav-links-container {
+    gap: 7px !important;
+  }
+
+  .nav-links-container a,
+  .nav-links-container .nav-radio-btn {
+    padding: 5px 8px !important;
+    font-size: 11.5px !important;
+  }
+
+  .nav-links-container a svg {
+    display: inline-block !important;
+  }
+
+  .nav-right-container {
+    gap: 7px !important;
+  }
+
+  .nav-logout-text {
+    display: none !important;
+  }
+}
+
+/* Grands écrans PC (>= 1501px) */
+@media (min-width: 1501px) {
+  .navbar .container {
+    max-width: 1600px !important;
+    padding: 0 32px !important;
+  }
+
+  .nav-links-container {
+    gap: 12px !important;
+  }
+
+  .nav-right-container {
+    gap: 10px !important;
+  }
+
+  .nav-logout-text {
+    display: inline !important;
   }
 }
 
@@ -537,13 +683,21 @@ table {
     cursor: pointer !important;
   }
 
+  /* Conteneur groupe droit sur Smartphone */
+  .nav-right-container {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+    margin-top: 8px !important;
+  }
+
   /* Quick Settings (Mode Éco & Fuseaux RDC) sur Smartphone */
   .nav-settings-group {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
     width: 100% !important;
-    margin-top: 8px !important;
     padding-top: 14px !important;
     border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
   }
@@ -1009,20 +1163,6 @@ table {
     -webkit-line-clamp: 3 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
-  }
-
-  /* Navbar sur grand écran : ligne équilibrée avec zéro chevauchement */
-  .nav-menu-wrapper {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: nowrap !important;
-  }
-
-  .nav-links-container {
-    display: flex !important;
-    align-items: center !important;
-    gap: 14px !important;
   }
 
   .logout-action-btn:hover {

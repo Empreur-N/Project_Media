@@ -65,8 +65,9 @@ const NotificationBell = () => {
         onClick={() => setShowDropdown(!showDropdown)} 
         style={styles.bellBtn}
         title="Notifications"
+        aria-label="Notifications"
       >
-        <Bell size={20} />
+        <Bell size={15} />
         {unreadCount > 0 && (
           <span style={styles.badge}>{unreadCount}</span>
         )}
@@ -151,21 +152,26 @@ const styles = {
     alignItems: 'center',
   },
   bellBtn: {
-    background: 'none',
-    border: 'none',
+    background: 'rgba(255, 255, 255, 0.04)',
+    border: '1px solid var(--border-color)',
     color: 'var(--text-main)',
     cursor: 'pointer',
     position: 'relative',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
-    padding: '8px',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: 0,
     borderRadius: '50%',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s',
+    boxSizing: 'border-box',
+    flexShrink: 0,
   },
   badge: {
     position: 'absolute',
-    top: '2px',
-    right: '2px',
+    top: '-2px',
+    right: '-2px',
     backgroundColor: 'var(--error)',
     color: 'white',
     fontSize: '9px',
