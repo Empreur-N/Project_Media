@@ -118,7 +118,7 @@ const EditorSpace = () => {
         message: breakingMessage.trim(),
         articleId: selectedArticle ? String(selectedArticle.id) : null,
       }, token);
-      showMessage("🔴 Alerte Info diffusée en direct sur tous les écrans connectés sans rechargement !", "success");
+      showMessage("Alerte Info diffusée en direct sur tous les écrans connectés sans rechargement !", "success");
       setBreakingModalOpen(false);
       setBreakingTitle('');
       setBreakingMessage('');

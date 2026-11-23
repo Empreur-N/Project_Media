@@ -10,7 +10,7 @@ import {
   Activity, Users, FileText, Radio, PlayCircle, PlusCircle, 
   CheckCircle2, ShieldCheck, Search, Filter, Eye, Edit, 
   ExternalLink, Calendar, MapPin, Tag, UserCheck, RefreshCw,
-  Tv, MessageSquare, ArrowRight, BookOpen, Share2, Globe, Check, AlertCircle
+  Tv, MessageSquare, ArrowRight, BookOpen, Share2, Globe, Check, AlertCircle, Landmark
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -153,7 +153,9 @@ const Dashboard = () => {
           alignItems: 'center',
           gap: '16px'
         }}>
-          <div style={{ fontSize: '32px' }}>🏛️</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(216, 180, 254, 0.1)', border: '1px solid rgba(216, 180, 254, 0.25)' }}>
+            <Landmark size={26} style={{ color: 'var(--primary)' }} />
+          </div>
           <div>
             <div style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--primary)' }}>
               Cockpit de Supervision & Direction Fondatrice (Mode Consultation & Audit)
@@ -301,7 +303,7 @@ const Dashboard = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '22px' }}>🔄</span>
+              <RefreshCw size={20} style={{ color: 'var(--primary)' }} />
               <h2 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, color: 'var(--text-main)' }}>
                 Passerelle de Synchronisation Automatique des Réseaux Sociaux
               </h2>
@@ -365,8 +367,8 @@ const Dashboard = () => {
           </div>
 
           <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#1877f2' }}>
-              📲 Facebook
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#1877f2', letterSpacing: '0.04em' }}>
+              Facebook
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Webhook instantané vers l'actualité web
@@ -375,8 +377,8 @@ const Dashboard = () => {
           </div>
 
           <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#fe2c55' }}>
-              🎵 TikTok
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#fe2c55', letterSpacing: '0.04em' }}>
+              TikTok
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Vidéos courtes & buzz éditoriaux
@@ -385,8 +387,8 @@ const Dashboard = () => {
           </div>
 
           <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#e1306c' }}>
-              📸 Instagram
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#e1306c', letterSpacing: '0.04em' }}>
+              Instagram
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Photos de reportage et publications

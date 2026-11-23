@@ -15,9 +15,9 @@ const BreakingNewsBanner = () => {
         const perm = await Notification.requestPermission();
         if (perm === 'granted') {
           setPushSubscribed(true);
-          const notifTitle = '🔴 LIFE CHANNEL MEDIA';
+          const notifTitle = 'LIFE CHANNEL MEDIA';
           const notifOptions = {
-            body: '✅ Alertes Flash activées ! Vous recevrez désormais les urgences en direct sur cet appareil.',
+            body: 'Alertes Flash activées. Vous recevrez désormais les urgences en direct sur cet appareil.',
             icon: '/logo.png',
             badge: '/logo.png'
           };
@@ -50,7 +50,7 @@ const BreakingNewsBanner = () => {
 
             // Déclenchement de la notification native Web Push (Desktop & Mobile Android)
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-              const notifTitle = data.title ? `🔴 ALERTE INFO : ${data.title}` : '🔴 ALERTE INFO — LIFE CHANNEL';
+              const notifTitle = data.title ? `ALERTE INFO : ${data.title}` : 'ALERTE INFO — LIFE CHANNEL';
               const notifOptions = {
                 body: data.message || 'Information urgente en direct.',
                 icon: '/logo.png',

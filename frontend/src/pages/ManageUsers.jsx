@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUsers, updateUserActivation, updateUserRole, deleteUser, register } from '../services/api';
-import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic } from 'lucide-react';
 
 const ManageUsers = () => {
   const { token, user: currentUser } = useAuth();
@@ -276,9 +276,10 @@ const ManageUsers = () => {
             type="button"
             onClick={() => setActiveFilter('JOURNALISTS')}
             className={`btn ${activeFilter === 'JOURNALISTS' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '13px', padding: '8px 14px' }}
+            style={{ fontSize: '13px', padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            🎙️ Journalistes & Staff
+            <Mic size={14} />
+            <span>Journalistes & Staff</span>
           </button>
         </div>
 
@@ -338,8 +339,8 @@ const ManageUsers = () => {
                           {u.email}
                         </span>
                         {u.emailVerified && (
-                          <span style={{ marginLeft: '6px', fontSize: '10px', color: '#10b981', fontWeight: 'bold' }}>
-                            ✓ OTP Vérifié
+                          <span style={{ marginLeft: '6px', fontSize: '10px', color: '#10b981', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckCircle size={10} /> OTP Vérifié
                           </span>
                         )}
                       </td>

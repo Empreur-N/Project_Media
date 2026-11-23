@@ -3,18 +3,37 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { useDataSaver } from '../contexts/DataSaverContext';
-import { X, Globe, Moon, Sun, Clock, Zap, Bell, Check, Shield } from 'lucide-react';
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
+import { 
+  X, Globe, Moon, Sun, Clock, Zap, Bell, Check, ShieldCheck, 
+  Radio, SlidersHorizontal, MapPin, ExternalLink, Sparkles 
+} from 'lucide-react';
+
+const EDITIONS = [
+  { id: 'fr', code: 'FR', label: 'Français', desc: 'Édition RDC & Afrique', region: 'Kinshasa • Lubumbashi • Paris • Dakar' },
+  { id: 'en', code: 'EN', label: 'English', desc: 'International Edition', region: 'Global English Desk • London • New York' },
+  { id: 'es', code: 'ES', label: 'Español', desc: 'Edición Global', region: 'América Latina & Mundo' },
+];
 
 const SettingsModal = ({ isOpen, onClose }) => {
   const { lang, setLang, t } = useLanguage();
   const { theme, setTheme, isDark } = useTheme();
   const { toggleTimezone, currentDetails } = useTimezone();
   const { dataSaver, toggleDataSaver } = useDataSaver();
+  const { radioQuality, toggleRadioQuality } = useAudioPlayer();
 
   const [pushActive, setPushActive] = useState(
     typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
   );
   const [notificationMsg, setNotificationMsg] = useState('');
+  const [now, setNow] = useState(new Date());
+
+  // Horloge en direct dans la modale
+  useEffect(() => {
+    if (!isOpen) return;
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   // Fermer la modale avec la touche Échap
   useEffect(() => {
@@ -35,34 +54,41 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   const handleTogglePush = async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      setNotificationMsg("Votre navigateur ne prend pas en charge les alertes push.");
+      setNotificationMsg("Votre navigateur ne prend pas en charge les notifications push.");
       return;
     }
     if (Notification.permission === 'granted') {
-      setNotificationMsg("Les alertes Flash sont déjà autorisées et actives sur votre appareil.");
+      setNotificationMsg("Les alertes Flash Info sont déjà activées sur cet appareil.");
       return;
     }
     try {
       const res = await Notification.requestPermission();
       if (res === 'granted') {
         setPushActive(true);
-        setNotificationMsg("✅ Alertes Flash activées ! Vous recevrez nos breaking news en direct.");
+        setNotificationMsg("Alertes Flash activées. Vous recevrez nos urgences éditoriales en direct.");
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
           navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification('🔴 LIFE CHANNEL MEDIA', {
-              body: '✅ Alertes Flash activées avec succès !',
+            reg.showNotification('LIFE CHANNEL MEDIA', {
+              body: 'Alertes Flash Info activées avec succès.',
               icon: '/logo.png',
               badge: '/logo.png'
             });
           });
         }
       } else {
-        setNotificationMsg("Autorisation refusée dans le navigateur.");
+        setNotificationMsg("Autorisation refusée par le navigateur.");
       }
     } catch (e) {
       console.error(e);
       setNotificationMsg("Erreur lors de la configuration des notifications.");
     }
+  };
+
+  // Formatage de l'heure locale selon le fuseau
+  const formatTime = (offsetHours) => {
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const tzDate = new Date(utc + (3600000 * offsetHours));
+    return tzDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   return (
@@ -72,11 +98,11 @@ const SettingsModal = ({ isOpen, onClose }) => {
         onClick={(e) => e.stopPropagation()}
         className="glass-card animate-fade-in"
       >
-        {/* Header */}
+        {/* En-tête éditorial style France 24 */}
         <div style={styles.header}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={styles.iconCircle}>
-              <span style={{ fontSize: '18px' }}>⚙️</span>
+              <SlidersHorizontal size={18} style={{ color: 'var(--primary)' }} />
             </div>
             <div>
               <h2 style={styles.title}>{t('settingsTitle')}</h2>
@@ -89,14 +115,14 @@ const SettingsModal = ({ isOpen, onClose }) => {
             aria-label={t('close')}
             title={t('close')}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Content body */}
+        {/* Corps des réglages personnalisés */}
         <div style={styles.body}>
 
-          {/* 1. Choix de la Langue */}
+          {/* 1. Édition & Langue (Style France 24 avec codes typographiques élégants) */}
           <div style={styles.section}>
             <div style={styles.sectionHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -104,60 +130,43 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <h3 style={styles.sectionTitle}>{t('languageSection')}</h3>
               </div>
               <span style={styles.currentBadge}>
-                {lang === 'fr' ? '🇫🇷 Français' : lang === 'en' ? '🇬🇧 English' : '🇪🇸 Español'}
+                {lang.toUpperCase()} • {lang === 'fr' ? 'Français' : lang === 'en' ? 'English' : 'Español'}
               </span>
             </div>
             <p style={styles.sectionDesc}>{t('languageDesc')}</p>
             
             <div style={styles.grid3}>
-              <button
-                onClick={() => setLang('fr')}
-                style={{
-                  ...styles.choiceCard,
-                  ...(lang === 'fr' ? styles.choiceCardActive : {})
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={styles.flagEmoji}>🇫🇷</span>
-                  {lang === 'fr' && <Check size={16} style={{ color: 'var(--primary)' }} />}
-                </div>
-                <span style={styles.choiceTitle}>Français</span>
-                <span style={styles.choiceSubtitle}>Langue officielle RDC</span>
-              </button>
-
-              <button
-                onClick={() => setLang('en')}
-                style={{
-                  ...styles.choiceCard,
-                  ...(lang === 'en' ? styles.choiceCardActive : {})
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={styles.flagEmoji}>🇬🇧</span>
-                  {lang === 'en' && <Check size={16} style={{ color: 'var(--primary)' }} />}
-                </div>
-                <span style={styles.choiceTitle}>English</span>
-                <span style={styles.choiceSubtitle}>International</span>
-              </button>
-
-              <button
-                onClick={() => setLang('es')}
-                style={{
-                  ...styles.choiceCard,
-                  ...(lang === 'es' ? styles.choiceCardActive : {})
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={styles.flagEmoji}>🇪🇸</span>
-                  {lang === 'es' && <Check size={16} style={{ color: 'var(--primary)' }} />}
-                </div>
-                <span style={styles.choiceTitle}>Español</span>
-                <span style={styles.choiceSubtitle}>Hispanoamérica</span>
-              </button>
+              {EDITIONS.map((ed) => {
+                const isActive = lang === ed.id;
+                return (
+                  <button
+                    key={ed.id}
+                    onClick={() => setLang(ed.id)}
+                    style={{
+                      ...styles.choiceCard,
+                      ...(isActive ? styles.choiceCardActive : {})
+                    }}
+                    className={`settings-edition-card ${isActive ? 'active' : ''}`}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <span style={{
+                        ...styles.editionCode,
+                        backgroundColor: isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
+                        color: isActive ? '#171311' : '#F5F3F0'
+                      }}>
+                        {ed.code}
+                      </span>
+                      {isActive && <Check size={16} style={{ color: 'var(--primary)' }} />}
+                    </div>
+                    <span style={styles.choiceTitle}>{ed.label}</span>
+                    <span style={styles.choiceSubtitle}>{ed.desc}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* 2. Thème visuel (Clair / Sombre) */}
+          {/* 2. Apparence & Confort visuel (Mode Sombre Obsidian / Mode Ivoire Jour) */}
           <div style={styles.section}>
             <div style={styles.sectionHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -165,7 +174,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <h3 style={styles.sectionTitle}>{t('themeSection')}</h3>
               </div>
               <span style={styles.currentBadge}>
-                {isDark ? '🌙 Sombre' : '☀️ Clair'}
+                {isDark ? 'Obsidienne Nuit' : 'Ivoire Jour'}
               </span>
             </div>
             <p style={styles.sectionDesc}>{t('themeDesc')}</p>
@@ -176,17 +185,17 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 style={{
                   ...styles.themeCard,
                   ...(isDark ? styles.choiceCardActive : {}),
-                  background: 'linear-gradient(135deg, rgba(20, 16, 14, 0.95) 0%, rgba(10, 8, 7, 0.98) 100%)'
+                  background: 'linear-gradient(135deg, rgba(22, 17, 14, 0.96) 0%, rgba(11, 8, 7, 0.98) 100%)'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <Moon size={22} style={{ color: 'var(--primary)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Moon size={18} style={{ color: 'var(--primary)' }} />
+                    <span style={styles.choiceTitle}>{t('darkMode')}</span>
+                  </div>
                   {isDark && <Check size={16} style={{ color: 'var(--primary)' }} />}
                 </div>
-                <div style={{ marginTop: '6px' }}>
-                  <div style={styles.choiceTitle}>{t('darkMode')}</div>
-                  <div style={styles.choiceSubtitle}>{t('darkDesc')}</div>
-                </div>
+                <span style={styles.choiceSubtitle}>{t('darkDesc')}</span>
               </button>
 
               <button
@@ -199,18 +208,18 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <Sun size={22} style={{ color: '#D97706' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sun size={18} style={{ color: '#D97706' }} />
+                    <span style={{ ...styles.choiceTitle, color: '#1A1512' }}>{t('lightMode')}</span>
+                  </div>
                   {!isDark && <Check size={16} style={{ color: '#8A48D4' }} />}
                 </div>
-                <div style={{ marginTop: '6px' }}>
-                  <div style={{ ...styles.choiceTitle, color: '#1A1512' }}>{t('lightMode')}</div>
-                  <div style={{ ...styles.choiceSubtitle, color: '#6B5E52' }}>{t('lightDesc')}</div>
-                </div>
+                <span style={{ ...styles.choiceSubtitle, color: '#6B5E52' }}>{t('lightDesc')}</span>
               </button>
             </div>
           </div>
 
-          {/* 3. Fuseau Horaire RDC */}
+          {/* 3. Fuseaux Horaires Officiels RDC avec Horloge Temps Réel */}
           <div style={styles.section}>
             <div style={styles.sectionHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -218,7 +227,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <h3 style={styles.sectionTitle}>{t('timezoneSection')}</h3>
               </div>
               <span style={styles.currentBadge}>
-                {currentDetails.shortBadge} ({currentDetails.key === 'KINSHASA' ? 'Kin' : "L'shi"})
+                {currentDetails.key === 'KINSHASA' ? 'Kinshasa GMT+1' : 'Lubumbashi GMT+2'}
               </span>
             </div>
             <p style={styles.sectionDesc}>{t('timezoneDesc')}</p>
@@ -234,7 +243,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={styles.clockIcon}>🏙️</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={15} style={{ color: currentDetails.key === 'KINSHASA' ? 'var(--primary)' : 'var(--text-muted)' }} />
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.04em' }}>
+                      {formatTime(1)} (WAT)
+                    </span>
+                  </div>
                   {currentDetails.key === 'KINSHASA' && <Check size={16} style={{ color: 'var(--primary)' }} />}
                 </div>
                 <span style={styles.choiceTitle}>{t('kinshasaTz')}</span>
@@ -251,7 +265,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span style={styles.clockIcon}>⛏️</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={15} style={{ color: currentDetails.key === 'LUBUMBASHI' ? 'var(--primary)' : 'var(--text-muted)' }} />
+                    <span style={{ fontSize: '11px', fontWeight: '800', letterSpacing: '0.04em' }}>
+                      {formatTime(2)} (CAT)
+                    </span>
+                  </div>
                   {currentDetails.key === 'LUBUMBASHI' && <Check size={16} style={{ color: 'var(--primary)' }} />}
                 </div>
                 <span style={styles.choiceTitle}>{t('lubumbashiTz')}</span>
@@ -260,9 +279,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* 4. Mode Économie de Données */}
+          {/* 4. Optimisation Réseau & Forfait Mobile RDC */}
           <div style={styles.section}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={styles.subSectionRow}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flex: 1, paddingRight: '16px' }}>
                 <Zap size={18} fill={dataSaver ? 'var(--primary)' : 'none'} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
                 <div>
@@ -285,10 +304,39 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 }} />
               </button>
             </div>
+
+            {/* Qualité Audio du Direct Radio */}
+            <div style={{ ...styles.subSectionRow, marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flex: 1, paddingRight: '16px' }}>
+                <Radio size={18} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <h3 style={styles.sectionTitle}>{t('radioQualitySection')}</h3>
+                  <p style={styles.sectionDesc}>{t('radioQualityDesc')}</p>
+                </div>
+              </div>
+              <button
+                onClick={toggleRadioQuality}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '11.5px',
+                  borderRadius: '9999px',
+                  whiteSpace: 'nowrap',
+                  background: radioQuality === 'standard' ? 'rgba(216, 180, 254, 0.14)' : 'rgba(255, 255, 255, 0.06)',
+                  border: `1px solid ${radioQuality === 'standard' ? 'var(--primary)' : 'var(--border-color)'}`,
+                  color: radioQuality === 'standard' ? 'var(--primary)' : 'var(--text-main)',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                title="Basculer le débit du direct radio"
+              >
+                {radioQuality === 'standard' ? t('radioHd') : t('radioEco')}
+              </button>
+            </div>
           </div>
 
-          {/* 5. Alertes Flash Info Push */}
-          <div style={{ ...styles.section, borderBottom: 'none' }}>
+          {/* 5. Alertes d'Actualité & Flash Info */}
+          <div style={styles.section}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flex: 1, paddingRight: '16px' }}>
                 <Bell size={18} fill={pushActive ? 'var(--primary)' : 'none'} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
@@ -304,16 +352,16 @@ const SettingsModal = ({ isOpen, onClose }) => {
               </div>
               <button
                 onClick={handleTogglePush}
-                className="btn btn-secondary"
                 style={{
                   padding: '6px 14px',
                   fontSize: '11.5px',
                   borderRadius: '9999px',
                   whiteSpace: 'nowrap',
                   background: pushActive ? 'rgba(216, 180, 254, 0.18)' : 'rgba(255, 255, 255, 0.05)',
-                  borderColor: pushActive ? 'var(--primary)' : 'var(--border-color)',
+                  border: `1px solid ${pushActive ? 'var(--primary)' : 'var(--border-color)'}`,
                   color: pushActive ? 'var(--primary)' : 'var(--text-main)',
-                  fontWeight: '700'
+                  fontWeight: '700',
+                  cursor: 'pointer'
                 }}
               >
                 {pushActive ? t('alertsActive') : t('alertsInactive')}
@@ -321,12 +369,30 @@ const SettingsModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* 6. Mentions Éditoriales & Déontologie */}
+          <div style={{ ...styles.section, borderBottom: 'none', paddingBottom: 0 }}>
+            <div style={styles.aboutBox}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <ShieldCheck size={16} style={{ color: 'var(--primary)' }} />
+                <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '0.04em' }}>
+                  {t('aboutSection')}
+                </span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                  {t('aboutVersion')}
+                </span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.45', margin: 0 }}>
+                {t('aboutEditorial')}
+              </p>
+            </div>
+          </div>
+
         </div>
 
-        {/* Footer */}
+        {/* Footer avec bouton d'enregistrement élégant */}
         <div style={styles.footer}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
-            <Shield size={13} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+            <ShieldCheck size={14} style={{ color: 'var(--primary)' }} />
             <span>LIFE CHANNEL MEDIA • RDC</span>
           </div>
           <button 
@@ -349,9 +415,9 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.72)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(0, 0, 0, 0.78)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -362,11 +428,11 @@ const styles = {
   modal: {
     width: '100%',
     maxWidth: '580px',
-    maxHeight: '90vh',
-    background: 'linear-gradient(180deg, var(--bg-surface, #140F0D) 0%, var(--bg-main, #0B0807) 100%)',
+    maxHeight: '92vh',
+    background: 'linear-gradient(180deg, var(--bg-surface, #15100E) 0%, var(--bg-main, #0D0A08) 100%)',
     border: '1px solid var(--border-color, rgba(192, 192, 192, 0.2))',
     borderRadius: '20px',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(216, 180, 254, 0.12)',
+    boxShadow: '0 24px 70px rgba(0, 0, 0, 0.75), 0 0 40px rgba(216, 180, 254, 0.12)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
@@ -381,20 +447,22 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.02)',
   },
   iconCircle: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
+    width: '38px',
+    height: '38px',
+    borderRadius: '10px',
     background: 'rgba(107, 79, 56, 0.25)',
-    border: '1px solid var(--border-color)',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   title: {
-    fontSize: '16px',
+    fontSize: '15.5px',
     fontWeight: '800',
     color: 'var(--text-main, #F5F3F0)',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
     margin: 0,
     lineHeight: 1.2,
   },
@@ -404,11 +472,12 @@ const styles = {
     margin: '3px 0 0 0',
   },
   closeBtn: {
-    background: 'none',
-    border: 'none',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     color: 'var(--text-muted, #8E8A85)',
     cursor: 'pointer',
-    padding: '6px',
+    width: '32px',
+    height: '32px',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
@@ -416,18 +485,23 @@ const styles = {
     transition: 'all 0.2s',
   },
   body: {
-    padding: '16px 24px',
+    padding: '18px 24px',
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    maxHeight: 'calc(90vh - 140px)',
+    maxHeight: 'calc(92vh - 140px)',
   },
   section: {
     display: 'flex',
     flexDirection: 'column',
-    paddingBottom: '16px',
+    paddingBottom: '18px',
     borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+  },
+  subSectionRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionHeader: {
     display: 'flex',
@@ -437,24 +511,26 @@ const styles = {
   },
   sectionTitle: {
     fontSize: '13.5px',
-    fontWeight: '700',
+    fontWeight: '800',
     color: 'var(--text-main, #F5F3F0)',
+    letterSpacing: '0.02em',
     margin: 0,
   },
   currentBadge: {
     fontSize: '10px',
-    fontWeight: '700',
+    fontWeight: '800',
     color: 'var(--primary, #D8B4FE)',
     background: 'rgba(216, 180, 254, 0.12)',
-    padding: '2px 8px',
+    padding: '3px 9px',
     borderRadius: '9999px',
-    border: '1px solid rgba(216, 180, 254, 0.3)',
+    border: '1px solid rgba(216, 180, 254, 0.28)',
+    letterSpacing: '0.04em',
   },
   sectionDesc: {
     fontSize: '11.5px',
     color: 'var(--text-muted, #8E8A85)',
     margin: '0 0 12px 0',
-    lineHeight: 1.4,
+    lineHeight: 1.45,
   },
   grid3: {
     display: 'grid',
@@ -470,7 +546,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    padding: '12px',
+    padding: '12px 14px',
     borderRadius: '12px',
     background: 'rgba(255, 255, 255, 0.03)',
     border: '1px solid var(--border-color, rgba(192, 192, 192, 0.18))',
@@ -478,6 +554,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     textAlign: 'left',
+    boxSizing: 'border-box',
   },
   themeCard: {
     display: 'flex',
@@ -489,21 +566,23 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     textAlign: 'left',
+    boxSizing: 'border-box',
   },
   choiceCardActive: {
     borderColor: 'var(--primary, #D8B4FE)',
     background: 'rgba(216, 180, 254, 0.12)',
-    boxShadow: '0 0 16px rgba(216, 180, 254, 0.18)',
+    boxShadow: '0 0 18px rgba(216, 180, 254, 0.18)',
   },
-  flagEmoji: {
-    fontSize: '20px',
-  },
-  clockIcon: {
-    fontSize: '18px',
+  editionCode: {
+    fontSize: '11px',
+    fontWeight: '900',
+    padding: '3px 8px',
+    borderRadius: '6px',
+    letterSpacing: '0.08em',
   },
   choiceTitle: {
     fontSize: '12.5px',
-    fontWeight: '700',
+    fontWeight: '800',
     marginTop: '6px',
     color: 'var(--text-main, #F5F3F0)',
   },
@@ -511,7 +590,7 @@ const styles = {
     fontSize: '10px',
     color: 'var(--text-muted, #8E8A85)',
     marginTop: '2px',
-    lineHeight: 1.25,
+    lineHeight: 1.3,
   },
   toggleSwitch: {
     width: '46px',
@@ -532,6 +611,12 @@ const styles = {
     transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
   },
+  aboutBox: {
+    padding: '12px 14px',
+    borderRadius: '12px',
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.06)',
+  },
   footer: {
     display: 'flex',
     alignItems: 'center',
@@ -541,7 +626,7 @@ const styles = {
     background: 'rgba(255, 255, 255, 0.02)',
   },
   saveBtn: {
-    padding: '7px 18px',
+    padding: '8px 22px',
     fontSize: '12px',
     fontWeight: '800',
     letterSpacing: '0.04em',

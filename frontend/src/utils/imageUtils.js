@@ -8,16 +8,16 @@
 // Embedded, 100% offline SVG fallback generators by category
 export const generateCategorySvgDataUri = (category = 'Actualité') => {
   const catColors = {
-    Sport: { bg1: '#140f0c', bg2: '#2b1b14', accent: '#D8B4FE', icon: '⚽' },
-    Société: { bg1: '#140f0c', bg2: '#241a15', accent: '#C0C0C0', icon: '👥' },
-    Économie: { bg1: '#140f0c', bg2: '#352115', accent: '#D8B4FE', icon: '📈' },
-    Culture: { bg1: '#140f0c', bg2: '#2e1925', accent: '#D8B4FE', icon: '🎭' },
-    Environnement: { bg1: '#140f0c', bg2: '#1f2618', accent: '#C0C0C0', icon: '🌱' },
-    Politique: { bg1: '#140f0c', bg2: '#2c1414', accent: '#D8B4FE', icon: '🏛️' },
-    Technologie: { bg1: '#140f0c', bg2: '#1e1b2e', accent: '#D8B4FE', icon: '💻' },
-    Santé: { bg1: '#140f0c', bg2: '#182422', accent: '#C0C0C0', icon: '🏥' },
+    Sport: { bg1: '#140f0c', bg2: '#2b1b14', accent: '#D8B4FE', tag: 'SPORT' },
+    Société: { bg1: '#140f0c', bg2: '#241a15', accent: '#C0C0C0', tag: 'SOCIÉTÉ' },
+    Économie: { bg1: '#140f0c', bg2: '#352115', accent: '#D8B4FE', tag: 'ÉCONOMIE' },
+    Culture: { bg1: '#140f0c', bg2: '#2e1925', accent: '#D8B4FE', tag: 'CULTURE' },
+    Environnement: { bg1: '#140f0c', bg2: '#1f2618', accent: '#C0C0C0', tag: 'ENVIRONNEMENT' },
+    Politique: { bg1: '#140f0c', bg2: '#2c1414', accent: '#D8B4FE', tag: 'POLITIQUE' },
+    Technologie: { bg1: '#140f0c', bg2: '#1e1b2e', accent: '#D8B4FE', tag: 'TECH' },
+    Santé: { bg1: '#140f0c', bg2: '#182422', accent: '#C0C0C0', tag: 'SANTÉ' },
   };
-  const theme = catColors[category] || { bg1: '#140f0c', bg2: '#281c16', accent: '#D8B4FE', icon: '📰' };
+  const theme = catColors[category] || { bg1: '#140f0c', bg2: '#281c16', accent: '#D8B4FE', tag: 'ACTUALITÉ' };
   const label = category ? category.toUpperCase() : 'ACTUALITÉ';
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
@@ -32,8 +32,8 @@ export const generateCategorySvgDataUri = (category = 'Actualité') => {
     </defs>
     <rect width="800" height="450" fill="url(#bg)"/>
     <rect width="800" height="450" fill="url(#grid)"/>
-    <circle cx="400" cy="180" r="64" fill="rgba(255,255,255,0.05)" stroke="${theme.accent}" stroke-width="2"/>
-    <text x="400" y="195" font-size="44" text-anchor="middle" dominant-baseline="central">${theme.icon}</text>
+    <circle cx="400" cy="180" r="54" fill="rgba(255,255,255,0.04)" stroke="${theme.accent}" stroke-width="1.5"/>
+    <text x="400" y="188" font-size="28" font-weight="900" fill="${theme.accent}" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" text-anchor="middle" dominant-baseline="central" letter-spacing="3">LC</text>
     <rect x="260" y="270" width="280" height="34" rx="17" fill="rgba(0,0,0,0.45)" stroke="${theme.accent}" stroke-width="1.5"/>
     <text x="400" y="293" fill="#ffffff" font-size="14" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" text-anchor="middle" letter-spacing="2">${label}</text>
     <text x="400" y="340" fill="rgba(255,255,255,0.65)" font-size="13" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" text-anchor="middle" letter-spacing="1">LIFE CHANNEL • PORTAIL RDC</text>

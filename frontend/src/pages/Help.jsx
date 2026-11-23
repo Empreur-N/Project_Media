@@ -90,7 +90,7 @@ const Help = () => {
       },
       {
         question: "Comment fonctionne la modération des commentaires ?",
-        answer: "Les commentaires ayant atteint 5 signalements sont automatiquement suspendus de l'affichage public. Dans 'Console' ➔ 'Modération', vous pouvez soit lever le signalement pour réhabiliter le commentaire, soit le supprimer définitivement pour protéger l'espace public."
+        answer: "Les commentaires ayant atteint 5 signalements sont automatiquement suspendus de l'affichage public. Dans 'Console' > 'Modération', vous pouvez soit lever le signalement pour réhabiliter le commentaire, soit le supprimer définitivement pour protéger l'espace public."
       }
     ]
   };

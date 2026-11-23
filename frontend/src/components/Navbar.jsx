@@ -5,7 +5,7 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useDataSaver } from '../contexts/DataSaverContext';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Settings, UserCheck } from 'lucide-react';
+import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Settings, UserCheck, BarChart3, Mic, TrendingUp } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import SettingsModal from './SettingsModal';
 import AgentProfileModal from './AgentProfileModal';
@@ -34,9 +34,9 @@ const Navbar = () => {
       const res = await Notification.requestPermission();
       if (res === 'granted') {
         setPushActive(true);
-        const notifTitle = '🔴 LIFE CHANNEL MEDIA';
+        const notifTitle = 'LIFE CHANNEL MEDIA';
         const notifOptions = {
-          body: '✅ Alertes Flash activées ! Vous recevrez nos alertes urgentes et breaking news en direct.',
+          body: 'Alertes Flash activées. Vous recevrez nos alertes urgentes et breaking news en direct.',
           icon: '/logo.png',
           badge: '/logo.png'
         };
@@ -160,7 +160,7 @@ const Navbar = () => {
 
           {/* Right Action & User Controls Cluster */}
           <div className="nav-right-container" style={styles.navRight}>
-            {/* Bouton Paramètres Centralisé (⚙️) */}
+            {/* Bouton Paramètres Centralisé */}
             <button
               onClick={() => {
                 setSettingsOpen(true);
@@ -241,17 +241,17 @@ const Navbar = () => {
                         {/* Supervisor / Direction shortcuts (Fondateurs) */}
                         {user.role === 'SUPERVISOR' && (
                           <>
-                            <Link to="/admin" className="dropdown-item" onClick={handleLinkClick}>
-                              📊 Cockpit Direction & KPIs
+                            <Link to="/admin" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <BarChart3 size={14} style={{ color: 'var(--primary)' }} /> Cockpit Direction & KPIs
                             </Link>
-                            <Link to="/admin/podcasts" className="dropdown-item" onClick={handleLinkClick}>
-                              🎙️ Suivi des Podcasts
+                            <Link to="/admin/podcasts" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Mic size={14} style={{ color: 'var(--primary)' }} /> Suivi des Podcasts
                             </Link>
-                            <Link to="/admin/lives" className="dropdown-item" onClick={handleLinkClick}>
-                              📡 Suivi des Directs
+                            <Link to="/admin/lives" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Radio size={14} style={{ color: 'var(--primary)' }} /> Suivi des Directs
                             </Link>
-                            <Link to="/admin/ads" className="dropdown-item" onClick={handleLinkClick}>
-                              📈 Régie & Publicités
+                            <Link to="/admin/ads" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <TrendingUp size={14} style={{ color: 'var(--primary)' }} /> Régie & Publicités
                             </Link>
                           </>
                         )}

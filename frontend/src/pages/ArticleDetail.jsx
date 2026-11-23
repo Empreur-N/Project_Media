@@ -640,7 +640,7 @@ const ArticleDetail = () => {
                 </div>
 
                 <div style={styles.socialSecurityNote}>
-                  🔒 Connexion instantanée réservée aux lecteurs • Aucun mot de passe requis
+                  Connexion instantanée réservée aux lecteurs • Aucun mot de passe requis
                 </div>
               </div>
             </div>

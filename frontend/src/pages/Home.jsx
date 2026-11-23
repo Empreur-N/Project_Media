@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getArticles, getPopularArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search } from 'lucide-react';
+import { Calendar, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudLightning, X } from 'lucide-react';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
@@ -50,17 +50,38 @@ const DRC_CITIES_COORDS = {
   "Kananga": { lat: -5.8958, lon: 22.4178, province: "Kasaï-Central" }
 };
 
+const renderWeatherIcon = (type, size = 30) => {
+  switch (type) {
+    case 'sun':
+      return <Sun size={size} style={{ color: '#fbbf24' }} />;
+    case 'cloud-sun':
+      return <CloudSun size={size} style={{ color: '#fbbf24' }} />;
+    case 'cloud':
+      return <Cloud size={size} style={{ color: '#94a3b8' }} />;
+    case 'fog':
+      return <CloudFog size={size} style={{ color: '#cbd5e1' }} />;
+    case 'drizzle':
+      return <CloudDrizzle size={size} style={{ color: '#38bdf8' }} />;
+    case 'rain':
+      return <CloudRain size={size} style={{ color: '#60a5fa' }} />;
+    case 'thunder':
+      return <CloudLightning size={size} style={{ color: '#f59e0b' }} />;
+    default:
+      return <CloudSun size={size} style={{ color: '#94a3b8' }} />;
+  }
+};
+
 const getWeatherConditionMeta = (code) => {
-  if (code === 0) return { condition: "Ensoleillé", icon: "☀️" };
-  if (code === 1) return { condition: "Peu nuageux", icon: "🌤️" };
-  if (code === 2) return { condition: "Partiellement voilé", icon: "⛅" };
-  if (code === 3) return { condition: "Couvert", icon: "☁️" };
-  if (code === 45 || code === 48) return { condition: "Brumeux", icon: "🌫️" };
-  if (code >= 51 && code <= 57) return { condition: "Bruine légère", icon: "🌦️" };
-  if (code >= 61 && code <= 67) return { condition: "Pluie modérée", icon: "🌧️" };
-  if (code >= 80 && code <= 82) return { condition: "Averses tropicales", icon: "🌧️" };
-  if (code >= 95) return { condition: "Orages tropicaux", icon: "⛈️" };
-  return { condition: "Temps variable", icon: "⛅" };
+  if (code === 0) return { condition: "Ensoleillé", iconType: "sun" };
+  if (code === 1) return { condition: "Peu nuageux", iconType: "cloud-sun" };
+  if (code === 2) return { condition: "Partiellement voilé", iconType: "cloud-sun" };
+  if (code === 3) return { condition: "Couvert", iconType: "cloud" };
+  if (code === 45 || code === 48) return { condition: "Brumeux", iconType: "fog" };
+  if (code >= 51 && code <= 57) return { condition: "Bruine légère", iconType: "drizzle" };
+  if (code >= 61 && code <= 67) return { condition: "Pluie modérée", iconType: "rain" };
+  if (code >= 80 && code <= 82) return { condition: "Averses tropicales", iconType: "rain" };
+  if (code >= 95) return { condition: "Orages tropicaux", iconType: "thunder" };
+  return { condition: "Temps variable", iconType: "cloud-sun" };
 };
 
 // --- Composant Météo des Régions en Temps Réel (Open-Meteo Satellite & Stations RDC) ---
@@ -71,7 +92,7 @@ const WeatherWidget = () => {
     condition: "En direct...",
     humidity: "82%",
     wind: "6 km/h",
-    icon: "⛅",
+    iconType: "cloud-sun",
     loading: false
   });
   const [cache, setCache] = useState({});
@@ -100,7 +121,7 @@ const WeatherWidget = () => {
           condition: meta.condition,
           humidity: `${Math.round(cur.relative_humidity_2m)}%`,
           wind: `${Math.round(cur.wind_speed_10m)} km/h`,
-          icon: meta.icon,
+          iconType: meta.iconType,
           loading: false
         };
 
@@ -139,7 +160,9 @@ const WeatherWidget = () => {
         </select>
       </div>
       <div style={styles.weatherBody}>
-        <span style={styles.weatherIcon}>{weatherState.icon}</span>
+        <div style={{ ...styles.weatherIcon, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {renderWeatherIcon(weatherState.iconType, 34)}
+        </div>
         <div style={styles.weatherInfo}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
             <span style={styles.weatherTemp}>{weatherState.temp}</span>
@@ -469,7 +492,8 @@ const Home = () => {
                   }}
                   title="Afficher toutes les actualités à la une"
                 >
-                  ✕ Réinitialiser
+                  <X size={11} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  <span>Réinitialiser</span>
                 </button>
               </div>
             )}

@@ -108,7 +108,7 @@ const AudioPlayer = () => {
           <span style={styles.pulseRadioDot} />
           <Radio size={16} />
           <span style={styles.floatingRadioText}>
-            {isPlaying && isRadioLive ? "🔴 Radio en Direct (En cours d'écoute)" : "🎙️ Écouter la Radio en Direct 24/7"}
+            {isPlaying && isRadioLive ? "Radio en Direct (En cours d'écoute)" : "Écouter la Radio en Direct 24/7"}
           </span>
           <Play size={14} fill="currentColor" style={{ marginLeft: '4px' }} />
         </button>
