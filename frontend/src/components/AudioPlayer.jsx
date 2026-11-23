@@ -117,7 +117,7 @@ const AudioPlayer = () => {
   }
 
   return (
-    <div style={styles.playerContainer} className="glass-card">
+    <div style={styles.playerContainer} className="glass-card audio-player-fixed">
       <audio
         ref={audioRef}
         src={getMediaUrl(currentEpisode.audioUrl)}

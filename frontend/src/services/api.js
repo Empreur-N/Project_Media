@@ -131,9 +131,17 @@ export const uploadMedia = async (file, articleId = null, token = null) => {
       headers,
       body: formData,
     });
-    const data = await response.json();
+    let data = {};
+    const text = await response.text();
+    if (text && text.trim().length > 0) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { message: text };
+      }
+    }
     if (!response.ok) {
-      throw new Error(data.message || "Erreur lors de l'upload du média");
+      throw new Error(data.message || `Erreur lors de l'upload du média (${response.status})`);
     }
     return data;
   } catch (error) {

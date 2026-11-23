@@ -72,8 +72,15 @@ const Navbar = () => {
         setDropdownOpen(false);
       }
     };
+    const handleToggleMobileMenu = () => {
+      setMenuOpen(prev => !prev);
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('lc:toggle-mobile-menu', handleToggleMobileMenu);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('lc:toggle-mobile-menu', handleToggleMobileMenu);
+    };
   }, []);
 
   return (

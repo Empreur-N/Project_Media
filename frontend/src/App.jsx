@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
+import RegionFilterBar from './components/RegionFilterBar';
+import MobileBottomNav from './components/MobileBottomNav';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -68,10 +70,11 @@ function App() {
               <AudioPlayerProvider>
                 <AuthProvider>
                   <Router>
-          <div className="app-container">
-            <BreakingNewsBanner />
-            <Navbar />
-            <main className="main-content">
+              <div className="app-container">
+                <BreakingNewsBanner />
+                <Navbar />
+                <RegionFilterBar />
+                <main className="main-content">
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -154,10 +157,11 @@ function App() {
                  </Routes>
                </ErrorBoundary>
             </main>
-            <Footer />
-            <AudioPlayer />
-            <FloatingLivePlayer />
-          </div>
+                <Footer />
+                <AudioPlayer />
+                <FloatingLivePlayer />
+                <MobileBottomNav />
+              </div>
         </Router>
         </AuthProvider>
       </AudioPlayerProvider>

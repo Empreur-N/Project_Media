@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getArticles, getPopularArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
@@ -158,8 +158,58 @@ const WeatherWidget = () => {
   );
 };
 
+// --- Référentiel des rubriques régionales & thématiques (Style France 24) ---
+const TOPIC_LABELS = {
+  RDC: { label: 'RDC & Kinshasa', color: '#38bdf8' },
+  AFRIQUE: { label: 'Afrique', color: '#f59e0b' },
+  MONDE: { label: 'Monde', color: '#10b981' },
+  EUROPE: { label: 'Europe', color: '#60a5fa' },
+  AMERIQUE: { label: 'Amérique', color: '#f43f5e' },
+  ASIE: { label: 'Asie', color: '#ec4899' },
+  MOYEN_ORIENT: { label: 'Moyen-Orient', color: '#fb923c' },
+  ECONOMIE: { label: 'Économie', color: '#34d399' },
+  SPORT: { label: 'Sports', color: '#a78bfa' },
+  CULTURE: { label: 'Culture & Société', color: '#fbbf24' },
+};
+
+const matchesTopic = (art, topicKey) => {
+  if (!topicKey || topicKey === 'ALL') return true;
+  const cat = (art.category || '').toLowerCase();
+  const reg = (art.region || '').toLowerCase();
+  const txt = `${art.title || ''} ${art.summary || ''} ${art.tags || ''}`.toLowerCase();
+
+  switch (topicKey) {
+    case 'RDC':
+      return reg.includes('rdc') || reg.includes('congo') || reg.includes('kinshasa') || 
+             reg.includes('katanga') || reg.includes('kivu') || txt.includes('rdc') || txt.includes('kinshasa') || txt.includes('congo');
+    case 'AFRIQUE':
+      return reg.includes('afrique') || txt.includes('afrique') || txt.includes('african') || txt.includes('sahel') || txt.includes('nigeria') || txt.includes('sénégal') || txt.includes('cameroun') || txt.includes('kenya') || txt.includes('rwanda') || txt.includes('angola') || txt.includes('sud-africain');
+    case 'MONDE':
+      return reg.includes('monde') || reg.includes('international') || txt.includes('onu') || txt.includes('mondial') || txt.includes('international') || txt.includes('diplomatie');
+    case 'EUROPE':
+      return reg.includes('europe') || txt.includes('europe') || txt.includes('france') || txt.includes('ukraine') || txt.includes('bruxelles') || txt.includes('paris') || txt.includes('ue');
+    case 'AMERIQUE':
+      return reg.includes('amérique') || reg.includes('amerique') || txt.includes('états-unis') || txt.includes('usa') || txt.includes('washington') || txt.includes('amérique') || txt.includes('brésil');
+    case 'ASIE':
+      return reg.includes('asie') || txt.includes('asie') || txt.includes('chine') || txt.includes('pékin') || txt.includes('japon') || txt.includes('tokyo') || txt.includes('inde');
+    case 'MOYEN_ORIENT':
+      return reg.includes('moyen-orient') || txt.includes('moyen-orient') || txt.includes('gaza') || txt.includes('israël') || txt.includes('liban') || txt.includes('iran') || txt.includes('dubaï');
+    case 'ECONOMIE':
+      return cat.includes('écon') || cat.includes('econ') || txt.includes('bourse') || txt.includes('banque') || txt.includes('dollars') || txt.includes('franc congolais') || txt.includes('pib') || txt.includes('croissance');
+    case 'SPORT':
+      return cat.includes('sport') || txt.includes('football') || txt.includes('can ') || txt.includes('léopards') || txt.includes('fifa') || txt.includes('champions league') || txt.includes('match');
+    case 'CULTURE':
+      return cat.includes('cultur') || cat.includes('société') || txt.includes('musique') || txt.includes('rumba') || txt.includes('festival') || txt.includes('cinéma') || txt.includes('art');
+    default:
+      return true;
+  }
+};
+
 const Home = () => {
   const { timezone } = useTimezone();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTopic = searchParams.get('topic');
+
   const [articles, setArticles] = useState([]);
   const [popularArticles, setPopularArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -170,10 +220,19 @@ const Home = () => {
   const categories = ["Politique", "Économie", "Société", "Sport", "Culture", "Technologie", "Santé", "Environnement"];
   const regions = ["Kinshasa", "Haut-Katanga", "Lualaba", "Nord-Kivu", "Sud-Kivu", "Kongo-Central"];
 
-  const filteredArticles = articles.filter(art => 
-    (art.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     art.summary?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredArticles = articles.filter(art => {
+    const matchesSearch = !searchQuery || 
+      (art.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+       art.summary?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const topicMatches = matchesTopic(art, activeTopic);
+    return matchesSearch && topicMatches;
+  });
+
+  const displayArticles = (filteredArticles && filteredArticles.length > 0)
+    ? filteredArticles
+    : (activeTopic && activeTopic !== 'ALL'
+        ? IMPORTED_ARTICLES.filter(a => matchesTopic(a, activeTopic))
+        : filteredArticles);
 
   const getFallbackArticles = (cat, reg) => {
     let list = IMPORTED_ARTICLES;
@@ -354,8 +413,67 @@ const Home = () => {
       <div className="container" style={{ marginTop: '20px' }}>
         <AdPlacement placement="HEADER" style={{ marginBottom: '30px' }} />
 
-        <div className="home-layout" style={styles.mainLayout}>
+        <div className="home-layout" id="articles-feed" style={styles.mainLayout}>
           <div className="feed-column" style={styles.feedColumn}>
+            {/* Bannière de rubrique active sélectionnée (Style France 24) */}
+            {activeTopic && activeTopic !== 'ALL' && (
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 18px',
+                  background: 'rgba(28, 21, 18, 0.75)',
+                  border: '1px solid rgba(192, 192, 192, 0.22)',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span 
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '2px',
+                      backgroundColor: TOPIC_LABELS[activeTopic]?.color || 'var(--primary)',
+                      boxShadow: `0 0 10px ${TOPIC_LABELS[activeTopic]?.color || 'var(--primary)'}`
+                    }} 
+                  />
+                  <div>
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Rubrique : {TOPIC_LABELS[activeTopic]?.label || activeTopic}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                      ({displayArticles.length} dépêche{displayArticles.length > 1 ? 's' : ''})
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const newParams = new URLSearchParams(searchParams);
+                    newParams.delete('topic');
+                    setSearchParams(newParams);
+                  }}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '9999px',
+                    color: 'var(--primary)',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    padding: '5px 12px',
+                    transition: 'all 0.2s'
+                  }}
+                  title="Afficher toutes les actualités à la une"
+                >
+                  ✕ Réinitialiser
+                </button>
+              </div>
+            )}
+
             {loading ? (
               <div className="articles-grid" style={styles.articlesGrid}>
                 {[1, 2, 3, 4].map((i) => (
@@ -370,7 +488,7 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            ) : (!filteredArticles || filteredArticles.length === 0) ? (
+            ) : (!displayArticles || displayArticles.length === 0) ? (
               <div className="glass-card" style={styles.emptyState}>
                 <BookOpen size={48} style={{ color: 'var(--text-muted)', marginBottom: '16px' }} />
                 <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px' }}>Aucun article disponible</h3>
@@ -380,7 +498,7 @@ const Home = () => {
               </div>
             ) : (
               <div className="articles-grid" style={styles.articlesGrid}>
-                {filteredArticles.map((article) => (
+                {displayArticles.map((article) => (
                   <article key={article.id} className="glass-card article-card" style={styles.card}>
                     <div className="article-card-image-wrapper" style={styles.cardImageContainer}>
                       <img 

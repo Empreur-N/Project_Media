@@ -50,6 +50,24 @@ const translations = {
     latestArticles: 'Dernières Actualités',
     loading: 'Chargement en cours...',
 
+    // Mobile Bottom Nav & Regions
+    bottomNavTopStories: 'À la une',
+    bottomNavLive: 'Direct TV',
+    bottomNavFeed: 'En continu',
+    bottomNavReplays: 'Replays',
+    bottomNavMenu: 'Menu',
+    regionAll: 'À la une',
+    regionRdc: 'RDC & Kinshasa',
+    regionAfrica: 'Afrique',
+    regionWorld: 'Monde',
+    regionEurope: 'Europe',
+    regionAmericas: 'Amérique',
+    regionAsia: 'Asie',
+    regionMiddleEast: 'Moyen-Orient',
+    regionEconomy: 'Économie',
+    regionSports: 'Sports',
+    regionCulture: 'Culture & Société',
+
     // Agent Profile
     agentProfile: 'Mon Profil Agent',
     changePhoto: 'Modifier ma photo de profil',
@@ -107,6 +125,24 @@ const translations = {
     latestArticles: 'Latest Stories',
     loading: 'Loading content...',
 
+    // Mobile Bottom Nav & Regions
+    bottomNavTopStories: 'Top Stories',
+    bottomNavLive: 'Live TV',
+    bottomNavFeed: 'Live Feed',
+    bottomNavReplays: 'Replays',
+    bottomNavMenu: 'Menu',
+    regionAll: 'Top Stories',
+    regionRdc: 'DRC & Kinshasa',
+    regionAfrica: 'Africa',
+    regionWorld: 'World',
+    regionEurope: 'Europe',
+    regionAmericas: 'Americas',
+    regionAsia: 'Asia',
+    regionMiddleEast: 'Middle East',
+    regionEconomy: 'Economy',
+    regionSports: 'Sports',
+    regionCulture: 'Culture & Society',
+
     // Agent Profile
     agentProfile: 'My Agent Profile',
     changePhoto: 'Change profile picture',
@@ -163,6 +199,24 @@ const translations = {
     readArticle: 'Leer artículo',
     latestArticles: 'Últimas Noticias',
     loading: 'Cargando contenido...',
+
+    // Mobile Bottom Nav & Regions
+    bottomNavTopStories: 'A la una',
+    bottomNavLive: 'Directo TV',
+    bottomNavFeed: 'En continuo',
+    bottomNavReplays: 'Replays',
+    bottomNavMenu: 'Menú',
+    regionAll: 'A la una',
+    regionRdc: 'RDC y Kinshasa',
+    regionAfrica: 'África',
+    regionWorld: 'Mundo',
+    regionEurope: 'Europa',
+    regionAmericas: 'América',
+    regionAsia: 'Asia',
+    regionMiddleEast: 'Oriente Medio',
+    regionEconomy: 'Economía',
+    regionSports: 'Deportes',
+    regionCulture: 'Cultura y Sociedad',
 
     // Agent Profile
     agentProfile: 'Mi Perfil de Agente',
