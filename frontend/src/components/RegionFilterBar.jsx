@@ -24,13 +24,16 @@ const RegionFilterBar = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
-  // Masquer sur les pages d'administration et d'authentification
+  // Masquer sur les pages d'administration, d'authentification et de réglages
   if (
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/login') ||
     location.pathname.startsWith('/register') ||
     location.pathname === '/log' ||
-    location.pathname === '/staff'
+    location.pathname === '/staff' ||
+    location.pathname === '/settings' ||
+    location.pathname === '/parametres' ||
+    location.pathname === '/reglages'
   ) {
     return null;
   }

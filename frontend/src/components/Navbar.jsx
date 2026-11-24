@@ -160,20 +160,18 @@ const Navbar = () => {
 
           {/* Right Action & User Controls Cluster */}
           <div className="nav-right-container" style={styles.navRight}>
-            {/* Bouton Paramètres Centralisé */}
-            <button
-              onClick={() => {
-                setSettingsOpen(true);
-                handleLinkClick();
-              }}
+            {/* Bouton Paramètres Centralisé vers la Page Dédiée */}
+            <Link
+              to="/settings"
+              onClick={handleLinkClick}
               className="nav-settings-btn"
-              style={styles.settingsBtn}
+              style={{ ...styles.settingsBtn, textDecoration: 'none' }}
               title={t('settings')}
               aria-label={t('settings')}
             >
               <Settings size={14} style={{ color: 'var(--primary)' }} />
               <span className="nav-settings-label">{t('settings')}</span>
-            </button>
+            </Link>
 
             {/* Authentication & User Spaces Section */}
             {user && user.role !== 'USER' ? (

@@ -120,6 +120,8 @@ const Footer = () => {
             © {new Date().getFullYear()} <strong>LIFE CHANNEL</strong>.
           </p>
           <div style={styles.footerLinksRow}>
+            <Link to="/settings" style={styles.footerHelpLink}>Réglages & Préférences</Link>
+            <span style={{ color: 'var(--text-muted)', fontSize: '11px', opacity: 0.5 }}>•</span>
             <Link to="/faq" style={styles.footerHelpLink}>FAQ & Aide</Link>
             <span style={{ color: 'var(--text-muted)', fontSize: '11px', opacity: 0.5 }}>•</span>
             <Link to="/staff" style={styles.staffLink} title="Accès réservé à la rédaction et aux journalistes">

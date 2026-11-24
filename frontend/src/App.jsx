@@ -23,6 +23,7 @@ import { AudioPlayerProvider } from './contexts/AudioPlayerContext';
 import AudioPlayer from './components/AudioPlayer';
 import Footer from './components/Footer';
 import Help from './pages/Help';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import FloatingLivePlayer from './components/FloatingLivePlayer';
 import BreakingNewsBanner from './components/BreakingNewsBanner';
@@ -89,6 +90,9 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/aide" element={<Help />} />
                   <Route path="/faq" element={<Help />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/parametres" element={<Settings />} />
+                  <Route path="/reglages" element={<Settings />} />
                   <Route 
                     path="/admin" 
                     element={

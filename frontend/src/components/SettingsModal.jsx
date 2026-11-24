@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTimezone } from '../contexts/TimezoneContext';
@@ -389,12 +390,25 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
         </div>
 
-        {/* Footer avec bouton d'enregistrement élégant */}
+        {/* Footer avec bouton d'enregistrement élégant et lien vers la page complète */}
         <div style={styles.footer}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-            <ShieldCheck size={14} style={{ color: 'var(--primary)' }} />
-            <span>LIFE CHANNEL MEDIA • RDC</span>
-          </div>
+          <Link 
+            to="/settings" 
+            onClick={onClose}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px', 
+              fontSize: '11.5px', 
+              color: 'var(--primary)', 
+              fontWeight: '700',
+              textDecoration: 'none' 
+            }}
+            title="Consulter la page complète des réglages et préférences"
+          >
+            <ExternalLink size={13} />
+            <span>Ouvrir la page complète</span>
+          </Link>
           <button 
             onClick={onClose} 
             className="btn btn-primary"

@@ -1371,6 +1371,61 @@ table {
   }
 }
 
+/* ==========================================================================
+   PAGE DE RÉGLAGES & PRÉFÉRENCES ÉDITORIALES (STYLE FRANCE 24)
+   ========================================================================== */
+
+/* Adaptation dynamique de la taille de police éditoriale */
+html[data-font-size="comfort"] {
+  font-size: 17px;
+}
+
+html[data-font-size="large"] {
+  font-size: 18.5px;
+}
+
+html[data-font-size="comfort"] .article-card-summary {
+  font-size: 1.1em !important;
+  line-height: 1.65 !important;
+}
+
+html[data-font-size="large"] .article-card-summary {
+  font-size: 1.22em !important;
+  line-height: 1.75 !important;
+}
+
+.settings-card {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.settings-card:hover {
+  border-color: rgba(216, 180, 254, 0.35) !important;
+}
+
+.edition-choice-row:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(192, 192, 192, 0.28) !important;
+}
+
+.theme-selector-box:hover {
+  transform: translateY(-2px) !important;
+}
+
+.timezone-select-box:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(192, 192, 192, 0.28) !important;
+}
+
+@keyframes spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin-anim 1s linear infinite !important;
+}
+
+
 
 
 

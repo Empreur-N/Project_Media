@@ -1,34 +1,27 @@
-const CACHE_NAME = 'life-channel-v1';
+const CACHE_NAME = 'life-channel-v5';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/logo.png',
   '/manifest.json'
 ];
 
-// Installation : Mise en cache des assets statiques essentiels (App Shell)
+// Installation : Prise en charge immédiate
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
-// Activation : Nettoyage des anciens caches
+// Activation : Nettoyage immédiat et intégral de tous les anciens caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.map((key) => caches.delete(key))
       );
     })
   );
   self.clients.claim();
 });
 
-// Interception des requêtes : Stratégie Network-First avec repli Cache pour mode hors-ligne
+// Interception des requêtes : Toujours Network-First, aucune mise en cache d'index.html
 self.addEventListener('fetch', (event) => {
   const request = event.request;
 
@@ -37,10 +30,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Ne JAMAIS servir de HTML depuis le cache pour garantir que les bundles JS sont toujours à jour
+  if (request.mode === 'navigate' || request.url.endsWith('/') || request.url.includes('.html')) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/'))
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
-        // Mettre en cache la réponse fraîche pour consultation ultérieure hors-ligne
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -50,23 +50,17 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(async () => {
-        // Repli hors-ligne depuis le cache
         const cachedResponse = await caches.match(request);
         if (cachedResponse) {
           return cachedResponse;
-        }
-
-        // Si page HTML introuvable hors-ligne, renvoyer l'index
-        if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
-          return caches.match('/');
         }
       })
   );
 });
 
-// Événement Push standard (Web Push API pour Chrome Desktop & Mobile Android)
+// Événement Push standard (Web Push API sans aucun emoji)
 self.addEventListener('push', (event) => {
-  let data = { title: '🔴 ALERTE INFO — LIFE CHANNEL', message: 'Nouvelle alerte d\'actualité en direct', url: '/' };
+  let data = { title: 'ALERTE INFO — LIFE CHANNEL', message: 'Nouvelle alerte d\'actualité en direct', url: '/' };
   if (event.data) {
     try {
       data = event.data.json();
@@ -88,7 +82,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || '🔴 ALERTE FLASH INFO', options)
+    self.registration.showNotification(data.title || 'ALERTE FLASH INFO', options)
   );
 });
 
