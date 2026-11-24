@@ -3,7 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, publishArticleDirectly, uploadMedia } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
-import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy } from 'lucide-react';
+import { getMediaUrl } from '../utils/urlUtils';
+import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X } from 'lucide-react';
 
 const JournalistSpace = () => {
   const { user, token } = useAuth();
@@ -29,6 +30,7 @@ const JournalistSpace = () => {
   const [planningTimezone, setPlanningTimezone] = useState('Africa/Kinshasa');
   
   const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' }); // 'success' or 'error'
 
@@ -91,8 +93,18 @@ const JournalistSpace = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(URL.createObjectURL(file));
     }
+  };
+
+  const handleClearImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setMainImageUrl('');
   };
 
   const handleUploadImage = async () => {
@@ -103,8 +115,10 @@ const JournalistSpace = () => {
     setUploading(true);
     try {
       const media = await uploadMedia(selectedFile, null, token);
-      setMainImageUrl(media.fileUrl);
-      showMessage("Image de couverture téléchargée avec succès !");
+      if (media && media.fileUrl) {
+        setMainImageUrl(media.fileUrl);
+        showMessage("Image de couverture téléchargée avec succès !");
+      }
     } catch (error) {
       showMessage("Erreur lors du téléchargement de l'image: " + error.message, "error");
     } finally {
@@ -124,6 +138,8 @@ const JournalistSpace = () => {
     setScheduledDate('');
     setPlanningTimezone('Africa/Kinshasa');
     setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
   };
 
   const handleSave = async (e, targetStatus = 'DRAFT') => {
@@ -216,6 +232,9 @@ const JournalistSpace = () => {
     setRegion(article.region || 'Kinshasa');
     setTags(article.tags || '');
     setMainImageUrl(article.mainImageUrl || '');
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
 
     if (article.publicationDate) {
       const d = new Date(article.publicationDate);
@@ -250,14 +269,14 @@ const JournalistSpace = () => {
   };
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
+    <div className="container animate-fade-in journalist-container">
       {/* Header */}
-      <div style={styles.header}>
+      <div className="journalist-header">
         <div>
           <h1 style={styles.title}>Espace Journaliste</h1>
           <p style={styles.subtitle}>Gérez vos articles, rédigez de nouvelles actualités et suivez vos publications</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="journalist-header-actions">
           <Link 
             to="/admin/messages?category=TECH_SUPPORT" 
             className="btn btn-secondary" 
@@ -374,11 +393,11 @@ const JournalistSpace = () => {
         </div>
       ) : (
         /* Form Creation */
-        <div className="glass-card" style={styles.panel}>
+        <div className="glass-card journalist-panel">
           <h2 style={styles.panelTitle}>{articleId ? "Modifier l'article" : "Rédiger un nouvel article"}</h2>
           <form onSubmit={(e) => handleSave(e, 'PUBLISHED')}>
-            <div style={styles.formGrid}>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="journalist-form-grid">
+              <div className="form-group journalist-col-full">
                 <label className="form-label">Titre de l'article *</label>
                 <input
                   type="text"
@@ -405,7 +424,7 @@ const JournalistSpace = () => {
                 </select>
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group journalist-col-full">
                 <label className="form-label">Mots-clés (séparés par des virgules)</label>
                 <input
                   type="text"
@@ -440,32 +459,99 @@ const JournalistSpace = () => {
               </div>
 
               {/* Cover Image upload (Media Service Integration) */}
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                <label className="form-label">Image Principale / Couverture</label>
-                <div style={styles.uploadRow}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    style={styles.fileInput}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleUploadImage}
-                    className="btn btn-secondary"
-                    disabled={uploading || !selectedFile}
-                  >
-                    <ImageIcon size={16} /> {uploading ? "Upload..." : "Télécharger"}
-                  </button>
-                </div>
-                {mainImageUrl && (
-                  <div style={styles.imageUrlDisplay}>
-                    <span>URL de l'image de couverture : <code>{mainImageUrl}</code></span>
+              <div className="form-group journalist-col-full">
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Image Principale / Couverture</span>
+                  {(previewUrl || mainImageUrl) && (
+                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle size={13} /> {previewUrl ? "Nouvelle image prête" : "Image active sur le serveur"}
+                    </span>
+                  )}
+                </label>
+
+                {previewUrl || mainImageUrl ? (
+                  <div className="image-preview-card">
+                    <div className="image-preview-wrapper">
+                      <img 
+                        src={previewUrl || getMediaUrl(mainImageUrl)} 
+                        alt="Aperçu couverture" 
+                        className="image-preview-img"
+                      />
+                      <div className="image-preview-overlay">
+                        {previewUrl && (
+                          <div className="image-preview-tag">
+                            <ImageIcon size={14} /> Fichier : {selectedFile?.name} ({((selectedFile?.size || 0) / 1024).toFixed(0)} Ko)
+                          </div>
+                        )}
+                        {!previewUrl && mainImageUrl && (
+                          <div className="image-preview-tag">
+                            <CheckCircle size={14} /> Fichier serveur : {mainImageUrl.split('/').pop()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="image-preview-actions">
+                      <label htmlFor="article-cover-file" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                        <RefreshCw size={15} /> Remplacer l'image
+                        <input
+                          id="article-cover-file"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                      {selectedFile && !uploading && (
+                        <button
+                          type="button"
+                          onClick={handleUploadImage}
+                          className="btn btn-secondary"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                        >
+                          <UploadCloud size={15} /> Téléverser maintenant
+                        </button>
+                      )}
+                      {uploading && (
+                        <span style={{ fontSize: '12px', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="spin"><RefreshCw size={14} /></span> Téléversement...
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleClearImage}
+                        className="btn btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--error)' }}
+                        title="Retirer l'image"
+                      >
+                        <Trash2 size={15} /> Supprimer
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <label htmlFor="article-cover-file" className="image-dropzone">
+                    <input
+                      id="article-cover-file"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <div className="dropzone-icon-circle">
+                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: '15px', color: 'var(--text-main)' }}>
+                        Choisir une photo d'illustration pour cet article
+                      </p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Cliquez ici pour sélectionner une photo depuis votre appareil (JPG, PNG, WEBP)
+                      </p>
+                    </div>
+                  </label>
                 )}
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group journalist-col-full">
                 <label className="form-label">Résumé de l'article (max. 1000 caractères)</label>
                 <textarea
                   className="form-input"
@@ -477,7 +563,7 @@ const JournalistSpace = () => {
                 />
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group journalist-col-full">
                 <label className="form-label">Contenu de l'article *</label>
                 <textarea
                   className="form-input"
@@ -490,7 +576,7 @@ const JournalistSpace = () => {
               </div>
             </div>
 
-            <div style={styles.formActions}>
+            <div className="journalist-form-actions">
               <button type="button" className="btn btn-secondary" onClick={() => setView('list')}>
                 Annuler
               </button>

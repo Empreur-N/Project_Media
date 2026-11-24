@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { Play, Pause, Volume2, X, Music, Radio, Zap } from 'lucide-react';
 import { getMediaUrl as resolveMediaUrl } from '../utils/urlUtils';
@@ -20,6 +21,10 @@ const AudioPlayer = () => {
   const [volume, setVolume] = useState(0.8);
   const [visible, setVisible] = useState(false);
   const [coverFailed, setCoverFailed] = useState(false);
+  const location = useLocation();
+
+  // Ne pas afficher la barre flottante sur les espaces d'administration ou formulaires de rédaction
+  const isAdminOrEditor = location.pathname.startsWith('/admin') || location.pathname.startsWith('/login');
 
   // Gérer la visibilité du lecteur si un épisode ou la radio est sélectionné
   useEffect(() => {
@@ -95,6 +100,7 @@ const AudioPlayer = () => {
   };
 
   if (!visible || !currentEpisode) {
+    if (isAdminOrEditor) return null;
     return (
       <div style={styles.floatingRadioBar}>
         <button

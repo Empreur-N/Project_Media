@@ -1425,6 +1425,219 @@ html[data-font-size="large"] .article-card-summary {
   animation: spin-anim 1s linear infinite !important;
 }
 
+/* ========================================================
+   ESPACE JOURNALISTE / ÉDITEUR RESPONSIVE & IMAGE UPLOADER
+   ======================================================== */
+.journalist-container {
+  padding: 40px 24px 100px;
+}
+
+.journalist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+  gap: 16px;
+}
+
+.journalist-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.journalist-panel {
+  padding: 30px;
+}
+
+.journalist-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.journalist-col-full {
+  grid-column: span 2;
+}
+
+.journalist-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}
+
+/* Image Uploader & Preview Box */
+.image-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed rgba(192, 192, 192, 0.25);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.image-dropzone:hover {
+  background: rgba(216, 180, 254, 0.04);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.dropzone-icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(216, 180, 254, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(216, 180, 254, 0.25);
+}
+
+.image-preview-card {
+  background: rgba(20, 15, 13, 0.85);
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 320px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview-img {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-preview-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.image-preview-tag {
+  background: rgba(14, 10, 8, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(216, 180, 254, 0.3);
+  color: #F5F3F0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.image-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Mobile Media Queries */
+@media (max-width: 768px) {
+  .journalist-container {
+    padding: 16px 12px 140px;
+  }
+  
+  .journalist-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding-bottom: 16px;
+  }
+  
+  .journalist-header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .journalist-header-actions a,
+  .journalist-header-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .journalist-panel {
+    padding: 18px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .journalist-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .journalist-col-full {
+    grid-column: span 1;
+  }
+
+  .journalist-form-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+  }
+
+  .journalist-form-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 14px 16px !important;
+    font-size: 15px !important;
+  }
+
+  .image-preview-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .image-preview-actions button,
+  .image-preview-actions label {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
 
 
 
