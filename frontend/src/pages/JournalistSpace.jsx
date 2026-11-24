@@ -36,7 +36,6 @@ const JournalistSpace = () => {
   const [message, setMessage] = useState({ text: '', type: '' }); // 'success' or 'error'
 
   const categories = ["Politique", "Économie", "Société", "Sport", "Culture", "Technologie", "Santé", "Environnement"];
-  const regions = ["Kinshasa", "Haut-Katanga", "Lualaba", "Nord-Kivu", "Sud-Kivu", "Kongo-Central"];
 
   const fetchMyArticles = async () => {
     setLoading(true);

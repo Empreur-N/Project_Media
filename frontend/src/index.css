@@ -1602,12 +1602,12 @@ html[data-font-size="large"] .article-card-summary {
   }
 
   .journalist-form-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   .journalist-col-full {
-    grid-column: span 1;
+    grid-column: span 1 !important;
   }
 
   .journalist-form-actions {
