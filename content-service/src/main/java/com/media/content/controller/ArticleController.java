@@ -115,7 +115,7 @@ public class ArticleController {
         return ResponseEntity.ok(saved);
     }
 
-    // Modifier un article (Uniquement si DRAFT ou REVISION_REQUIRED)
+    // Modifier un article (Permet de modifier brouillon, article soumis ou article déjà publié pour mise à jour/photo)
     @PutMapping("/articles/{id}")
     @CacheEvict(value = "articles", allEntries = true)
     public ResponseEntity<?> updateArticle(
@@ -126,11 +126,6 @@ public class ArticleController {
         if (existing == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", "Article non trouvé"));
-        }
-
-        if (existing.getStatus() != ArticleStatus.DRAFT && existing.getStatus() != ArticleStatus.REVISION_REQUIRED) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "Impossible de modifier un article déjà soumis ou publié"));
         }
 
         String previousTextSnapshot = "Titre: " + existing.getTitle() + "\nRésumé: " + existing.getSummary() + "\nContenu: " + existing.getContent();
@@ -154,6 +149,11 @@ public class ArticleController {
         String newTextSnapshot = "Titre: " + saved.getTitle() + "\nRésumé: " + saved.getSummary() + "\nContenu: " + saved.getContent();
         // Sauvegarde de la trace légale avec snapshot de l'ancien texte et titre
         saveAuditLog(saved.getId(), saved.getTitle(), "UPDATE", saved.getAuthorUsername(), extractIp(request), previousTitleSnapshot, saved.getTitle(), previousTextSnapshot, newTextSnapshot, null);
+
+        // Si l'article est déjà en ligne, réindexer immédiatement la recherche
+        if (saved.getStatus() == ArticleStatus.PUBLISHED) {
+            notifyArticlePublished(saved);
+        }
 
         return ResponseEntity.ok(saved);
     }

@@ -145,6 +145,23 @@ const JournalistSpace = () => {
       utcPublicationDate = new Date().toISOString();
     }
 
+    // Téléversement automatique si un fichier image a été sélectionné
+    let finalImageUrl = mainImageUrl;
+    if (selectedFile) {
+      try {
+        setUploading(true);
+        const media = await uploadMedia(selectedFile, null, token);
+        if (media && media.fileUrl) {
+          finalImageUrl = media.fileUrl;
+          setMainImageUrl(media.fileUrl);
+        }
+      } catch (uploadErr) {
+        console.warn("Téléversement automatique de l'image:", uploadErr);
+      } finally {
+        setUploading(false);
+      }
+    }
+
     const payload = {
       title,
       summary,
@@ -152,7 +169,7 @@ const JournalistSpace = () => {
       category,
       region,
       tags,
-      mainImageUrl,
+      mainImageUrl: finalImageUrl,
       publicationDate: utcPublicationDate,
       authorUsername: user.username,
       status: targetStatus
@@ -162,12 +179,7 @@ const JournalistSpace = () => {
       if (articleId) {
         // Mode modification
         await updateArticle(articleId, payload, token);
-        if (targetStatus === 'PUBLISHED') {
-          await publishArticleDirectly(articleId, token);
-          showMessage("Article publié en direct avec succès ! La direction a été notifiée.");
-        } else {
-          showMessage("Brouillon mis à jour avec succès !");
-        }
+        showMessage("Article mis à jour avec succès avec sa nouvelle image !");
       } else {
         // Mode création
         await createArticle(payload, token);
@@ -333,7 +345,7 @@ const JournalistSpace = () => {
                       <td style={styles.td}>{new Date(art.createdAt || art.publicationDate).toLocaleDateString('fr-FR')}</td>
                       <td style={styles.td}>
                         <div style={styles.actionRow}>
-                          {(art.status === 'DRAFT' || art.status === 'REVISION_REQUIRED' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                          {(art.status === 'DRAFT' || art.status === 'REVISION_REQUIRED' || art.status === 'PUBLISHED' || art.authorUsername === user?.username || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'SUPERVISOR') && (
                             <button onClick={() => handleEditClick(art)} className="btn btn-secondary" style={styles.smallBtn}>
                               <Edit size={14} /> Modifier
                             </button>
@@ -364,7 +376,7 @@ const JournalistSpace = () => {
         /* Form Creation */
         <div className="glass-card" style={styles.panel}>
           <h2 style={styles.panelTitle}>{articleId ? "Modifier l'article" : "Rédiger un nouvel article"}</h2>
-          <form onSubmit={handleSaveDraft}>
+          <form onSubmit={(e) => handleSave(e, 'PUBLISHED')}>
             <div style={styles.formGrid}>
               <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label className="form-label">Titre de l'article *</label>
@@ -504,7 +516,7 @@ const JournalistSpace = () => {
                   boxShadow: '0 4px 16px rgba(229, 169, 60, 0.3)'
                 }}
               >
-                <Globe size={16} /> Publier immédiatement en ligne
+                <Globe size={16} /> {articleId ? "Enregistrer les modifications" : "Publier immédiatement en ligne"}
               </button>
             </div>
           </form>
