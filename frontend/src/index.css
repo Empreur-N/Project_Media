@@ -1723,6 +1723,97 @@ html[data-font-size="large"] .article-card-summary {
   }
 }
 
+/* ========================================================
+   ADMIN / GESTION UNIFIED RESPONSIVE (Lives, Ads, Podcasts, Users)
+   ======================================================== */
+.admin-page-container {
+  padding: 40px 24px 100px;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-form-card {
+  padding: 30px;
+  margin-bottom: 30px;
+  border-radius: var(--radius-md);
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-col-full {
+  grid-column: 1 / -1 !important;
+}
+
+.admin-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .admin-page-container {
+    padding: 16px 12px 140px;
+  }
+
+  .admin-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding-bottom: 16px;
+  }
+
+  .admin-page-header button,
+  .admin-page-header a {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .admin-form-card {
+    padding: 20px 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-bottom: 20px;
+  }
+
+  .admin-col-full {
+    grid-column: 1 !important;
+  }
+
+  .admin-submit-btn {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+  }
+}
+
+
 
 
 

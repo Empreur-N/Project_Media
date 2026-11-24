@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllLives, scheduleLive, updateLiveStatus } from '../services/api';
-import { Radio, Plus, Calendar, Clock, Tv, CheckCircle, AlertCircle, Play, Square } from 'lucide-react';
+import { Radio, Plus, Calendar, Clock, Tv, CheckCircle, AlertCircle, Play, Square, X } from 'lucide-react';
 
 const ManageLives = () => {
   const { user, token } = useAuth();
@@ -92,8 +92,8 @@ const ManageLives = () => {
   };
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
-      <div style={styles.header}>
+    <div className="container animate-fade-in admin-page-container">
+      <div className="admin-page-header">
         <div>
           <h1 style={styles.title}>
             {user?.role === 'SUPERVISOR' ? 'Suivi des Directs Radio & TV' : 'Gestion des Directs'}
@@ -107,10 +107,11 @@ const ManageLives = () => {
         {user?.role !== 'SUPERVISOR' && (
           <button 
             onClick={() => setShowForm(!showForm)} 
-            className="btn btn-primary"
+            className={`btn ${showForm ? "btn-secondary" : "btn-primary"}`}
             style={styles.addBtn}
           >
-            <Plus size={18} /> {showForm ? "Annuler" : "Programmer un Direct"}
+            {showForm ? <X size={18} /> : <Plus size={18} />} 
+            <span>{showForm ? "Annuler" : "Programmer un Direct"}</span>
           </button>
         )}
       </div>
@@ -130,10 +131,10 @@ const ManageLives = () => {
 
       {/* Formulaire de planification */}
       {showForm && (
-        <form onSubmit={handleSchedule} className="glass-card" style={styles.form}>
+        <form onSubmit={handleSchedule} className="glass-card admin-form-card">
           <h3 style={styles.formTitle}>Programmer une Diffusion</h3>
           
-          <div style={styles.formGrid}>
+          <div className="admin-form-grid">
             <div className="form-group">
               <label className="form-label">Titre du direct *</label>
               <input
@@ -158,7 +159,7 @@ const ManageLives = () => {
               />
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group admin-col-full">
               <label className="form-label">Description du programme *</label>
               <textarea
                 className="form-input"
@@ -194,10 +195,9 @@ const ManageLives = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={styles.submitBtn}
+            className="btn btn-primary admin-submit-btn" 
           >
-            Enregistrer le programme
+            <Radio size={16} /> Enregistrer le programme
           </button>
         </form>
       )}

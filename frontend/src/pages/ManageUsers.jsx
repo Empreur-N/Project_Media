@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUsers, updateUserActivation, updateUserRole, deleteUser, register } from '../services/api';
-import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic, X } from 'lucide-react';
 
 const ManageUsers = () => {
   const { token, user: currentUser } = useAuth();
@@ -145,8 +145,8 @@ const ManageUsers = () => {
   const pendingCount = users.filter(u => !u.active).length;
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
-      <div style={styles.header}>
+    <div className="container animate-fade-in admin-page-container">
+      <div className="admin-page-header">
         <div>
           <h1 style={styles.title}>Gestion des Rôles & Comptes</h1>
           <p style={styles.subtitle}>
@@ -155,10 +155,11 @@ const ManageUsers = () => {
         </div>
         <button 
           onClick={() => setShowForm(!showForm)} 
-          className="btn btn-primary"
+          className={`btn ${showForm ? "btn-secondary" : "btn-primary"}`}
           style={styles.addBtn}
         >
-          <UserPlus size={18} /> {showForm ? "Annuler" : "Créer/Pré-créer un agent"}
+          {showForm ? <X size={18} /> : <UserPlus size={18} />}
+          <span>{showForm ? "Annuler" : "Créer/Pré-créer un agent"}</span>
         </button>
       </div>
 
@@ -177,13 +178,13 @@ const ManageUsers = () => {
 
       {/* Formulaire de création / pré-inscription */}
       {showForm && (
-        <form onSubmit={handleCreateUser} className="glass-card animate-fade-in" style={styles.form}>
+        <form onSubmit={handleCreateUser} className="glass-card animate-fade-in admin-form-card">
           <h3 style={styles.formTitle}>Créer / Pré-inscrire un agent</h3>
           <p style={styles.formSubtitle}>
             Les comptes créés par les administrateurs sont actifs immédiatement. Les comptes pré-inscrits par les journalistes ou rédacteurs requièrent l'activation d'un admin.
           </p>
           
-          <div style={styles.formGrid}>
+          <div className="admin-form-grid">
             <div className="form-group">
               <label className="form-label">Nom d'utilisateur *</label>
               <input
@@ -237,8 +238,7 @@ const ManageUsers = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={styles.submitBtn}
+            className="btn btn-primary admin-submit-btn" 
             disabled={creating}
           >
             {creating ? "Création en cours..." : "Créer le compte"}

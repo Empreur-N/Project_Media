@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getEpisodes, createEpisode, uploadMedia } from '../services/api';
-import { Radio, Plus, Play, Trash, CheckCircle, AlertCircle, FileAudio, FileImage, Clock } from 'lucide-react';
+import { Radio, Plus, Play, Trash, CheckCircle, AlertCircle, FileAudio, FileImage, Clock, X } from 'lucide-react';
 
 const ManagePodcasts = () => {
   const { user, token } = useAuth();
@@ -96,8 +96,8 @@ const ManagePodcasts = () => {
   };
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
-      <div style={styles.header}>
+    <div className="container animate-fade-in admin-page-container">
+      <div className="admin-page-header">
         <div>
           <h1 style={styles.title}>
             {user?.role === 'SUPERVISOR' ? 'Suivi & Supervision des Podcasts' : 'Gestion des Podcasts'}
@@ -111,10 +111,11 @@ const ManagePodcasts = () => {
         {user?.role !== 'SUPERVISOR' && (
           <button 
             onClick={() => setShowForm(!showForm)} 
-            className="btn btn-primary"
+            className={`btn ${showForm ? "btn-secondary" : "btn-primary"}`}
             style={styles.addBtn}
           >
-            <Plus size={18} /> {showForm ? "Annuler" : "Créer un Épisode"}
+            {showForm ? <X size={18} /> : <Plus size={18} />}
+            <span>{showForm ? "Annuler" : "Créer un Épisode"}</span>
           </button>
         )}
       </div>
@@ -134,10 +135,10 @@ const ManagePodcasts = () => {
 
       {/* Formulaire de création */}
       {showForm && (
-        <form onSubmit={handleCreateEpisode} className="glass-card" style={styles.form}>
+        <form onSubmit={handleCreateEpisode} className="glass-card admin-form-card">
           <h3 style={styles.formTitle}>Nouvel Épisode</h3>
           
-          <div style={styles.formGrid}>
+          <div className="admin-form-grid">
             <div className="form-group">
               <label className="form-label">Titre de l'épisode *</label>
               <input
@@ -233,8 +234,7 @@ const ManagePodcasts = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={styles.submitBtn}
+            className="btn btn-primary admin-submit-btn" 
             disabled={uploading}
           >
             {uploading ? "Upload & Traitement en cours..." : "Publier l'épisode"}

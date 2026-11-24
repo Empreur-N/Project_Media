@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getAllAds, createAd, uploadMedia } from '../services/api';
-import { Plus, BarChart3, Image, Link2, CheckCircle, AlertCircle, FileImage, LayoutGrid, Smartphone } from 'lucide-react';
+import { Plus, BarChart3, Image, Link2, CheckCircle, AlertCircle, FileImage, LayoutGrid, Smartphone, X } from 'lucide-react';
 import MobileMoneyModal from '../components/MobileMoneyModal';
 import { getMediaUrl as resolveMediaUrl } from '../utils/urlUtils';
 
@@ -96,8 +96,8 @@ const ManageAds = () => {
   };
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
-      <div style={styles.header}>
+    <div className="container animate-fade-in admin-page-container">
+      <div className="admin-page-header">
         <div>
           <h1 style={styles.title}>
             {user?.role === 'SUPERVISOR' ? 'Suivi Régie Publicitaire' : 'Régie Publicitaire'}
@@ -111,10 +111,11 @@ const ManageAds = () => {
         {user?.role !== 'SUPERVISOR' && (
           <button 
             onClick={() => setShowForm(!showForm)} 
-            className="btn btn-primary"
+            className={`btn ${showForm ? "btn-secondary" : "btn-primary"}`}
             style={styles.addBtn}
           >
-            <Plus size={18} /> {showForm ? "Annuler" : "Créer une Campagne"}
+            {showForm ? <X size={18} /> : <Plus size={18} />}
+            <span>{showForm ? "Annuler" : "Créer une Campagne"}</span>
           </button>
         )}
       </div>
@@ -134,10 +135,10 @@ const ManageAds = () => {
 
       {/* Formulaire de création */}
       {showForm && (
-        <form onSubmit={handleCreateAd} className="glass-card" style={styles.form}>
+        <form onSubmit={handleCreateAd} className="glass-card admin-form-card">
           <h3 style={styles.formTitle}>Nouvelle Bannière</h3>
           
-          <div style={styles.formGrid}>
+          <div className="admin-form-grid">
             <div className="form-group">
               <label className="form-label">Nom de la campagne *</label>
               <input
@@ -194,8 +195,7 @@ const ManageAds = () => {
 
           <button 
             type="submit" 
-            className="btn btn-primary" 
-            style={styles.submitBtn}
+            className="btn btn-primary admin-submit-btn" 
             disabled={uploading}
           >
             {uploading ? "Publication de la campagne..." : "Lancer la campagne"}
