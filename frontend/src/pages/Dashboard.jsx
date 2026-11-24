@@ -10,8 +10,10 @@ import {
   Activity, Users, FileText, Radio, PlayCircle, PlusCircle, 
   CheckCircle2, ShieldCheck, Search, Filter, Eye, Edit, 
   ExternalLink, Calendar, MapPin, Tag, UserCheck, RefreshCw,
-  Tv, MessageSquare, ArrowRight, BookOpen, Share2, Globe, Check, AlertCircle, Landmark
+  Tv, MessageSquare, ArrowRight, BookOpen, Share2, Globe, Check, AlertCircle, Landmark,
+  Play, Video, Camera, Key
 } from 'lucide-react';
+import { REGION_GROUPS } from '../data/regions';
 
 const Dashboard = () => {
   const { user, token } = useAuth();
@@ -100,7 +102,11 @@ const Dashboard = () => {
 
       const matchCategory = selectedCategory === 'ALL' || art.category === selectedCategory;
       const matchAuthor = selectedAuthor === 'ALL' || art.authorUsername === selectedAuthor;
-      const matchRegion = selectedRegion === 'ALL' || art.region === selectedRegion;
+      const matchRegion = selectedRegion === 'ALL' || 
+        (art.region && (
+          art.region.toLowerCase().includes(selectedRegion.toLowerCase()) || 
+          selectedRegion.toLowerCase().includes(art.region.toLowerCase())
+        ));
       const matchStatus = selectedStatus === 'ALL' || (art.status || 'PUBLISHED') === selectedStatus;
 
       return matchSearch && matchCategory && matchAuthor && matchRegion && matchStatus;
@@ -355,56 +361,77 @@ const Dashboard = () => {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', fontSize: '13px', color: '#ff0000' }}>
-              ▶️ YouTube
+        <div className="social-sync-grid">
+          <div className="social-sync-channel-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#ef4444' }}>
+              <Play size={16} fill="#ef4444" />
+              <span>YouTube Channel</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Importation vidéo automatique + iframe intégrée
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
+              Importation vidéo automatique avec lecteur intégré
             </div>
-            <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '6px', fontWeight: '600' }}>● Auto-polling 30 min & RSS actif</div>
+            <div style={{ fontSize: '11px', color: '#10b981', marginTop: '8px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="live-dot" /> Auto-polling 30 min & flux RSS actif
+            </div>
           </div>
 
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#1877f2', letterSpacing: '0.04em' }}>
-              Facebook
+          <div className="social-sync-channel-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#38bdf8' }}>
+              <Share2 size={16} />
+              <span>Facebook Page</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Webhook instantané vers l'actualité web
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
+              Relai instantané vers le fil d'actualité web
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Endpoint Webhook configuré</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+              Endpoint Webhook configuré
+            </div>
           </div>
 
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#fe2c55', letterSpacing: '0.04em' }}>
-              TikTok
+          <div className="social-sync-channel-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#f43f5e' }}>
+              <Video size={16} />
+              <span>TikTok Officiel</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Vidéos courtes & buzz éditoriaux
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
+              Formats courts verticaux & synthèses vidéo
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Formatage vertical optimisé</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+              Formatage vertical optimisé
+            </div>
           </div>
 
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#e1306c', letterSpacing: '0.04em' }}>
-              Instagram
+          <div className="social-sync-channel-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '13px', color: '#ec4899' }}>
+              <Camera size={16} />
+              <span>Instagram Live Channel</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Photos de reportage et publications
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
+              Photos de reportage & stories terrain
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>Galerie et légendes intégrées</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+              Galeries et légendes intégrées
+            </div>
           </div>
         </div>
 
-        <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', background: 'rgba(0, 0, 0, 0.25)', fontSize: '12px', color: 'var(--text-muted)' }}>
-          <strong style={{ color: 'var(--text-main)' }}>URL du Webhook d'ingestion : </strong>
-          <code>https://lifechannelmedia.com/api/contents/social-sync</code>
-          <span style={{ marginLeft: '12px' }}>
-            <strong style={{ color: 'var(--text-main)' }}>Entête d'autorisation : </strong>
-            <code>X-Social-Sync-Key: lifechannel_social_sync_secret_2026</code>
-          </span>
-        </div>
+        {/* Paramètres techniques Webhooks (collapsible & ultra-soigné) */}
+        <details className="social-sync-details">
+          <summary className="social-sync-summary">
+            <Key size={14} style={{ color: 'var(--primary)' }} />
+            <span>Paramètres Techniques & Clés d'Ingestion Webhook</span>
+          </summary>
+          <div className="social-sync-details-content">
+            <div className="social-sync-kv-row">
+              <span className="social-sync-kv-label">URL du Webhook d'ingestion :</span>
+              <code className="social-sync-kv-value">https://lifechannelmedia.com/api/contents/social-sync</code>
+            </div>
+            <div className="social-sync-kv-row">
+              <span className="social-sync-kv-label">Entête d'autorisation :</span>
+              <code className="social-sync-kv-value">X-Social-Sync-Key: lifechannel_social_sync_secret_2026</code>
+            </div>
+          </div>
+        </details>
       </div>
 
       {/* SECTION CENTRALE : Tableau de bord des publications */}
@@ -422,79 +449,95 @@ const Dashboard = () => {
         </div>
 
         {/* Barre de Recherche et Filtres */}
-        <div style={styles.filterBar}>
+        <div className="dashboard-filter-panel glass-card">
           {/* Recherche textuelle */}
-          <div style={styles.searchWrapper}>
-            <Search size={16} style={styles.searchIcon} />
+          <div className="dashboard-search-wrapper">
+            <Search size={16} className="dashboard-search-icon" />
             <input
               type="text"
-              placeholder="Rechercher par titre, auteur, résumé..."
+              placeholder="Rechercher par titre, auteur, résumé ou mot-clé..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={styles.searchInput}
+              className="dashboard-search-input"
             />
           </div>
 
-          {/* Filtre Auteur / Journaliste */}
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>Auteur / Journaliste :</label>
-            <select 
-              value={selectedAuthor} 
-              onChange={(e) => setSelectedAuthor(e.target.value)}
-              style={styles.selectInput}
-            >
-              <option value="ALL">Tous les journalistes ({uniqueAuthors.length})</option>
-              {uniqueAuthors.map(author => (
-                <option key={author} value={author}>{author}</option>
-              ))}
-            </select>
-          </div>
+          {/* Filtres en grille responsive */}
+          <div className="dashboard-filters-grid">
+            {/* Filtre Auteur / Journaliste */}
+            <div className="dashboard-filter-col">
+              <label className="dashboard-filter-label">
+                <UserCheck size={13} style={{ color: 'var(--primary)' }} /> Auteur / Journaliste
+              </label>
+              <select 
+                value={selectedAuthor} 
+                onChange={(e) => setSelectedAuthor(e.target.value)}
+                className="form-input"
+              >
+                <option value="ALL">Tous les journalistes ({uniqueAuthors.length})</option>
+                {uniqueAuthors.map(author => (
+                  <option key={author} value={author}>{author}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Filtre Catégorie */}
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>Catégorie :</label>
-            <select 
-              value={selectedCategory} 
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={styles.selectInput}
-            >
-              <option value="ALL">Toutes les rubriques</option>
-              {uniqueCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
+            {/* Filtre Catégorie */}
+            <div className="dashboard-filter-col">
+              <label className="dashboard-filter-label">
+                <Tag size={13} style={{ color: 'var(--primary)' }} /> Rubrique & Catégorie
+              </label>
+              <select 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="form-input"
+              >
+                <option value="ALL">Toutes les rubriques</option>
+                {uniqueCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Filtre Région */}
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>Région :</label>
-            <select 
-              value={selectedRegion} 
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              style={styles.selectInput}
-            >
-              <option value="ALL">Toutes les régions</option>
-              <option value="Kinshasa">Kinshasa</option>
-              <option value="Nord-Kivu">Nord-Kivu</option>
-              <option value="Haut-Katanga">Haut-Katanga</option>
-              <option value="Sud-Kivu">Sud-Kivu</option>
-              <option value="Lualaba">Lualaba</option>
-            </select>
+            {/* Filtre Région */}
+            <div className="dashboard-filter-col">
+              <label className="dashboard-filter-label">
+                <MapPin size={13} style={{ color: 'var(--primary)' }} /> Zone Géographique
+              </label>
+              <select 
+                value={selectedRegion} 
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="form-input"
+              >
+                <option value="ALL">Toutes les zones et régions</option>
+                {REGION_GROUPS.map((grp) => (
+                  <optgroup key={grp.group} label={grp.group}>
+                    {grp.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Bouton Reset */}
           {(searchQuery || selectedAuthor !== 'ALL' || selectedCategory !== 'ALL' || selectedRegion !== 'ALL') && (
-            <button 
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedAuthor('ALL');
-                setSelectedCategory('ALL');
-                setSelectedRegion('ALL');
-              }}
-              style={styles.resetFilterBtn}
-            >
-              Réinitialiser
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }}>
+              <button 
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedAuthor('ALL');
+                  setSelectedCategory('ALL');
+                  setSelectedRegion('ALL');
+                }}
+                className="btn btn-secondary"
+                style={{ fontSize: '12px', padding: '6px 14px' }}
+              >
+                Réinitialiser les filtres
+              </button>
+            </div>
           )}
         </div>
 
