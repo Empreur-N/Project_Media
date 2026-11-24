@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import ArticleDetail from './pages/ArticleDetail';
 import JournalistSpace from './pages/JournalistSpace';
 import EditorSpace from './pages/EditorSpace';
+import StaffChat from './pages/StaffChat';
 import Search from './pages/Search';
 import CommentModeration from './pages/CommentModeration';
 import Podcasts from './pages/Podcasts';
@@ -112,8 +113,16 @@ function App() {
                   <Route 
                     path="/admin/editor" 
                     element={
-                      <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN']}>
+                      <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
                         <EditorSpace />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/messages" 
+                    element={
+                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                        <StaffChat />
                       </ProtectedRoute>
                     } 
                   />

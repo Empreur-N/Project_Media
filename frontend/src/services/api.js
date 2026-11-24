@@ -104,6 +104,10 @@ export const submitArticle = (id, token) => {
   return apiCall(`/contents/articles/${id}/submit`, 'POST', null, token);
 };
 
+export const publishArticleDirectly = (id, token) => {
+  return apiCall(`/contents/articles/${id}/publish`, 'POST', null, token);
+};
+
 export const reviewArticle = (id, action, reviewerUsername, token, rejectionReason = null) => {
   let url = `/contents/articles/${id}/review?action=${action}&reviewerUsername=${reviewerUsername}`;
   if (rejectionReason) {
@@ -241,6 +245,20 @@ export const markNotifAsRead = (id, token) => {
 
 export const broadcastNotification = (payload, token) => {
   return apiCall('/notifications/broadcast', 'POST', payload, token);
+};
+
+// --- Messagerie Interne & Support Collaborateurs ---
+export const getInternalMessages = (category = null, token = null) => {
+  const query = category ? `?category=${encodeURIComponent(category)}` : '';
+  return apiCall(`/notifications/messages${query}`, 'GET', null, token);
+};
+
+export const sendInternalMessage = (messageData, token) => {
+  return apiCall('/notifications/messages', 'POST', messageData, token);
+};
+
+export const toggleResolveInternalMessage = (id, token) => {
+  return apiCall(`/notifications/messages/${id}/resolve`, 'PUT', null, token);
 };
 
 // --- Analytics ---

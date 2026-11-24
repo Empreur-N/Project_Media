@@ -204,25 +204,52 @@ const matchesTopic = (art, topicKey) => {
   switch (topicKey) {
     case 'RDC':
       return reg.includes('rdc') || reg.includes('congo') || reg.includes('kinshasa') || 
-             reg.includes('katanga') || reg.includes('kivu') || txt.includes('rdc') || txt.includes('kinshasa') || txt.includes('congo');
+             reg.includes('katanga') || reg.includes('kivu') || reg.includes('ituri') ||
+             reg.includes('lualaba') || reg.includes('kasai') || reg.includes('matadi') ||
+             txt.includes('rdc') || txt.includes('kinshasa') || txt.includes('congo') ||
+             txt.includes('lubumbashi') || txt.includes('goma') || txt.includes('ituri') ||
+             txt.includes('bunia') || txt.includes('katanga') || txt.includes('kivu') ||
+             txt.includes('fardc') || txt.includes('tshisekedi') || txt.includes('muteba') ||
+             txt.includes('kasai') || txt.includes('kongo') || txt.includes('bukavu') ||
+             txt.includes('kisangani') || (!art.region && !txt.includes('ukraine') && !txt.includes('france') && !txt.includes('russie') && !txt.includes('vatican') && !txt.includes('états-unis'));
     case 'AFRIQUE':
-      return reg.includes('afrique') || txt.includes('afrique') || txt.includes('african') || txt.includes('sahel') || txt.includes('nigeria') || txt.includes('sénégal') || txt.includes('cameroun') || txt.includes('kenya') || txt.includes('rwanda') || txt.includes('angola') || txt.includes('sud-africain');
+      return reg.includes('afrique') || txt.includes('afrique') || txt.includes('african') || 
+             txt.includes('sahel') || txt.includes('nigeria') || txt.includes('sénégal') || 
+             txt.includes('cameroun') || txt.includes('kenya') || txt.includes('rwanda') || 
+             txt.includes('angola') || txt.includes('sud-africain') || txt.includes('alger') || txt.includes('maroc');
     case 'MONDE':
-      return reg.includes('monde') || reg.includes('international') || txt.includes('onu') || txt.includes('mondial') || txt.includes('international') || txt.includes('diplomatie');
+      return reg.includes('monde') || reg.includes('international') || txt.includes('onu') || 
+             txt.includes('mondial') || txt.includes('international') || txt.includes('diplomatie') ||
+             txt.includes('ukraine') || txt.includes('russie') || txt.includes('vatican') || 
+             txt.includes('pape') || txt.includes('gaza') || txt.includes('chine') || txt.includes('usa') || txt.includes('otan');
     case 'EUROPE':
-      return reg.includes('europe') || txt.includes('europe') || txt.includes('france') || txt.includes('ukraine') || txt.includes('bruxelles') || txt.includes('paris') || txt.includes('ue');
+      return reg.includes('europe') || txt.includes('europe') || txt.includes('france') || 
+             txt.includes('ukraine') || txt.includes('bruxelles') || txt.includes('paris') || 
+             txt.includes('ue') || txt.includes('vatican') || txt.includes('pape') || txt.includes('russie') || txt.includes('londres');
     case 'AMERIQUE':
-      return reg.includes('amérique') || reg.includes('amerique') || txt.includes('états-unis') || txt.includes('usa') || txt.includes('washington') || txt.includes('amérique') || txt.includes('brésil');
+      return reg.includes('amérique') || reg.includes('amerique') || txt.includes('états-unis') || 
+             txt.includes('usa') || txt.includes('washington') || txt.includes('amérique') || 
+             txt.includes('brésil') || txt.includes('trump') || txt.includes('biden') || txt.includes('canada');
     case 'ASIE':
-      return reg.includes('asie') || txt.includes('asie') || txt.includes('chine') || txt.includes('pékin') || txt.includes('japon') || txt.includes('tokyo') || txt.includes('inde');
+      return reg.includes('asie') || txt.includes('asie') || txt.includes('chine') || 
+             txt.includes('pékin') || txt.includes('japon') || txt.includes('tokyo') || 
+             txt.includes('inde') || txt.includes('taïwan');
     case 'MOYEN_ORIENT':
-      return reg.includes('moyen-orient') || txt.includes('moyen-orient') || txt.includes('gaza') || txt.includes('israël') || txt.includes('liban') || txt.includes('iran') || txt.includes('dubaï');
+      return reg.includes('moyen-orient') || txt.includes('moyen-orient') || txt.includes('gaza') || 
+             txt.includes('israël') || txt.includes('liban') || txt.includes('iran') || 
+             txt.includes('dubaï') || txt.includes('saoudite') || txt.includes('riyad');
     case 'ECONOMIE':
-      return cat.includes('écon') || cat.includes('econ') || txt.includes('bourse') || txt.includes('banque') || txt.includes('dollars') || txt.includes('franc congolais') || txt.includes('pib') || txt.includes('croissance');
+      return cat.includes('écon') || cat.includes('econ') || txt.includes('bourse') || 
+             txt.includes('banque') || txt.includes('dollars') || txt.includes('franc congolais') || 
+             txt.includes('pib') || txt.includes('croissance') || txt.includes('minerais') || txt.includes('cuivre') || txt.includes('cobalt');
     case 'SPORT':
-      return cat.includes('sport') || txt.includes('football') || txt.includes('can ') || txt.includes('léopards') || txt.includes('fifa') || txt.includes('champions league') || txt.includes('match');
+      return cat.includes('sport') || txt.includes('football') || txt.includes('can ') || 
+             txt.includes('léopards') || txt.includes('fifa') || txt.includes('champions league') || 
+             txt.includes('match') || txt.includes('ronaldo') || txt.includes('messi') || txt.includes('wissa') || txt.includes('desabre');
     case 'CULTURE':
-      return cat.includes('cultur') || cat.includes('société') || txt.includes('musique') || txt.includes('rumba') || txt.includes('festival') || txt.includes('cinéma') || txt.includes('art');
+      return cat.includes('cultur') || cat.includes('société') || txt.includes('musique') || 
+             txt.includes('rumba') || txt.includes('festival') || txt.includes('cinéma') || 
+             txt.includes('art') || txt.includes('diable') || txt.includes('pape') || txt.includes('église');
     default:
       return true;
   }
@@ -243,7 +270,14 @@ const Home = () => {
   const categories = ["Politique", "Économie", "Société", "Sport", "Culture", "Technologie", "Santé", "Environnement"];
   const regions = ["Kinshasa", "Haut-Katanga", "Lualaba", "Nord-Kivu", "Sud-Kivu", "Kongo-Central"];
 
-  const filteredArticles = articles.filter(art => {
+  // Tri strict : dépêches les plus récentes en tête de liste
+  const sortedArticles = [...articles].sort((a, b) => {
+    const timeA = new Date(a.publicationDate || a.createdAt || 0).getTime();
+    const timeB = new Date(b.publicationDate || b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+
+  const filteredArticles = sortedArticles.filter(art => {
     const matchesSearch = !searchQuery || 
       (art.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
        art.summary?.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -521,55 +555,130 @@ const Home = () => {
                 </p>
               </div>
             ) : (
-              <div className="articles-grid" style={styles.articlesGrid}>
-                {displayArticles.map((article) => (
-                  <article key={article.id} className="glass-card article-card" style={styles.card}>
-                    <div className="article-card-image-wrapper" style={styles.cardImageContainer}>
+              <>
+                {/* 1. ARTICLE À LA UNE / GRAND FORMAT EN CONTINU */}
+                {displayArticles.length > 0 && (
+                  <article className="glass-card" style={styles.featuredCard}>
+                    <div style={styles.featuredImageWrapper}>
                       <img 
-                        src={getFullImageUrl(article.mainImageUrl, article.category)} 
-                        alt={article.title} 
+                        src={getFullImageUrl(displayArticles[0].mainImageUrl, displayArticles[0].category)} 
+                        alt={displayArticles[0].title}
                         className="img-cover-adaptive"
-                        style={styles.cardImage} 
-                        loading="lazy"
-                        onError={(e) => handleImageError(e, article.category)}
+                        style={styles.featuredImage}
+                        onError={(e) => handleImageError(e, displayArticles[0].category)}
                       />
-                      <span style={styles.cardCategory}>{article.category}</span>
+                      <div style={styles.featuredBadgeOverlay}>
+                        <span style={styles.featuredLivePill}>
+                          <span style={styles.livePulseDot} />
+                          À LA UNE • DIRECT
+                        </span>
+                        <span style={styles.cardCategory}>{displayArticles[0].category}</span>
+                      </div>
                     </div>
-                    
-                    <div className="article-card-body" style={styles.cardBody}>
+
+                    <div style={styles.featuredBody}>
                       <div style={styles.cardMeta}>
                         <span style={styles.metaItem}>
                           <Calendar size={13} style={{ color: 'var(--primary)' }} />
-                          {formatDate(article.publicationDate || article.createdAt)}
+                          {formatDate(displayArticles[0].publicationDate || displayArticles[0].createdAt)}
                         </span>
-                        {article.region && (
+                        {displayArticles[0].region && (
                           <span style={styles.metaItem}>
                             <MapPin size={13} style={{ color: 'var(--primary)' }} />
-                            {article.region}
+                            {displayArticles[0].region}
                           </span>
                         )}
+                        <span style={{ ...styles.metaItem, color: 'var(--argente)' }}>
+                          Par {displayArticles[0].authorUsername}
+                        </span>
                       </div>
-                      
-                      <h3 className="article-card-title" style={styles.cardTitle}>
-                        <Link to={`/articles/${article.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                          {article.title}
+
+                      <h2 style={styles.featuredTitle}>
+                        <Link to={`/articles/${displayArticles[0].id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                          {displayArticles[0].title}
                         </Link>
-                      </h3>
-                      
-                      <p className="article-card-summary" style={styles.cardSummary}>
-                        {article.summary}
+                      </h2>
+
+                      <p style={styles.featuredSummary}>
+                        {displayArticles[0].summary}
                       </p>
-                      
-                      <div className="article-card-footer" style={styles.cardFooter}>
-                        <span style={styles.authorName}>Par {article.authorUsername}</span>
-                        <Link to={`/articles/${article.id}`} className="btn-pill-outline" style={{ padding: '6px 16px', fontSize: '11px' }}>
-                          Lire <ArrowRight size={13} />
+
+                      <div style={{ marginTop: '16px' }}>
+                        <Link to={`/articles/${displayArticles[0].id}`} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: '800' }}>
+                          Lire le grand format <ArrowRight size={14} />
                         </Link>
                       </div>
                     </div>
                   </article>
-                ))}
-              </div>
+                )}
+
+                {/* 2. EN CONTINU & ANALYSES (Articles suivants) */}
+                {displayArticles.length > 1 && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '28px 0 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)' }} />
+                        <h3 style={{ fontSize: '16px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#F5F3F0', margin: 0 }}>
+                          En continu & Dernières dépêches
+                        </h3>
+                      </div>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {displayArticles.length - 1} autre{displayArticles.length > 2 ? 's' : ''} publication{displayArticles.length > 2 ? 's' : ''}
+                      </span>
+                    </div>
+
+                    <div className="articles-grid" style={styles.articlesGrid}>
+                      {displayArticles.slice(1).map((article) => (
+                        <article key={article.id} className="glass-card article-card" style={styles.card}>
+                          <div className="article-card-image-wrapper" style={styles.cardImageContainer}>
+                            <img 
+                              src={getFullImageUrl(article.mainImageUrl, article.category)} 
+                              alt={article.title} 
+                              className="img-cover-adaptive"
+                              style={styles.cardImage} 
+                              loading="lazy"
+                              onError={(e) => handleImageError(e, article.category)}
+                            />
+                            <span style={styles.cardCategory}>{article.category}</span>
+                          </div>
+                          
+                          <div className="article-card-body" style={styles.cardBody}>
+                            <div style={styles.cardMeta}>
+                              <span style={styles.metaItem}>
+                                <Calendar size={13} style={{ color: 'var(--primary)' }} />
+                                {formatDate(article.publicationDate || article.createdAt)}
+                              </span>
+                              {article.region && (
+                                <span style={styles.metaItem}>
+                                  <MapPin size={13} style={{ color: 'var(--primary)' }} />
+                                  {article.region}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <h3 className="article-card-title" style={styles.cardTitle}>
+                              <Link to={`/articles/${article.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                {article.title}
+                              </Link>
+                            </h3>
+                            
+                            <p className="article-card-summary" style={styles.cardSummary}>
+                              {article.summary}
+                            </p>
+                            
+                            <div className="article-card-footer" style={styles.cardFooter}>
+                              <span style={styles.authorName}>Par {article.authorUsername}</span>
+                              <Link to={`/articles/${article.id}`} className="btn-pill-outline" style={{ padding: '6px 16px', fontSize: '11px' }}>
+                                Lire <ArrowRight size={13} />
+                              </Link>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </div>
 
@@ -837,6 +946,72 @@ const styles = {
     minWidth: 0,
     width: '100%',
   },
+  // --- Article À La Une / Grand Format ---
+  featuredCard: {
+    borderRadius: '16px',
+    overflow: 'hidden',
+    background: 'rgba(28, 21, 18, 0.92)',
+    border: '1px solid rgba(192, 192, 192, 0.22)',
+    marginBottom: '28px',
+    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.45)',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'transform 0.3s ease, border-color 0.3s ease'
+  },
+  featuredImageWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: '320px',
+    overflow: 'hidden',
+    background: '#120e0c'
+  },
+  featuredImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  },
+  featuredBadgeOverlay: {
+    position: 'absolute',
+    top: '16px',
+    left: '16px',
+    right: '16px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    pointerEvents: 'none'
+  },
+  featuredLivePill: {
+    background: 'rgba(239, 68, 68, 0.92)',
+    color: '#ffffff',
+    fontSize: '11px',
+    fontWeight: '900',
+    letterSpacing: '0.08em',
+    padding: '5px 12px',
+    borderRadius: '6px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)'
+  },
+  featuredBody: {
+    padding: '24px 28px'
+  },
+  featuredTitle: {
+    fontFamily: 'var(--font-serif)',
+    fontSize: '24px',
+    fontWeight: '800',
+    lineHeight: '1.3',
+    color: '#F5F3F0',
+    margin: '10px 0 12px'
+  },
+  featuredSummary: {
+    fontSize: '14.5px',
+    color: 'var(--argente)',
+    lineHeight: '1.6',
+    margin: 0,
+    maxWidth: '780px'
+  },
+
   articlesGrid: {
     width: '100%',
   },

@@ -69,17 +69,50 @@ public class ArticleController {
         return ResponseEntity.ok(articleRepository.findByAuthorUsernameOrderByCreatedAtDesc(username));
     }
 
-    // Créer un nouvel article (Initialisé à DRAFT)
+    // Créer un nouvel article (Support de publication immédiate en ligne ou brouillon)
     @PostMapping("/articles")
     @CacheEvict(value = "articles", allEntries = true)
     public ResponseEntity<?> createArticle(@Valid @RequestBody Article article, HttpServletRequest request) {
-        article.setStatus(ArticleStatus.DRAFT);
+        boolean isDirectPublish = article.getStatus() == ArticleStatus.PUBLISHED;
+        if (isDirectPublish) {
+            article.setStatus(ArticleStatus.PUBLISHED);
+            article.setPublicationDate(LocalDateTime.now(ZoneOffset.UTC));
+        } else {
+            article.setStatus(ArticleStatus.DRAFT);
+        }
+
         Article saved = articleRepository.save(article);
 
         // Enregistrement dans le journal d'audit légal (Règle 4)
-        saveAuditLog(saved.getId(), saved.getTitle(), "CREATE", saved.getAuthorUsername(), extractIp(request), null, saved.getTitle(), null, saved.getContent(), null);
+        saveAuditLog(saved.getId(), saved.getTitle(), isDirectPublish ? "DIRECT_PUBLISH" : "CREATE", saved.getAuthorUsername(), extractIp(request), null, saved.getTitle(), null, saved.getContent(), null);
+
+        if (isDirectPublish) {
+            notifyArticlePublished(saved);
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    // Publication immédiate d'un article par le journaliste / rédacteur
+    @PostMapping("/articles/{id}/publish")
+    @CacheEvict(value = "articles", allEntries = true)
+    public ResponseEntity<?> publishArticleDirectly(@PathVariable Long id, HttpServletRequest request) {
+        Article article = articleRepository.findById(id).orElse(null);
+        if (article == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Article non trouvé"));
+        }
+
+        ArticleStatus prevStatus = article.getStatus();
+        article.setStatus(ArticleStatus.PUBLISHED);
+        article.setPublicationDate(LocalDateTime.now(ZoneOffset.UTC));
+        Article saved = articleRepository.save(article);
+
+        saveAuditLog(saved.getId(), saved.getTitle(), "DIRECT_PUBLISH", saved.getAuthorUsername(), extractIp(request), saved.getTitle(), saved.getTitle(), "Statut: " + prevStatus, "Statut: PUBLISHED", null);
+
+        notifyArticlePublished(saved);
+
+        return ResponseEntity.ok(saved);
     }
 
     // Modifier un article (Uniquement si DRAFT ou REVISION_REQUIRED)
@@ -189,34 +222,41 @@ public class ArticleController {
         // Journalisation de la validation éditoriale avec motif de rejet éventuel
         saveAuditLog(saved.getId(), saved.getTitle(), "REVIEW_" + action, reviewerUsername, extractIp(request), saved.getTitle(), saved.getTitle(), "Statut: " + prevStatus, "Nouveau Statut: " + action, rejectionReason);
 
-        // Indexer l'article et envoyer une notification RabbitMQ s'il est publié
+        // Indexer l'article et notifier la direction s'il est publié
         if (saved.getStatus() == ArticleStatus.PUBLISHED) {
-            // 1. Indexation Search
-            try {
-                restClient.post()
-                        .uri("http://localhost:8085/api/search/index")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(saved)
-                        .retrieve()
-                        .toBodilessEntity();
-            } catch (Exception e) {
-                System.err.println("Échec de l'indexation de l'article dans le Search Service: " + e.getMessage());
-            }
-
-            // 2. Envoi de notification asynchrone via RabbitMQ
-            try {
-                Map<String, String> notifPayload = Map.of(
-                        "title", "Nouvel article publié !",
-                        "body", "L'article \"" + saved.getTitle() + "\" vient d'être mis en ligne.",
-                        "recipient", "" // broadcast
-                );
-                rabbitTemplate.convertAndSend("notificationQueue", notifPayload);
-            } catch (Exception e) {
-                System.err.println("Échec d'envoi du message RabbitMQ: " + e.getMessage());
-            }
+            notifyArticlePublished(saved);
         }
 
         return ResponseEntity.ok(saved);
+    }
+
+    private void notifyArticlePublished(Article saved) {
+        // 1. Indexation Search
+        try {
+            restClient.post()
+                    .uri("http://search-service:8085/api/search/index")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(saved)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            System.err.println("Échec indexation search: " + e.getMessage());
+        }
+
+        // 2. Notification asynchrone pour la Direction et les Administrateurs
+        try {
+            String author = (saved.getAuthorUsername() != null && !saved.getAuthorUsername().isEmpty()) 
+                    ? saved.getAuthorUsername() 
+                    : "la rédaction";
+            Map<String, String> notifPayload = Map.of(
+                    "title", "Nouvel article publié par " + author,
+                    "body", "Le journaliste " + author + " vient de publier : \"" + saved.getTitle() + "\" (" + saved.getCategory() + ").",
+                    "recipient", "" // diffusion générale direction & équipe
+            );
+            rabbitTemplate.convertAndSend("notificationQueue", notifPayload);
+        } catch (Exception e) {
+            System.err.println("Échec d'envoi du message RabbitMQ: " + e.getMessage());
+        }
     }
 
     // Récupérer l'historique d'audit d'un article spécifique (Directeur de publication / Editeur)

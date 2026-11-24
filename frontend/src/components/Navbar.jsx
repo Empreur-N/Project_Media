@@ -5,7 +5,7 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useDataSaver } from '../contexts/DataSaverContext';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Settings, UserCheck, BarChart3, Mic, TrendingUp } from 'lucide-react';
+import { LogOut, LayoutDashboard, User as UserIcon, Radio, Newspaper, Search, Menu, X, ChevronDown, HelpCircle, Settings, UserCheck, BarChart3, Mic, TrendingUp, MessageSquare, FileText } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import SettingsModal from './SettingsModal';
 import AgentProfileModal from './AgentProfileModal';
@@ -242,6 +242,9 @@ const Navbar = () => {
                             <Link to="/admin" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <BarChart3 size={14} style={{ color: 'var(--primary)' }} /> Cockpit Direction & KPIs
                             </Link>
+                            <Link to="/admin/editor" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <FileText size={14} style={{ color: 'var(--primary)' }} /> Validation & Relecture
+                            </Link>
                             <Link to="/admin/podcasts" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <Mic size={14} style={{ color: 'var(--primary)' }} /> Suivi des Podcasts
                             </Link>
@@ -295,6 +298,15 @@ const Navbar = () => {
                             </Link>
                             <Link to="/admin/editor" className="dropdown-item" onClick={handleLinkClick}>
                               Relire
+                            </Link>
+                          </>
+                        )}
+                        {/* Messagerie Interne & Support Collaborateurs */}
+                        {(user.role === 'JOURNALIST' || user.role === 'EDITOR' || user.role === 'SUPERVISOR' || user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+                          <>
+                            <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+                            <Link to="/admin/messages" className="dropdown-item" onClick={handleLinkClick} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '700' }}>
+                              <MessageSquare size={14} /> Messagerie & Support Interne
                             </Link>
                           </>
                         )}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, uploadMedia } from '../services/api';
+import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, publishArticleDirectly, uploadMedia } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
-import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck } from 'lucide-react';
+import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy } from 'lucide-react';
 
 const JournalistSpace = () => {
   const { user, token } = useAuth();
@@ -126,8 +126,8 @@ const JournalistSpace = () => {
     setSelectedFile(null);
   };
 
-  const handleSaveDraft = async (e) => {
-    e.preventDefault();
+  const handleSave = async (e, targetStatus = 'DRAFT') => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!title || !content || !category) {
       showMessage("Veuillez remplir les champs obligatoires (Titre, Contenu, Catégorie)", "error");
       return;
@@ -141,6 +141,8 @@ const JournalistSpace = () => {
       if (!isNaN(parsed.getTime())) {
         utcPublicationDate = parsed.toISOString();
       }
+    } else if (targetStatus === 'PUBLISHED') {
+      utcPublicationDate = new Date().toISOString();
     }
 
     const payload = {
@@ -152,21 +154,41 @@ const JournalistSpace = () => {
       tags,
       mainImageUrl,
       publicationDate: utcPublicationDate,
-      authorUsername: user.username
+      authorUsername: user.username,
+      status: targetStatus
     };
 
     try {
       if (articleId) {
         // Mode modification
         await updateArticle(articleId, payload, token);
-        showMessage("Brouillon mis à jour avec succès !");
+        if (targetStatus === 'PUBLISHED') {
+          await publishArticleDirectly(articleId, token);
+          showMessage("Article publié en direct avec succès ! La direction a été notifiée.");
+        } else {
+          showMessage("Brouillon mis à jour avec succès !");
+        }
       } else {
         // Mode création
         await createArticle(payload, token);
-        showMessage("Nouveau brouillon enregistré !");
+        if (targetStatus === 'PUBLISHED') {
+          showMessage("Article mis en ligne immédiatement ! La direction a été notifiée.");
+        } else {
+          showMessage("Nouveau brouillon enregistré !");
+        }
       }
       resetForm();
       setView('list');
+      fetchMyArticles();
+    } catch (error) {
+      showMessage(error.message, "error");
+    }
+  };
+
+  const handleDirectPublish = async (id) => {
+    try {
+      await publishArticleDirectly(id, token);
+      showMessage("Article mis en ligne immédiatement avec succès ! La direction a été notifiée.");
       fetchMyArticles();
     } catch (error) {
       showMessage(error.message, "error");
@@ -223,7 +245,16 @@ const JournalistSpace = () => {
           <h1 style={styles.title}>Espace Journaliste</h1>
           <p style={styles.subtitle}>Gérez vos articles, rédigez de nouvelles actualités et suivez vos publications</p>
         </div>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Link 
+            to="/admin/messages?category=TECH_SUPPORT" 
+            className="btn btn-secondary" 
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}
+            title="Poser une question technique ou contacter l'administration"
+          >
+            <LifeBuoy size={16} style={{ color: 'var(--primary)' }} />
+            <span>Support & Direction</span>
+          </Link>
           {view === 'list' ? (
             <button className="btn btn-primary" onClick={() => { resetForm(); setView('form'); }}>
               <PlusCircle size={18} /> Rédiger un Article
@@ -307,13 +338,15 @@ const JournalistSpace = () => {
                               <Edit size={14} /> Modifier
                             </button>
                           )}
-                          {(art.status === 'DRAFT' || art.status === 'REVISION_REQUIRED') && (
-                            <button onClick={() => handleSubmitToReview(art.id)} className="btn btn-primary" style={{ ...styles.smallBtn, background: 'var(--primary)' }}>
-                              <Send size={14} /> Soumettre
+                          {(art.status === 'DRAFT' || art.status === 'REVISION_REQUIRED' || art.status === 'SUBMITTED') && (
+                            <button 
+                              onClick={() => handleDirectPublish(art.id)} 
+                              className="btn btn-primary" 
+                              style={{ ...styles.smallBtn, background: 'linear-gradient(135deg, #E5A93C 0%, #D97706 100%)', color: '#1a1412', fontWeight: '700' }}
+                              title="Mettre immédiatement cet article en ligne"
+                            >
+                              <Globe size={13} /> Mettre en ligne
                             </button>
-                          )}
-                          {art.status === 'SUBMITTED' && (
-                            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>En attente</span>
                           )}
                           {art.status === 'PUBLISHED' && user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN' && (
                             <span style={{ fontSize: '13px', color: 'var(--accent)' }}>En ligne</span>
@@ -449,8 +482,29 @@ const JournalistSpace = () => {
               <button type="button" className="btn btn-secondary" onClick={() => setView('list')}>
                 Annuler
               </button>
-              <button type="submit" className="btn btn-primary">
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={(e) => handleSave(e, 'DRAFT')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
                 <FileText size={16} /> Enregistrer comme Brouillon
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={(e) => handleSave(e, 'PUBLISHED')}
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  background: 'linear-gradient(135deg, #E5A93C 0%, #D97706 100%)',
+                  color: '#1a1412',
+                  fontWeight: '800',
+                  boxShadow: '0 4px 16px rgba(229, 169, 60, 0.3)'
+                }}
+              >
+                <Globe size={16} /> Publier immédiatement en ligne
               </button>
             </div>
           </form>
