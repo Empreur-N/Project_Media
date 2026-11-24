@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getArticles, getPopularArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
+import { REGION_GROUPS } from '../data/regions';
 import AdPlacement from '../components/AdPlacement';
 import { Calendar, MapPin, Eye, ArrowRight, BookOpen, TrendingUp, Search, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudLightning, X } from 'lucide-react';
 import { useTimezone } from '../contexts/TimezoneContext';
@@ -457,8 +458,16 @@ const Home = () => {
               onChange={(e) => setRegion(e.target.value)}
               style={styles.regionSelect}
             >
-              <option value="">Régions</option>
-              {regions.map((r) => <option key={r} value={r}>{r}</option>)}
+              <option value="">Toutes les régions</option>
+              {REGION_GROUPS.map((grp) => (
+                <optgroup key={grp.group} label={grp.group}>
+                  {grp.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
         </div>

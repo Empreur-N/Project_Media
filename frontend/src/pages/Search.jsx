@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { searchArticles } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
+import { REGION_GROUPS } from '../data/regions';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 import { Search as SearchIcon, Calendar, Tag, MapPin, ArrowRight } from 'lucide-react';
 
@@ -107,14 +108,22 @@ const Search = () => {
           </div>
 
           <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>Région</label>
+            <label style={styles.filterLabel}>Zone Géographique / Région</label>
             <select
               value={region}
               onChange={(e) => setRegion(e.target.value)}
               style={styles.select}
             >
-              <option value="">Toutes</option>
-              {regions.map((r) => <option key={r} value={r}>{r}</option>)}
+              <option value="">Toutes les régions</option>
+              {REGION_GROUPS.map((grp) => (
+                <optgroup key={grp.group} label={grp.group}>
+                  {grp.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
         </div>

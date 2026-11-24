@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getInternalMessages, sendInternalMessage, toggleResolveInternalMessage } from '../services/api';
-import { MessageSquare, LifeBuoy, Send, CheckCircle2, Clock, User, Shield, Tag, Search, RefreshCw, AlertCircle, ArrowLeft } from 'lucide-react';
+import { MessageSquare, LifeBuoy, Send, CheckCircle2, Clock, User, Shield, Tag, Search, RefreshCw, AlertCircle, ArrowLeft, PenSquare } from 'lucide-react';
 
 const StaffChat = () => {
   const { user, token } = useAuth();
@@ -10,6 +10,7 @@ const StaffChat = () => {
   const initialCategory = searchParams.get('category') || 'TECH_SUPPORT';
 
   const [activeTab, setActiveTab] = useState(initialCategory);
+  const [mobileView, setMobileView] = useState('feed'); // 'feed' | 'compose'
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,7 +76,10 @@ const StaffChat = () => {
       setSubject('');
       setContent('');
       fetchMessages(true);
-      setTimeout(() => setStatusFeedback({ text: '', type: '' }), 5000);
+      setTimeout(() => {
+        setStatusFeedback({ text: '', type: '' });
+        setMobileView('feed');
+      }, 1500);
     } catch (err) {
       setStatusFeedback({ text: err.message || "Erreur d'envoi du message", type: "error" });
     } finally {
@@ -189,10 +193,30 @@ const StaffChat = () => {
         </button>
       </div>
 
-      {/* Main Layout : 2 Columns (Messages feed on left, Form on right) */}
-      <div style={styles.mainGrid}>
+      {/* Mobile Navigation Tabs (visible on smartphone / tablet) */}
+      <div className="staff-mobile-view-tabs">
+        <button 
+          type="button" 
+          className={`staff-mobile-tab-btn ${mobileView === 'feed' ? 'active' : ''}`}
+          onClick={() => setMobileView('feed')}
+        >
+          <MessageSquare size={16} />
+          <span>Discussions ({filteredMessages.length})</span>
+        </button>
+        <button 
+          type="button" 
+          className={`staff-mobile-tab-btn ${mobileView === 'compose' ? 'active' : ''}`}
+          onClick={() => setMobileView('compose')}
+        >
+          <Send size={16} />
+          <span>Écrire à la Direction</span>
+        </button>
+      </div>
+
+      {/* Main Layout : 2 Columns on desktop, single column on mobile */}
+      <div className="staff-chat-grid">
         {/* Left Column : Messages list */}
-        <div style={styles.feedCol}>
+        <div className={`staff-feed-col ${mobileView === 'compose' ? 'staff-feed-col-hidden' : ''}`} style={styles.feedCol}>
           {/* Search bar inside feed */}
           <div style={styles.searchBar}>
             <Search size={16} style={{ color: 'var(--text-muted)' }} />
@@ -285,8 +309,8 @@ const StaffChat = () => {
         </div>
 
         {/* Right Column : Compose New Message */}
-        <div style={styles.formCol}>
-          <div className="glass-card" style={styles.composeCard}>
+        <div className={`staff-form-col ${mobileView === 'feed' ? 'staff-compose-col-hidden' : ''}`} style={styles.formCol}>
+          <div className="glass-card staff-compose-card" style={styles.composeCard}>
             <div style={styles.composeHeader}>
               <MessageSquare size={18} style={{ color: 'var(--primary)' }} />
               <h2 style={styles.composeTitle}>Nouveau Message ou Signalement</h2>
@@ -317,7 +341,7 @@ const StaffChat = () => {
                 >
                   <option value="TECH_SUPPORT">Support Technique (Bug, Blocage, Image, Plateforme)</option>
                   <option value="EDITORIAL">Rédaction & Échanges Équipe</option>
-                  <option value="GENERAL">Question Générale</option>
+                  <option value="GENERAL">Question Générale & Direction</option>
                 </select>
               </div>
 
@@ -357,6 +381,19 @@ const StaffChat = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Action Button on mobile when viewing feed */}
+      {mobileView === 'feed' && (
+        <button 
+          type="button"
+          className="staff-mobile-fab"
+          onClick={() => setMobileView('compose')}
+          title="Écrire un nouveau message à la direction"
+        >
+          <PenSquare size={17} />
+          <span>Nouveau Message</span>
+        </button>
+      )}
     </div>
   );
 };
@@ -576,8 +613,6 @@ const styles = {
     color: 'var(--text-muted)'
   },
   formCol: {
-    position: 'sticky',
-    top: '20px'
   },
   composeCard: {
     padding: '24px',
@@ -632,32 +667,41 @@ const styles = {
     letterSpacing: '0.04em'
   },
   selectInput: {
-    background: 'rgba(18, 14, 12, 0.9)',
+    background: 'rgba(18, 14, 12, 0.95)',
     border: '1px solid rgba(192, 192, 192, 0.25)',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: '#F5F3F0',
-    padding: '10px 12px',
-    fontSize: '13px',
-    outline: 'none'
+    padding: '12px 14px',
+    fontSize: '13.5px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   textInput: {
-    background: 'rgba(18, 14, 12, 0.9)',
+    background: 'rgba(18, 14, 12, 0.95)',
     border: '1px solid rgba(192, 192, 192, 0.25)',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: '#F5F3F0',
-    padding: '10px 12px',
-    fontSize: '13px',
-    outline: 'none'
+    padding: '12px 14px',
+    fontSize: '13.5px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   textareaInput: {
-    background: 'rgba(18, 14, 12, 0.9)',
+    background: 'rgba(18, 14, 12, 0.95)',
     border: '1px solid rgba(192, 192, 192, 0.25)',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: '#F5F3F0',
-    padding: '10px 12px',
-    fontSize: '13px',
+    padding: '12px 14px',
+    fontSize: '13.5px',
     outline: 'none',
-    resize: 'vertical'
+    resize: 'vertical',
+    minHeight: '120px',
+    fontFamily: 'inherit',
+    lineHeight: '1.6',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   submitBtn: {
     display: 'flex',
@@ -667,14 +711,16 @@ const styles = {
     background: 'linear-gradient(135deg, #E5A93C 0%, #D97706 100%)',
     color: '#1a1412',
     border: 'none',
-    borderRadius: '8px',
-    padding: '12px',
-    fontSize: '13.5px',
+    borderRadius: '10px',
+    padding: '14px 20px',
+    fontSize: '14px',
     fontWeight: '800',
     cursor: 'pointer',
     marginTop: '6px',
-    boxShadow: '0 4px 14px rgba(229, 169, 60, 0.3)',
-    transition: 'all 0.2s'
+    boxShadow: '0 4px 16px rgba(229, 169, 60, 0.35)',
+    transition: 'all 0.2s',
+    width: '100%',
+    boxSizing: 'border-box'
   }
 };
 

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, publishArticleDirectly, uploadMedia } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
+import { REGION_GROUPS } from '../data/regions';
 import { getMediaUrl } from '../utils/urlUtils';
 import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X } from 'lucide-react';
 
@@ -417,10 +418,18 @@ const JournalistSpace = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Région</label>
+                <label className="form-label">Zone Géographique / Région *</label>
                 <select className="form-input" value={region} onChange={(e) => setRegion(e.target.value)}>
-                  <option value="">Aucune région</option>
-                  {regions.map((r) => <option key={r} value={r}>{r}</option>)}
+                  <option value="">Aucune région spécifique (Global)</option>
+                  {REGION_GROUPS.map((grp) => (
+                    <optgroup key={grp.group} label={grp.group}>
+                      {grp.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
 
