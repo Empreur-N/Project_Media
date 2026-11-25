@@ -261,6 +261,10 @@ export const toggleResolveInternalMessage = (id, token) => {
   return apiCall(`/notifications/messages/${id}/resolve`, 'PUT', null, token);
 };
 
+export const replyInternalMessage = (id, replyData, token) => {
+  return apiCall(`/notifications/messages/${id}/replies`, 'POST', replyData, token);
+};
+
 // --- Analytics ---
 export const trackPageView = (viewData) => {
   const payload = typeof viewData === 'object' && viewData !== null ? viewData : { articleId: viewData };

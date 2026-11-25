@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getInternalMessages, sendInternalMessage, toggleResolveInternalMessage } from '../services/api';
-import { MessageSquare, LifeBuoy, Send, CheckCircle2, Clock, User, Shield, Tag, Search, RefreshCw, AlertCircle, ArrowLeft, PenSquare } from 'lucide-react';
+import { getInternalMessages, sendInternalMessage, toggleResolveInternalMessage, replyInternalMessage } from '../services/api';
+import { MessageSquare, LifeBuoy, Send, CheckCircle2, Clock, User, Shield, Tag, Search, RefreshCw, AlertCircle, ArrowLeft, PenSquare, CornerDownRight, Reply, X } from 'lucide-react';
 
 const StaffChat = () => {
   const { user, token } = useAuth();
@@ -22,6 +22,12 @@ const StaffChat = () => {
   const [category, setCategory] = useState(initialCategory === 'ALL' ? 'TECH_SUPPORT' : initialCategory);
   const [sending, setSending] = useState(false);
   const [statusFeedback, setStatusFeedback] = useState({ text: '', type: '' });
+
+  // Reply states
+  const [replyingToId, setReplyingToId] = useState(null);
+  const [replyText, setReplyText] = useState({});
+  const [resolveOnReply, setResolveOnReply] = useState({});
+  const [replyLoading, setReplyLoading] = useState(false);
 
   const fetchMessages = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -93,6 +99,31 @@ const StaffChat = () => {
       fetchMessages(true);
     } catch (err) {
       console.error("Erreur de mise à jour du statut:", err);
+    }
+  };
+
+  const handleSendReply = async (messageId) => {
+    const text = replyText[messageId]?.trim();
+    if (!text) return;
+
+    setReplyLoading(true);
+    try {
+      const markResolved = resolveOnReply[messageId] || false;
+      await replyInternalMessage(messageId, {
+        senderUsername: user?.username || 'Direction',
+        senderRole: user?.role || 'ADMIN',
+        content: text,
+        markResolved
+      }, token);
+
+      setReplyText(prev => ({ ...prev, [messageId]: '' }));
+      setReplyingToId(null);
+      fetchMessages(true);
+    } catch (err) {
+      console.error("Erreur réponse interne:", err);
+      alert("Erreur lors de l'envoi de la réponse : " + (err.message || 'Échec de transmission'));
+    } finally {
+      setReplyLoading(false);
     }
   };
 
@@ -301,6 +332,116 @@ const StaffChat = () => {
                         minute: '2-digit'
                       })}
                     </span>
+                  </div>
+
+                  {/* Fil des réponses de la direction & échanges */}
+                  {msg.replies && msg.replies.length > 0 && (
+                    <div style={styles.repliesThread}>
+                      <div style={styles.repliesHeader}>
+                        <CornerDownRight size={14} style={{ color: 'var(--primary)' }} />
+                        <span>Réponses de la direction & échanges ({msg.replies.length})</span>
+                      </div>
+                      {msg.replies.map((rep) => (
+                        <div key={rep.id} style={styles.replyBubble}>
+                          <div style={styles.replyMeta}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={styles.replyAvatar}>
+                                <Shield size={11} style={{ color: 'var(--primary)' }} />
+                              </span>
+                              <span style={styles.replySender}>{rep.senderUsername}</span>
+                              <span style={{ ...styles.roleBadge, ...getRoleBadgeStyle(rep.senderRole) }}>
+                                {getRoleLabel(rep.senderRole)}
+                              </span>
+                            </div>
+                            <span style={styles.replyDate}>
+                              {new Date(rep.createdAt).toLocaleString('fr-FR', {
+                                day: '2-digit',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <p style={styles.replyBody}>{rep.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Zone de réponse interactive (Admin & Rédaction) */}
+                  <div style={styles.replyActionArea}>
+                    {replyingToId !== msg.id ? (
+                      <button
+                        type="button"
+                        onClick={() => setReplyingToId(msg.id)}
+                        className="btn btn-secondary"
+                        style={styles.openReplyBtn}
+                        title="Donner des instructions ou répondre directement à l'agent"
+                      >
+                        <Reply size={13} style={{ color: 'var(--primary)' }} />
+                        <span>Répondre à {msg.senderUsername} / Donner des instructions</span>
+                      </button>
+                    ) : (
+                      <div style={styles.replyFormBox}>
+                        <div style={styles.replyFormHeader}>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Reply size={14} /> Répondre à {msg.senderUsername} ({msg.subject})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setReplyingToId(null)}
+                            style={styles.closeReplyBtn}
+                            title="Fermer"
+                          >
+                            <X size={15} />
+                          </button>
+                        </div>
+
+                        <textarea
+                          rows="3"
+                          placeholder={`Rédigez ici votre réponse ou instruction pour ${msg.senderUsername}...`}
+                          value={replyText[msg.id] || ''}
+                          onChange={(e) => setReplyText(prev => ({ ...prev, [msg.id]: e.target.value }))}
+                          style={styles.replyTextarea}
+                          autoFocus
+                        />
+
+                        <div style={styles.replyToolbar}>
+                          {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' || user?.role === 'SUPERVISOR') && !msg.isResolved && (
+                            <label style={styles.resolveCheckboxLabel}>
+                              <input
+                                type="checkbox"
+                                checked={resolveOnReply[msg.id] || false}
+                                onChange={(e) => setResolveOnReply(prev => ({ ...prev, [msg.id]: e.target.checked }))}
+                                style={{ accentColor: 'var(--primary)', cursor: 'pointer' }}
+                              />
+                              <span>Marquer comme résolu en répondant</span>
+                            </label>
+                          )}
+
+                          <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+                            <button
+                              type="button"
+                              onClick={() => setReplyingToId(null)}
+                              className="btn btn-secondary"
+                              style={{ padding: '6px 12px', fontSize: '12px' }}
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSendReply(msg.id)}
+                              className="btn btn-primary"
+                              disabled={replyLoading || !replyText[msg.id]?.trim()}
+                              style={{ padding: '6px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}
+                            >
+                              <Send size={13} />
+                              <span>{replyLoading ? 'Envoi...' : 'Envoyer la réponse'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -611,6 +752,124 @@ const styles = {
   },
   msgDate: {
     color: 'var(--text-muted)'
+  },
+  repliesThread: {
+    marginTop: '14px',
+    paddingTop: '12px',
+    borderTop: '1px dashed rgba(255, 255, 255, 0.08)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px'
+  },
+  repliesHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: 'var(--primary)',
+    marginBottom: '2px'
+  },
+  replyBubble: {
+    background: 'rgba(14, 10, 8, 0.65)',
+    border: '1px solid rgba(229, 169, 60, 0.2)',
+    borderRadius: '10px',
+    padding: '10px 14px'
+  },
+  replyMeta: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '6px',
+    fontSize: '11.5px'
+  },
+  replyAvatar: {
+    width: '18px',
+    height: '18px',
+    borderRadius: '50%',
+    background: 'rgba(229, 169, 60, 0.15)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  replySender: {
+    fontWeight: '700',
+    color: '#F5F3F0'
+  },
+  replyDate: {
+    color: 'var(--text-muted)',
+    fontSize: '11px'
+  },
+  replyBody: {
+    margin: 0,
+    fontSize: '13px',
+    color: '#E5E2DC',
+    lineHeight: '1.5',
+    whiteSpace: 'pre-wrap'
+  },
+  replyActionArea: {
+    marginTop: '12px'
+  },
+  openReplyBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '12px',
+    padding: '7px 14px',
+    borderRadius: '6px',
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid var(--border-color)',
+    color: '#F5F3F0'
+  },
+  replyFormBox: {
+    background: 'rgba(14, 10, 8, 0.85)',
+    border: '1px solid rgba(216, 180, 254, 0.3)',
+    borderRadius: '10px',
+    padding: '12px 14px'
+  },
+  replyFormHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px'
+  },
+  closeReplyBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-muted)',
+    cursor: 'pointer',
+    padding: '2px',
+    display: 'flex',
+    alignItems: 'center'
+  },
+  replyTextarea: {
+    width: '100%',
+    background: 'rgba(0, 0, 0, 0.4)',
+    border: '1px solid var(--border-color)',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    color: 'var(--text-main)',
+    fontSize: '13px',
+    resize: 'vertical',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  replyToolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: '8px',
+    gap: '10px',
+    flexWrap: 'wrap'
+  },
+  resolveCheckboxLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '12px',
+    color: 'var(--text-muted)',
+    cursor: 'pointer'
   },
   formCol: {
   },

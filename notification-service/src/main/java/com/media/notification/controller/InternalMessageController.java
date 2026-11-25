@@ -1,8 +1,10 @@
 package com.media.notification.controller;
 
 import com.media.notification.model.InternalMessage;
+import com.media.notification.model.InternalMessageReply;
 import com.media.notification.model.Notification;
 import com.media.notification.repository.InternalMessageRepository;
+import com.media.notification.repository.InternalMessageReplyRepository;
 import com.media.notification.repository.NotificationRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,14 @@ import java.util.Map;
 public class InternalMessageController {
 
     private final InternalMessageRepository internalMessageRepository;
+    private final InternalMessageReplyRepository internalMessageReplyRepository;
     private final NotificationRepository notificationRepository;
 
-    public InternalMessageController(InternalMessageRepository internalMessageRepository, NotificationRepository notificationRepository) {
+    public InternalMessageController(InternalMessageRepository internalMessageRepository,
+                                     InternalMessageReplyRepository internalMessageReplyRepository,
+                                     NotificationRepository notificationRepository) {
         this.internalMessageRepository = internalMessageRepository;
+        this.internalMessageReplyRepository = internalMessageReplyRepository;
         this.notificationRepository = notificationRepository;
     }
 
@@ -96,5 +102,67 @@ public class InternalMessageController {
         msg.setResolved(!msg.isResolved());
         InternalMessage updated = internalMessageRepository.save(msg);
         return ResponseEntity.ok(updated);
+    }
+
+    // Répondre directement à un message / donner des instructions à un agent
+    @PostMapping("/{id}/replies")
+    public ResponseEntity<?> addReply(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        InternalMessage msg = internalMessageRepository.findById(id).orElse(null);
+        if (msg == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Message non trouvé"));
+        }
+
+        String sender = (String) payload.get("senderUsername");
+        String role = (String) payload.get("senderRole");
+        String content = (String) payload.get("content");
+        
+        Object markResolvedObj = payload.get("markResolved");
+        boolean markResolved = false;
+        if (markResolvedObj instanceof Boolean) {
+            markResolved = (Boolean) markResolvedObj;
+        } else if (markResolvedObj != null) {
+            markResolved = Boolean.parseBoolean(markResolvedObj.toString());
+        }
+
+        if (content == null || content.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Le contenu de la réponse est requis"));
+        }
+
+        InternalMessageReply reply = InternalMessageReply.builder()
+                .message(msg)
+                .senderUsername(sender != null ? sender.trim() : "Direction")
+                .senderRole(role != null ? role : "ADMIN")
+                .content(content.trim())
+                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
+                .build();
+
+        InternalMessageReply savedReply = internalMessageReplyRepository.save(reply);
+
+        if (markResolved && !msg.isResolved()) {
+            msg.setResolved(true);
+            internalMessageRepository.save(msg);
+        }
+
+        // Notification envoyée directement à l'agent émetteur
+        try {
+            if (msg.getSenderUsername() != null && !msg.getSenderUsername().equalsIgnoreCase(sender)) {
+                String snippet = content.length() > 90 ? content.substring(0, 90) + "..." : content;
+                String roleLabel = role != null && !role.isBlank() ? role : "Direction";
+                Notification notif = Notification.builder()
+                        .title("Réponse Direction (" + roleLabel + ")")
+                        .message("À propos de \"" + msg.getSubject() + "\" : " + snippet)
+                        .recipientUsername(msg.getSenderUsername())
+                        .isRead(false)
+                        .createdAt(LocalDateTime.now(ZoneOffset.UTC))
+                        .build();
+                notificationRepository.save(notif);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur notification réponse: " + e.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedReply);
     }
 }

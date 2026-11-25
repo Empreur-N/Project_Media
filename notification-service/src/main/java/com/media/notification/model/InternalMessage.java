@@ -42,6 +42,11 @@ public class InternalMessage {
     @Builder.Default
     private boolean isResolved = false;
 
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("createdAt ASC")
+    @Builder.Default
+    private java.util.List<InternalMessageReply> replies = new java.util.ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
