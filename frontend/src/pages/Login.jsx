@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { login as loginApi, register as registerApi, socialLogin } from '../services/api';
 import { loginWithGoogleOAuth, loginWithFacebookOAuth } from '../services/socialAuth';
-import { Shield, Key, User as UserIcon, AlertCircle, ArrowRight, UserPlus, Mail, CheckCircle, FileText } from 'lucide-react';
+import { Shield, Key, User as UserIcon, AlertCircle, ArrowRight, UserPlus, Mail, CheckCircle, FileText, ShieldCheck } from 'lucide-react';
 
 const Login = () => {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
@@ -102,9 +102,8 @@ const Login = () => {
         fullName: regFullName.trim() || regUsername.trim()
       });
 
-      setSuccess('Compte créé avec succès ! Initialisation de votre session...');
-
-      if (res.token) {
+      if (res.active && res.token) {
+        setSuccess('Compte créé et activé avec succès ! Initialisation de votre session...');
         login(res.token, {
           username: res.username || regUsername,
           fullName: res.fullName || regFullName,
@@ -115,12 +114,11 @@ const Login = () => {
           redirectByRole(res.role || regRole);
         }, 800);
       } else {
-        setTimeout(() => {
-          setMode('login');
-          setUsername(regUsername);
-          setPassword(regPassword);
-          setSuccess('Votre compte a été créé. Vous pouvez maintenant vous connecter.');
-        }, 1200);
+        // Compte inactif : en attente obligatoire de validation par un administrateur
+        setMode('login');
+        setUsername(regUsername);
+        setPassword('');
+        setSuccess(res.message || "Demande d'accréditation enregistrée avec succès ! Conformément aux règles de sécurité, votre compte est inactif et doit être obligatoirement validé par un administrateur avant toute première connexion.");
       }
     } catch (err) {
       setError(err.message || 'Erreur lors de la création du compte agent. Veuillez vérifier vos informations.');
@@ -164,7 +162,13 @@ const Login = () => {
         return;
       }
       console.error(`Erreur connexion ${provider}:`, err);
-      setError(`Connexion ${provider} : ${err.message || "vérifiez l'autorisation dans votre compte"}`);
+      let humanMsg = err.message || "Vérifiez l'autorisation dans votre compte";
+      if (humanMsg.includes('origin_mismatch') || humanMsg.includes('not allowed')) {
+        humanMsg = "Le domaine 'lifechannelmedia.com' doit être déclaré dans les origines JavaScript autorisées de votre console Google Cloud.";
+      } else if (humanMsg.includes('App Not Active') || humanMsg.includes('non actif')) {
+        humanMsg = "L'application Facebook doit être passée en mode 'Live' (En ligne) sur Meta Developers pour autoriser la connexion publique.";
+      }
+      setError(`Connexion ${provider} : ${humanMsg}`);
     } finally {
       setSocialLoading(false);
     }
@@ -345,6 +349,40 @@ const Login = () => {
         ) : (
           /* Formulaire d'Inscription Agent / Journaliste */
           <form onSubmit={handleRegisterSubmit}>
+            <div style={{
+              background: 'rgba(229, 169, 60, 0.08)',
+              border: '1px solid rgba(229, 169, 60, 0.25)',
+              borderRadius: '8px',
+              padding: '14px 16px',
+              marginBottom: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '700', fontSize: '13.5px' }}>
+                <ShieldCheck size={18} />
+                <span>Accréditation Sécurisée & Contrôle d'Accès</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                Toute inscription d'agent (Journaliste ou Éditeur) requiert <strong>l'approbation obligatoire d'un administrateur</strong> avant toute première connexion. Pour une vérification automatique par e-mail :
+              </p>
+              <Link 
+                to="/register" 
+                className="btn btn-secondary"
+                style={{
+                  alignSelf: 'flex-start',
+                  fontSize: '12px',
+                  padding: '6px 14px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginTop: '4px'
+                }}
+              >
+                <span>Portail d'accréditation avec vérification OTP</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
             <div className="form-group" style={{ marginBottom: '16px' }}>
               <label className="form-label" style={styles.formLabel}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>

@@ -14,6 +14,9 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
+    
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username:lifechannelactualites@gmail.com}")
+    private String fromEmail;
 
     public EmailService(@Autowired(required = false) JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -74,7 +77,7 @@ public class EmailService {
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(htmlContent, true);
-                helper.setFrom("contact@lifechannelmedia.com", "LIFE CHANNEL");
+                helper.setFrom(fromEmail != null && !fromEmail.isBlank() ? fromEmail : "lifechannelactualites@gmail.com", "LIFE CHANNEL");
                 mailSender.send(message);
                 log.info("✅ E-mail envoyé avec succès via SMTP à {}", toEmail);
             } catch (Exception e) {

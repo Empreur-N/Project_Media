@@ -155,13 +155,13 @@ public class AuthController {
                 }
 
                 if ("ADMIN".equals(creatorRole) || "SUPER_ADMIN".equals(creatorRole)) {
-                    // Les admins peuvent attribuer n'importe quel rôle directement
+                    // Les administrateurs connectés peuvent attribuer n'importe quel rôle et activer immédiatement
                     role = requestedRole;
                     active = true;
-                } else if (requestedRole == Role.JOURNALIST || requestedRole == Role.EDITOR) {
-                    // Autorise la création autonome des comptes agents et journalistes pour Life Channel
+                } else if (requestedRole == Role.JOURNALIST || requestedRole == Role.EDITOR || requestedRole == Role.SUPERVISOR) {
+                    // Inscription autonome d'un agent/journaliste : compte obligatoirement inactif jusqu'à validation admin
                     role = requestedRole;
-                    active = true;
+                    active = false;
                 } else if (requestedRole == Role.VISITOR) {
                     role = Role.VISITOR;
                     active = true;
@@ -186,17 +186,29 @@ public class AuthController {
 
         userRepository.save(user);
 
-        String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "message", "Compte créé avec succès !",
-                        "active", active,
-                        "token", token,
-                        "username", user.getUsername(),
-                        "fullName", user.getFullName(),
-                        "email", user.getEmail(),
-                        "role", user.getRole().name()
-                ));
+        if (active) {
+            String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message", "Compte créé et activé avec succès !",
+                            "active", true,
+                            "token", token,
+                            "username", user.getUsername(),
+                            "fullName", user.getFullName(),
+                            "email", user.getEmail(),
+                            "role", user.getRole().name()
+                    ));
+        } else {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message", "Votre compte agent (" + user.getRole().name() + ") a été enregistré avec succès. Conformément aux règles de sécurité, il doit être approuvé et activé par un administrateur avant toute première connexion.",
+                            "active", false,
+                            "username", user.getUsername(),
+                            "fullName", user.getFullName(),
+                            "email", user.getEmail(),
+                            "role", user.getRole().name()
+                    ));
+        }
     }
 
     @PostMapping("/auth/login")
@@ -221,8 +233,12 @@ public class AuthController {
         }
 
         if (!user.isActive()) {
+            if (user.getRole() == Role.JOURNALIST || user.getRole() == Role.EDITOR || user.getRole() == Role.SUPERVISOR) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Votre compte agent (" + user.getRole().name() + ") est en attente de validation par l'administrateur. Veuillez patienter jusqu'à l'approbation de votre accréditation."));
+            }
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Ce compte est désactivé"));
+                    .body(Map.of("message", "Ce compte est désactivé ou en attente d'approbation administrative."));
         }
 
         String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getUsers, updateUserActivation, updateUserRole, deleteUser, register } from '../services/api';
-import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic, X } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic, X, Clock } from 'lucide-react';
 
 const ManageUsers = () => {
   const { token, user: currentUser } = useAuth();
@@ -267,10 +267,14 @@ const ManageUsers = () => {
               backgroundColor: activeFilter === 'PENDING' ? '#f59e0b' : 'rgba(245, 158, 11, 0.1)',
               borderColor: '#f59e0b',
               color: activeFilter === 'PENDING' ? '#000' : '#f59e0b',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⏳ En attente d'approbation ({pendingCount})
+            <Clock size={14} />
+            <span>En attente d'approbation ({pendingCount})</span>
           </button>
           <button 
             type="button"
