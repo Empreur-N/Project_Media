@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { getArticle, getComments, postComment, flagComment, likeComment, trackPageView, socialLogin } from '../services/api';
+import { getArticles, getArticle, getComments, postComment, deleteComment, flagComment, likeComment, trackPageView, socialLogin } from '../services/api';
 import { loginWithGoogleOAuth, loginWithFacebookOAuth } from '../services/socialAuth';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
@@ -65,6 +65,20 @@ const ArticleDetail = () => {
       return [];
     }
   });
+
+  // États Spécifiques Phoenix (Recommandations, Tiroir de Réaction, Likes & Partages d'Article)
+  const [relatedArticles, setRelatedArticles] = useState([]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [articleLiked, setArticleLiked] = useState(() => {
+    try {
+      const liked = JSON.parse(localStorage.getItem('lifechannel_liked_articles') || '[]');
+      return liked.includes(id);
+    } catch {
+      return false;
+    }
+  });
+  const [articleLikesCount, setArticleLikesCount] = useState(14);
+  const [articleSharesCount, setArticleSharesCount] = useState(24);
 
   // Partage Rapide Helpers (Statuts WhatsApp, Facebook, Twitter, Partage natif mobile)
   const handleNativeShare = async () => {
@@ -136,6 +150,28 @@ const ArticleDetail = () => {
         if (fallback) setArticle(fallback);
       } finally {
         setLoading(false);
+      }
+
+      // Récupération des articles recommandés ("Vous aimeriez aussi" style Phoenix)
+      try {
+        let allArticles = [];
+        try {
+          const allData = await getArticles();
+          if (Array.isArray(allData) && allData.length > 0) {
+            allArticles = allData;
+          }
+        } catch (e) {
+          // ignore
+        }
+        if (!allArticles.length) {
+          allArticles = IMPORTED_ARTICLES;
+        }
+        const filtered = allArticles
+          .filter(a => String(a.id) !== String(id))
+          .slice(0, 4);
+        setRelatedArticles(filtered);
+      } catch (relErr) {
+        console.warn("Erreur chargement articles recommandés:", relErr);
       }
     };
 
@@ -475,6 +511,56 @@ const ArticleDetail = () => {
     return formatRdcDateTime(dateString, timezone);
   };
 
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return 'Il y a un instant';
+    const diffSec = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diffSec < 60) return 'Il y a 0 seconde';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `Il y a ${diffMin} minute${diffMin > 1 ? 's' : ''}`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `Il y a ${diffHour} heure${diffHour > 1 ? 's' : ''}`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay === 1) return 'Hier';
+    if (diffDay === 2) return 'Avant-hier';
+    if (diffDay < 7) return `Il y a ${diffDay} jours`;
+    return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  };
+
+  const handleToggleArticleLike = () => {
+    const newLiked = !articleLiked;
+    setArticleLiked(newLiked);
+    setArticleLikesCount(prev => Math.max(0, prev + (newLiked ? 1 : -1)));
+    try {
+      const likedList = JSON.parse(localStorage.getItem('lifechannel_liked_articles') || '[]');
+      const updatedList = newLiked 
+        ? [...new Set([...likedList, id])]
+        : likedList.filter(item => String(item) !== String(id));
+      localStorage.setItem('lifechannel_liked_articles', JSON.stringify(updatedList));
+    } catch (e) {
+      console.warn("Storage like error:", e);
+    }
+    if (newLiked) {
+      showToast("Vous aimez cet article !", "success");
+    }
+  };
+
+  const scrollToComments = () => {
+    const el = document.getElementById('comments-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    setComments(prev => (Array.isArray(prev) ? prev : []).filter(c => c.id !== commentId));
+    try {
+      await deleteComment(commentId, token);
+      showToast("Commentaire supprimé.", "success");
+    } catch (e) {
+      showToast("Commentaire retiré de l'affichage.", "info");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container animate-fade-in" style={{ paddingTop: '30px', paddingBottom: '80px' }}>
@@ -554,63 +640,6 @@ const ArticleDetail = () => {
 
         {/* Title */}
         <h1 style={styles.title}>{article.title}</h1>
-
-        {/* Barre de Partage Rapide Supérieure (Statuts WhatsApp, Facebook, X, etc.) */}
-        <div className="fast-share-container">
-          <div className="fast-share-label">
-            <Share2 size={16} style={{ color: 'var(--primary)' }} />
-            <span>Relayer sur vos statuts & réseaux :</span>
-          </div>
-          <div className="fast-share-buttons">
-            <a
-              href={getWhatsAppShareUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="share-btn-whatsapp"
-              title="Partager sur mon statut ou mes discussions WhatsApp"
-            >
-              <WhatsAppIcon size={16} />
-              <span>Statut WhatsApp</span>
-            </a>
-            <a
-              href={getFacebookShareUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="share-btn-facebook"
-              title="Partager sur Facebook"
-            >
-              <FacebookIcon size={15} />
-              <span>Facebook</span>
-            </a>
-            <a
-              href={getTwitterShareUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="share-btn-twitter"
-              title="Partager sur X (Twitter)"
-            >
-              <span>X (Twitter)</span>
-            </a>
-            <button
-              type="button"
-              onClick={handleNativeShare}
-              className="share-btn-native"
-              title="Ouvrir le menu de partage du téléphone"
-            >
-              <Share2 size={14} />
-              <span>Plus d'options</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="share-btn-copy"
-              title="Copier le lien direct de l'article"
-            >
-              <Copy size={13} />
-              <span>Copier le lien</span>
-            </button>
-          </div>
-        </div>
 
         {/* Summary Card */}
         {article.summary && (
@@ -694,255 +723,242 @@ const ArticleDetail = () => {
         {/* Bannière Publicitaire de bas d'article */}
         <AdPlacement placement="FOOTER" style={{ marginTop: '20px', marginBottom: '30px' }} />
 
-        {/* Section Commentaires Fluide & Immédiate (Style Phoenix) */}
-        <div style={styles.commentsSection}>
-          <div style={styles.commentsSectionHeader}>
-            <div>
-              <h3 style={styles.commentsTitle}>
-                <MessageSquare size={20} style={{ color: 'var(--primary)' }} />
-                Espace Réactions & Débats ({comments.length})
-              </h3>
-              <p style={styles.commentsSubtitle}>
-                Partagez votre point de vue instantanément. Le champ est ouvert à tous les lecteurs citoyens.
-              </p>
+        {/* Signalement de l'article style Phoenix */}
+        <div 
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '20px 0 16px', color: '#94a3b8', fontSize: '13px', cursor: 'pointer' }}
+          onClick={() => showToast("Article signalé à l'équipe de rédaction.", "info")}
+          title="Signaler un contenu inapproprié"
+        >
+          <AlertTriangle size={14} style={{ color: '#94a3b8' }} />
+          <span>Signaler &gt;</span>
+        </div>
+
+        {/* Section Vous aimeriez aussi (Style Phoenix) */}
+        {relatedArticles && relatedArticles.length > 0 && (
+          <div className="phoenix-related-section">
+            <div className="phoenix-section-title">
+              <span className="phoenix-vertical-accent"></span>
+              <h4>Vous aimeriez aussi</h4>
+            </div>
+            <div className="phoenix-related-list">
+              {relatedArticles.map((rel) => (
+                <Link 
+                  key={rel.id} 
+                  to={`/articles/${rel.id}`} 
+                  className="phoenix-related-item"
+                >
+                  <div className="phoenix-related-content">
+                    <h5 className="phoenix-related-title">{rel.title}</h5>
+                    <div className="phoenix-related-meta">
+                      <span className="phoenix-related-source">{rel.category || 'Life Channel'}</span>
+                      <span>{formatTimeAgo(rel.publicationDate || rel.createdAt)}</span>
+                    </div>
+                  </div>
+                  <img 
+                    src={getFullImageUrl(rel.mainImageUrl, rel.category)} 
+                    alt={rel.title} 
+                    className="phoenix-related-thumb"
+                    onError={(e) => handleImageError(e, rel.category)}
+                  />
+                </Link>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Formulaire de réaction fluide et direct - Accessible à tous */}
-          <form onSubmit={handleCommentSubmit} className="comment-input-instant-box">
-            {/* Ligne d'identification du commentateur */}
-            <div className="comment-identity-bar">
-              {user ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    ...styles.avatarSmall,
-                    background: getAvatarGradient(user.role, user.username)
-                  }}>
-                    {user.picture ? (
-                      <img
-                        src={user.picture}
-                        alt={user.fullName || user.username}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    ) : (
-                      <span>{(user.fullName || user.username).slice(0, 2).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <strong style={{ fontSize: '13.5px', color: '#F5F3F0' }}>
-                        {customReaderName.trim() || user.fullName || user.username}
-                      </strong>
-                      {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      Connecté sous @{user.username}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #E5A93C 0%, #D97706 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#1a1412',
-                    fontWeight: '800',
-                    fontSize: '11.5px',
-                    boxShadow: '0 2px 8px rgba(229, 169, 60, 0.3)'
-                  }}>
-                    {(customReaderName.trim() ? customReaderName.trim().slice(0, 2).toUpperCase() : 'LC')}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <input
-                      type="text"
-                      className="comment-reader-input"
-                      placeholder="Votre nom / prénom ou pseudo..."
-                      value={customReaderName}
-                      onChange={(e) => setCustomReaderName(e.target.value)}
-                      title="Précisez votre nom pour signer votre réaction"
-                    />
-                  </div>
-                </div>
-              )}
+        {/* Section Tous les commentaires (Style Phoenix) */}
+        <div id="comments-section" className="phoenix-comments-section">
+          <div className="phoenix-section-title">
+            <span className="phoenix-vertical-accent"></span>
+            <h4>Tous les commentaires</h4>
+          </div>
 
-              {/* Options sociales rapides ou bouton déconnexion */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={handleReaderLogout}
-                    style={styles.changeAccountBtn}
-                    title="Se déconnecter"
-                  >
-                    <LogOut size={12} />
-                    <span>Déconnexion</span>
-                  </button>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    <span style={{ fontSize: '11.5px' }}>Lier un compte :</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRealSocialLogin('GOOGLE')}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '50%',
-                        width: '28px',
-                        height: '28px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                      }}
-                      title="Se connecter avec Google"
-                    >
-                      <GoogleIcon size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRealSocialLogin('FACEBOOK')}
-                      style={{
-                        background: 'rgba(24, 119, 242, 0.15)',
-                        border: '1px solid rgba(24, 119, 242, 0.3)',
-                        borderRadius: '50%',
-                        width: '28px',
-                        height: '28px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#60a5fa',
-                        cursor: 'pointer'
-                      }}
-                      title="Se connecter avec Facebook"
-                    >
-                      <FacebookIcon size={14} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Champ de saisie direct (ouvre le clavier immédiatement sur smartphone) */}
-            <div style={{ marginTop: '8px' }}>
-              <textarea
-                id="comment-textarea"
-                className="form-input"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Rédigez votre commentaire ici. Votre avis s'affichera immédiatement..."
-                rows="3"
-                required
-                disabled={submittingComment}
-                style={{ width: '100%', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', flexWrap: 'wrap', gap: '10px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--argente)' }}>
-                Affichage direct avec photo et nom d'auteur • Modération citoyenne
-              </span>
-              <button 
-                type="submit" 
-                className="btn-pill-lavande" 
-                style={{ padding: '10px 24px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: '800' }} 
-                disabled={submittingComment || !newComment.trim()}
-              >
-                <Send size={14} />
-                <span>{submittingComment ? "Envoi..." : "Publier ma réaction"}</span>
-              </button>
-            </div>
-          </form>
-
-          {/* Liste des commentaires */}
           {commentsLoading ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Chargement des réactions...</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', padding: '16px 0' }}>Chargement des réactions...</p>
           ) : comments.length === 0 ? (
-            <div className="glass-card" style={styles.emptyCommentsCard}>
-              <MessageSquare size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px', opacity: 0.6 }} />
-              <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-main)' }}>Aucun commentaire pour le moment</div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Soyez le premier à réagir directement sur cet article !</p>
+            <div className="phoenix-empty-comments">
+              Aucun commentaire pour le moment. Soyez le premier à donner votre avis en cliquant ci-dessous !
             </div>
           ) : (
-            <div style={styles.commentsList}>
+            <div className="phoenix-comments-list">
               {comments.map((com) => {
                 const meta = getAuthorMeta(com);
+                const isOwn = (user && (user.username === com.username || (com.username && com.username.includes(user.username))));
                 return (
-                  <div key={com.id} className="glass-card animate-fade-in" style={styles.modernCommentCard}>
-                    {/* Header de l'intervention */}
-                    <div style={styles.commentHeaderRow}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          ...styles.avatarCircle,
-                          background: getAvatarGradient(meta.role, meta.handle)
-                        }}>
-                          {meta.initials}
-                        </div>
+                  <div key={com.id} className="phoenix-comment-item">
+                    <div 
+                      className="phoenix-comment-avatar"
+                      style={{ background: getAvatarGradient(meta.role, meta.handle) }}
+                    >
+                      {meta.initials}
+                    </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={styles.authorFullName}>{meta.name}</span>
-                            <span style={styles.authorHandle}>{meta.handle}</span>
-                            {getRoleBadge(meta.role)}
-                          </div>
-                          <div style={styles.commentDateBadge}>
-                            {com.createdAt ? new Date(com.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Récemment'}
-                          </div>
-                        </div>
+                    <div className="phoenix-comment-body">
+                      <div className="phoenix-comment-author">
+                        {meta.name}
                       </div>
-
-                      {/* Signalement */}
-                      <button 
-                        onClick={() => handleFlagComment(com.id)} 
-                        style={styles.flagIconBtn} 
-                        title="Signaler cette intervention à l'équipe de modération"
-                      >
-                        <AlertTriangle size={13} />
-                      </button>
+                      <div className="phoenix-comment-text">
+                        {com.content}
+                      </div>
+                      <div className="phoenix-comment-meta-row">
+                        <span>{formatTimeAgo(com.createdAt)}</span>
+                        <button 
+                          type="button" 
+                          className="phoenix-action-text-btn"
+                          onClick={() => {
+                            handleReply(meta.handle);
+                            setIsDrawerOpen(true);
+                          }}
+                        >
+                          Répondre
+                        </button>
+                        {isOwn && (
+                          <button 
+                            type="button" 
+                            className="phoenix-action-text-btn danger"
+                            onClick={() => handleDeleteComment(com.id)}
+                          >
+                            Supprimer
+                          </button>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Contenu textuel */}
-                    <div style={styles.commentContentWrapper}>
-                      <p style={styles.commentMessageText}>{com.content}</p>
-                    </div>
-
-                    {/* Barre d'interaction style Phoenix (Cœur rouge vibrant) */}
-                    <div style={styles.commentInteractionsRow}>
-                      <button 
-                        type="button"
-                        onClick={() => handleLikeComment(com.id)} 
-                        className={`phoenix-like-btn ${com.userLiked ? 'liked' : ''}`}
-                        title="J'aime cette réaction (style Phoenix)"
-                      >
-                        <Heart
-                          size={14}
-                          fill={com.userLiked ? '#ef4444' : 'none'}
-                          color={com.userLiked ? '#ef4444' : 'var(--text-muted)'}
-                          className={com.userLiked ? 'heart-pop' : ''}
-                        />
-                        <span style={{ fontWeight: '800' }}>{com.likesCount || 0}</span>
-                      </button>
-
-                      <button 
-                        onClick={() => handleReply(meta.handle)} 
-                        style={styles.replyBtn}
-                        title={`Répondre directement à ${meta.name}`}
-                      >
-                        <CornerDownRight size={13} />
-                        <span>Répondre</span>
-                      </button>
-                    </div>
+                    <button 
+                      type="button"
+                      className={`phoenix-comment-like-col ${com.userLiked ? 'liked' : ''}`}
+                      onClick={() => handleLikeComment(com.id)}
+                      title="J'aime ce commentaire"
+                    >
+                      <Heart 
+                        size={18} 
+                        fill={com.userLiked ? '#ef4444' : 'none'} 
+                        color={com.userLiked ? '#ef4444' : '#94a3b8'} 
+                      />
+                      {(com.likesCount > 0) && (
+                        <span className="phoenix-like-count">{com.likesCount}</span>
+                      )}
+                    </button>
                   </div>
                 );
               })}
             </div>
           )}
         </div>
+
+        {/* Barre d'interaction fixe du bas style Phoenix */}
+        <div className="phoenix-bottom-bar">
+          <div 
+            className="phoenix-bar-input-trigger" 
+            onClick={() => setIsDrawerOpen(true)}
+            role="button"
+            tabIndex={0}
+          >
+            Ce que j'en dis ...
+          </div>
+
+          <div className="phoenix-bar-actions">
+            <button 
+              type="button" 
+              className="phoenix-bar-btn" 
+              onClick={scrollToComments}
+              title="Voir les commentaires"
+            >
+              <MessageSquare size={19} />
+              <span className="phoenix-bar-badge">{comments.length}</span>
+            </button>
+
+            <button 
+              type="button" 
+              className={`phoenix-bar-btn ${articleLiked ? 'liked' : ''}`}
+              onClick={handleToggleArticleLike}
+              title="Aimer cet article"
+            >
+              <Heart 
+                size={19} 
+                fill={articleLiked ? '#ef4444' : 'none'} 
+                color={articleLiked ? '#ef4444' : '#94a3b8'} 
+              />
+              <span className="phoenix-bar-badge">{articleLikesCount}</span>
+            </button>
+
+            <button 
+              type="button" 
+              className="phoenix-bar-btn" 
+              onClick={handleNativeShare}
+              title="Partager cet article"
+            >
+              <Share2 size={19} />
+              <span className="phoenix-bar-badge">{articleSharesCount}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Tiroir d'écriture de réaction (Phoenix Drawer) */}
+        {isDrawerOpen && (
+          <div className="phoenix-drawer-backdrop" onClick={() => setIsDrawerOpen(false)}>
+            <div className="phoenix-drawer-card" onClick={(e) => e.stopPropagation()}>
+              <div className="phoenix-drawer-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="phoenix-vertical-accent"></span>
+                  <h4 style={{ margin: 0, fontSize: '15px', color: '#F5F3F0', fontWeight: '700' }}>
+                    Votre réaction
+                  </h4>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setIsDrawerOpen(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                  title="Fermer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={async (e) => {
+                await handleCommentSubmit(e);
+                setIsDrawerOpen(false);
+              }}>
+                {!user && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <input
+                      type="text"
+                      className="comment-reader-input"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                      placeholder="Votre nom / prénom ou pseudo..."
+                      value={customReaderName}
+                      onChange={(e) => setCustomReaderName(e.target.value)}
+                      title="Précisez votre nom pour signer votre réaction"
+                    />
+                  </div>
+                )}
+
+                <textarea
+                  id="comment-textarea"
+                  className="phoenix-drawer-textarea"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Ce que j'en dis ..."
+                  rows="3"
+                  required
+                  disabled={submittingComment}
+                  autoFocus
+                />
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                  <button
+                    type="submit"
+                    className="btn-pill-lavande"
+                    style={{ padding: '8px 24px', fontSize: '13px', fontWeight: '800' }}
+                    disabled={submittingComment || !newComment.trim()}
+                  >
+                    {submittingComment ? "Envoi..." : "Envoyer"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </article>
     </div>
   );

@@ -8,11 +8,13 @@ const MobileBottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Masquer sur les pages d'administration et d'authentification pour laisser place aux claviers & éditeurs
+  // Masquer sur les pages d'administration, de lecture d'article (remplacée par la barre d'engagement Phoenix) et d'authentification
   if (
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/login') ||
     location.pathname.startsWith('/register') ||
+    location.pathname.startsWith('/articles/') ||
+    location.pathname.startsWith('/article/') ||
     location.pathname === '/log' ||
     location.pathname === '/staff'
   ) {
