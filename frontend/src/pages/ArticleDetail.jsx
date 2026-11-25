@@ -6,13 +6,13 @@ import { getArticle, getComments, postComment, flagComment, likeComment, trackPa
 import { loginWithGoogleOAuth, loginWithFacebookOAuth } from '../services/socialAuth';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock, CheckCircle2, X, LogOut } from 'lucide-react';
+import { Calendar, Tag, MapPin, User, ArrowLeft, BookOpen, MessageSquare, AlertTriangle, Send, Heart, CornerDownRight, ShieldCheck, Sparkles, UserCheck, Lock, CheckCircle2, X, LogOut, Share2, Copy, Check, ExternalLink } from 'lucide-react';
 import { useMetaTags } from '../hooks/useMetaTags';
 import { useTimezone } from '../contexts/TimezoneContext';
 import { formatRdcDateTime } from '../utils/timeUtils';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 
-// Composants Icones Réseaux Sociaux (Google et Facebook officiels)
+// Composants Icones Réseaux Sociaux (Google, Facebook, WhatsApp)
 const GoogleIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -25,6 +25,12 @@ const GoogleIcon = ({ size = 18 }) => (
 const FacebookIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
+const WhatsAppIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
   </svg>
 );
 
@@ -46,11 +52,65 @@ const ArticleDetail = () => {
   // État de chargement de l'authentification sociale directe (Google / Facebook)
   const [socialLoading, setSocialLoading] = useState(false);
   
+  // Nom d'affichage personnalisé mémorisé pour les lecteurs
+  const [customReaderName, setCustomReaderName] = useState(() => {
+    return localStorage.getItem('lifechannel_reader_name') || '';
+  });
+
+  // Liste des IDs de commentaires aimés avec persistance locale (Cœur rouge style Phoenix)
+  const [likedComments, setLikedComments] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('lifechannel_liked_comments') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  // Partage Rapide Helpers (Statuts WhatsApp, Facebook, Twitter, Partage natif mobile)
+  const handleNativeShare = async () => {
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: article?.title || "LIFE CHANNEL",
+      text: article?.summary || article?.title || "Retrouvez cette actualité sur LIFE CHANNEL",
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          handleCopyLink();
+        }
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Lien de l'article copié dans le presse-papier !", "success");
+  };
+
+  const getWhatsAppShareUrl = () => {
+    const url = window.location.href;
+    const text = `*${article?.title || ''}*\n${article?.summary || ''}\n\n👉 Suivre l'info en continu sur LIFE CHANNEL : ${url}`;
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  };
+
+  const getFacebookShareUrl = () => {
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+  };
+
+  const getTwitterShareUrl = () => {
+    const text = `${article?.title || ''} via @LifeChannelRDC`;
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+  };
+  
   // Comments States
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [visitorName, setVisitorName] = useState('');
-  const [visitorHandle, setVisitorHandle] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
 
@@ -93,7 +153,10 @@ const ArticleDetail = () => {
     try {
       const data = await getComments(id);
       if (Array.isArray(data)) {
-        setComments(data);
+        setComments(data.map(c => ({
+          ...c,
+          userLiked: likedComments.includes(c.id)
+        })));
       } else {
         setComments([]);
       }
@@ -204,8 +267,6 @@ const ArticleDetail = () => {
     );
   };
 
-  // Nom d'affichage personnalisé optionnel pour les lecteurs
-  const [customReaderName, setCustomReaderName] = useState('');
 
   // Authentification directe 1-clic (Google / Facebook) sans aucun formulaire bloquant
   const handleRealSocialLogin = async (provider) => {
@@ -299,24 +360,51 @@ const ArticleDetail = () => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!user) {
-      showToast("Vous devez être connecté pour publier un commentaire.", "error");
-      return;
-    }
     if (!newComment.trim()) return;
 
-    const finalName = customReaderName.trim() || user.fullName || user.username;
-    const finalHandle = user.username.startsWith('@') ? user.username : `@${user.username}`;
-    let finalRole = user.role || 'USER';
-    if (user.role === 'USER') {
-      finalRole = user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE';
+    let finalName = '';
+    let finalHandle = '';
+    let finalRole = 'USER';
+
+    if (user) {
+      finalName = customReaderName.trim() || user.fullName || user.username;
+      finalHandle = user.username.startsWith('@') ? user.username : `@${user.username}`;
+      if (user.role === 'USER') {
+        finalRole = user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : (user.provider === 'GOOGLE' ? 'LECTEUR_GOOGLE' : 'LECTEUR_VERIFIE');
+      } else {
+        finalRole = user.role || 'USER';
+      }
+    } else {
+      finalName = customReaderName.trim() || 'Lecteur Citoyen';
+      finalHandle = '@' + finalName.toLowerCase().replace(/[^a-z0-9_]/g, '_').slice(0, 16);
+      finalRole = 'LECTEUR';
+      // Mémoriser le nom pour les prochains commentaires du lecteur
+      localStorage.setItem('lifechannel_reader_name', finalName);
     }
 
     setSubmittingComment(true);
+
+    const localCom = {
+      id: Date.now(),
+      articleId: Number(id),
+      username: `${finalName}|${finalHandle}|${finalRole}`,
+      authorName: finalName,
+      userRole: finalRole,
+      content: newComment.trim(),
+      likesCount: 0,
+      userLiked: false,
+      createdAt: new Date().toISOString()
+    };
+
+    // Affichage immédiat sans attendre la réponse serveur (Optimistic update)
+    setComments(prev => [localCom, ...(Array.isArray(prev) ? prev : [])]);
+    const commentToSend = newComment.trim();
+    setNewComment('');
+
     try {
       const payload = {
         articleId: Number(id),
-        content: newComment.trim(),
+        content: commentToSend,
         username: `${finalName}|${finalHandle}|${finalRole}`,
         authorName: finalName,
         userRole: finalRole,
@@ -324,35 +412,41 @@ const ArticleDetail = () => {
       };
 
       await postComment(payload, token);
-      setNewComment('');
       showToast("Votre réaction a été publiée avec succès !", "success");
-      fetchArticleComments();
     } catch (error) {
-      console.warn("API commentaire indisponible, ajout immédiat dans la vue locale:", error);
-      const localCom = {
-        id: Date.now(),
-        articleId: Number(id),
-        username: `${finalName}|${finalHandle}|${finalRole}`,
-        authorName: finalName,
-        userRole: finalRole,
-        content: newComment.trim(),
-        likesCount: 0,
-        createdAt: new Date().toISOString()
-      };
-      setComments(prev => [localCom, ...prev]);
-      setNewComment('');
+      console.warn("API commentaire indisponible, réaction conservée en local:", error);
       showToast("Votre réaction a été enregistrée avec succès.", "success");
     } finally {
       setSubmittingComment(false);
     }
   };
 
+  // Système de likes avec cœur rouge Phoenix & persistance
   const handleLikeComment = async (commentId) => {
-    setComments(prev => (Array.isArray(prev) ? prev : []).map(c => 
-      c.id === commentId ? { ...c, likesCount: (c.likesCount || 0) + 1, userLiked: true } : c
-    ));
+    const isCurrentlyLiked = likedComments.includes(commentId);
+    const newLiked = isCurrentlyLiked 
+      ? likedComments.filter(cid => cid !== commentId)
+      : [...likedComments, commentId];
+
+    setLikedComments(newLiked);
+    localStorage.setItem('lifechannel_liked_comments', JSON.stringify(newLiked));
+
+    setComments(prev => (Array.isArray(prev) ? prev : []).map(c => {
+      if (c.id === commentId) {
+        const delta = isCurrentlyLiked ? -1 : 1;
+        return {
+          ...c,
+          likesCount: Math.max(0, (c.likesCount || 0) + delta),
+          userLiked: !isCurrentlyLiked
+        };
+      }
+      return c;
+    }));
+
     try {
-      await likeComment(commentId, token);
+      if (!isCurrentlyLiked) {
+        await likeComment(commentId, token);
+      }
     } catch (e) {
       console.warn("Like local appliqué:", e);
     }
@@ -461,6 +555,63 @@ const ArticleDetail = () => {
         {/* Title */}
         <h1 style={styles.title}>{article.title}</h1>
 
+        {/* Barre de Partage Rapide Supérieure (Statuts WhatsApp, Facebook, X, etc.) */}
+        <div className="fast-share-container">
+          <div className="fast-share-label">
+            <Share2 size={16} style={{ color: 'var(--primary)' }} />
+            <span>Relayer sur vos statuts & réseaux :</span>
+          </div>
+          <div className="fast-share-buttons">
+            <a
+              href={getWhatsAppShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn-whatsapp"
+              title="Partager sur mon statut ou mes discussions WhatsApp"
+            >
+              <WhatsAppIcon size={16} />
+              <span>Statut WhatsApp</span>
+            </a>
+            <a
+              href={getFacebookShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn-facebook"
+              title="Partager sur Facebook"
+            >
+              <FacebookIcon size={15} />
+              <span>Facebook</span>
+            </a>
+            <a
+              href={getTwitterShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn-twitter"
+              title="Partager sur X (Twitter)"
+            >
+              <span>X (Twitter)</span>
+            </a>
+            <button
+              type="button"
+              onClick={handleNativeShare}
+              className="share-btn-native"
+              title="Ouvrir le menu de partage du téléphone"
+            >
+              <Share2 size={14} />
+              <span>Plus d'options</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="share-btn-copy"
+              title="Copier le lien direct de l'article"
+            >
+              <Copy size={13} />
+              <span>Copier le lien</span>
+            </button>
+          </div>
+        </div>
+
         {/* Summary Card */}
         {article.summary && (
           <div className="glass-card" style={styles.summaryCard}>
@@ -492,10 +643,58 @@ const ArticleDetail = () => {
           </div>
         )}
 
-        {/* Bannière Publicitaire de bas d'article */}
-        <AdPlacement placement="FOOTER" style={{ marginTop: '40px', marginBottom: '30px' }} />
+        {/* Barre de Partage Rapide Inférieure (Bas d'article) */}
+        <div className="fast-share-container" style={{ marginTop: '35px' }}>
+          <div className="fast-share-label">
+            <Share2 size={16} style={{ color: 'var(--primary)' }} />
+            <span>Cet article vous a intéressé ? Partagez-le avec vos proches :</span>
+          </div>
+          <div className="fast-share-buttons">
+            <a
+              href={getWhatsAppShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn-whatsapp"
+              title="Partager sur mon statut ou mes discussions WhatsApp"
+            >
+              <WhatsAppIcon size={16} />
+              <span>Partager sur WhatsApp</span>
+            </a>
+            <a
+              href={getFacebookShareUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="share-btn-facebook"
+              title="Partager sur Facebook"
+            >
+              <FacebookIcon size={15} />
+              <span>Facebook</span>
+            </a>
+            <button
+              type="button"
+              onClick={handleNativeShare}
+              className="share-btn-native"
+              title="Ouvrir le menu de partage rapide"
+            >
+              <Share2 size={14} />
+              <span>Partager via...</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="share-btn-copy"
+              title="Copier le lien"
+            >
+              <Copy size={13} />
+              <span>Copier</span>
+            </button>
+          </div>
+        </div>
 
-        {/* Section Commentaires */}
+        {/* Bannière Publicitaire de bas d'article */}
+        <AdPlacement placement="FOOTER" style={{ marginTop: '20px', marginBottom: '30px' }} />
+
+        {/* Section Commentaires Fluide & Immédiate (Style Phoenix) */}
         <div style={styles.commentsSection}>
           <div style={styles.commentsSectionHeader}>
             <div>
@@ -504,147 +703,161 @@ const ArticleDetail = () => {
                 Espace Réactions & Débats ({comments.length})
               </h3>
               <p style={styles.commentsSubtitle}>
-                Partagez votre avis, dialoguez avec les auteurs et la communauté citoyenne de LIFE CHANNEL.
+                Partagez votre point de vue instantanément. Le champ est ouvert à tous les lecteurs citoyens.
               </p>
             </div>
           </div>
 
-          {/* Formulaire de réaction structuré ou invite de connexion 1-clic Opera News */}
-          {user ? (
-            <form onSubmit={handleCommentSubmit} style={styles.modernCommentForm} className="glass-card">
-              <div style={styles.userCommentBanner}>
-                {/* Photo de profil / Avatar circulaire */}
-                <div style={{
-                  ...styles.avatarSmall,
-                  background: getAvatarGradient(user.role, user.username)
-                }}>
-                  {user.picture ? (
-                    <img
-                      src={user.picture}
-                      alt={user.fullName || user.username}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  ) : null}
-                  <span style={user.picture ? { display: 'none' } : {}}>
-                    {(user.fullName || user.username).slice(0, 2).toUpperCase()}
-                  </span>
-                </div>
-
-                {/* Données d'identité alignées */}
-                <div style={styles.userCommentInfo}>
-                  <div style={styles.userCommentTopRow}>
-                    <strong style={styles.userCommentName}>
-                      {customReaderName.trim() || user.fullName || user.username}
-                    </strong>
-                    {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
-                    <span style={styles.userCommentHandle}>
-                      @{user.username}
-                    </span>
-                    {user.role === 'USER' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const n = prompt("Modifier le nom affiché sur vos réactions :", customReaderName.trim() || user.fullName || "");
-                          if (n !== null && n.trim()) {
-                            setCustomReaderName(n.trim());
-                          }
-                        }}
-                        style={styles.editNameBtn}
-                        title="Personnaliser votre nom affiché publiquement"
-                      >
-                        (Modifier)
-                      </button>
+          {/* Formulaire de réaction fluide et direct - Accessible à tous */}
+          <form onSubmit={handleCommentSubmit} className="comment-input-instant-box">
+            {/* Ligne d'identification du commentateur */}
+            <div className="comment-identity-bar">
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    ...styles.avatarSmall,
+                    background: getAvatarGradient(user.role, user.username)
+                  }}>
+                    {user.picture ? (
+                      <img
+                        src={user.picture}
+                        alt={user.fullName || user.username}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span>{(user.fullName || user.username).slice(0, 2).toUpperCase()}</span>
                     )}
                   </div>
-                  <div style={styles.userCommentStatus}>
-                    Connecté via {user.provider === 'FACEBOOK' ? 'Facebook' : user.provider === 'GOOGLE' ? 'Google' : 'Life Channel'} • Publication directe
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <strong style={{ fontSize: '13.5px', color: '#F5F3F0' }}>
+                        {customReaderName.trim() || user.fullName || user.username}
+                      </strong>
+                      {getRoleBadge(user.role === 'USER' ? (user.provider === 'FACEBOOK' ? 'LECTEUR_FACEBOOK' : 'LECTEUR_GOOGLE') : user.role)}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      Connecté sous @{user.username}
+                    </div>
                   </div>
                 </div>
-
-                {/* Bouton de déconnexion aligné à droite */}
-                <button
-                  type="button"
-                  onClick={handleReaderLogout}
-                  style={styles.changeAccountBtn}
-                  title="Changer de compte ou se déconnecter"
-                >
-                  <LogOut size={12} />
-                  <span>Déconnexion</span>
-                </button>
-              </div>
-
-              <div style={{ marginTop: '12px' }}>
-                <textarea
-                  id="comment-textarea"
-                  className="form-input"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Exprimez-vous de manière constructive (respect de la charte de modération)..."
-                  rows="3"
-                  required
-                  disabled={submittingComment}
-                  style={{ width: '100%', resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={styles.formFooterRow}>
-                <span style={{ fontSize: '12px', color: 'var(--argente)' }}>
-                  Publication instantanée sous votre profil vérifié
-                </span>
-                <button 
-                  type="submit" 
-                  className="btn-pill-lavande" 
-                  style={{ padding: '9px 24px', fontSize: '12px' }} 
-                  disabled={submittingComment}
-                >
-                  <Send size={13} /> {submittingComment ? "Publication..." : "Publier ma réaction"}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="glass-card" style={styles.operaNewsAuthBox}>
-              <div style={{ textAlign: 'center', maxWidth: '620px', margin: '0 auto' }}>
-                <div style={styles.operaNewsBadge}>
-                  <Sparkles size={13} style={{ color: 'var(--primary)' }} />
-                  ESPACE RÉACTIONS DU PUBLIC
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #E5A93C 0%, #D97706 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#1a1412',
+                    fontWeight: '800',
+                    fontSize: '11.5px',
+                    boxShadow: '0 2px 8px rgba(229, 169, 60, 0.3)'
+                  }}>
+                    {(customReaderName.trim() ? customReaderName.trim().slice(0, 2).toUpperCase() : 'LC')}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <input
+                      type="text"
+                      className="comment-reader-input"
+                      placeholder="Votre nom / prénom ou pseudo..."
+                      value={customReaderName}
+                      onChange={(e) => setCustomReaderName(e.target.value)}
+                      title="Précisez votre nom pour signer votre réaction"
+                    />
+                  </div>
                 </div>
-                <h4 style={styles.operaNewsTitle}>
-                  Rejoignez le débat citoyen en 1 clic
-                </h4>
-                <p style={styles.operaNewsSubtitle}>
-                  Participez aux échanges en vous connectant directement avec votre compte Google ou Facebook, sans création de mot de passe ni démarche complexe :
-                </p>
+              )}
 
-                {/* Boutons Sociaux 1-Click Authentification Directe Google / Facebook */}
-                <div style={styles.socialButtonsRow}>
+              {/* Options sociales rapides ou bouton déconnexion */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                {user ? (
                   <button
                     type="button"
-                    onClick={() => handleRealSocialLogin('GOOGLE')}
-                    style={styles.btnGoogleSocial}
-                    disabled={socialLoading}
+                    onClick={handleReaderLogout}
+                    style={styles.changeAccountBtn}
+                    title="Se déconnecter"
                   >
-                    <GoogleIcon size={18} />
-                    <span>{socialLoading ? 'Connexion en cours...' : 'Continuer avec Google'}</span>
+                    <LogOut size={12} />
+                    <span>Déconnexion</span>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRealSocialLogin('FACEBOOK')}
-                    style={styles.btnFacebookSocial}
-                    disabled={socialLoading}
-                  >
-                    <FacebookIcon size={18} />
-                    <span>{socialLoading ? 'Connexion en cours...' : 'Continuer avec Facebook'}</span>
-                  </button>
-                </div>
-
-                <div style={styles.socialSecurityNote}>
-                  Connexion instantanée réservée aux lecteurs • Aucun mot de passe requis
-                </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <span style={{ fontSize: '11.5px' }}>Lier un compte :</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRealSocialLogin('GOOGLE')}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '50%',
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                      title="Se connecter avec Google"
+                    >
+                      <GoogleIcon size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRealSocialLogin('FACEBOOK')}
+                      style={{
+                        background: 'rgba(24, 119, 242, 0.15)',
+                        border: '1px solid rgba(24, 119, 242, 0.3)',
+                        borderRadius: '50%',
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#60a5fa',
+                        cursor: 'pointer'
+                      }}
+                      title="Se connecter avec Facebook"
+                    >
+                      <FacebookIcon size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+
+            {/* Champ de saisie direct (ouvre le clavier immédiatement sur smartphone) */}
+            <div style={{ marginTop: '8px' }}>
+              <textarea
+                id="comment-textarea"
+                className="form-input"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Rédigez votre commentaire ici. Votre avis s'affichera immédiatement..."
+                rows="3"
+                required
+                disabled={submittingComment}
+                style={{ width: '100%', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', flexWrap: 'wrap', gap: '10px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--argente)' }}>
+                Affichage direct avec photo et nom d'auteur • Modération citoyenne
+              </span>
+              <button 
+                type="submit" 
+                className="btn-pill-lavande" 
+                style={{ padding: '10px 24px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: '800' }} 
+                disabled={submittingComment || !newComment.trim()}
+              >
+                <Send size={14} />
+                <span>{submittingComment ? "Envoi..." : "Publier ma réaction"}</span>
+              </button>
+            </div>
+          </form>
 
           {/* Liste des commentaires */}
           {commentsLoading ? (
@@ -653,7 +866,7 @@ const ArticleDetail = () => {
             <div className="glass-card" style={styles.emptyCommentsCard}>
               <MessageSquare size={32} style={{ color: 'var(--text-muted)', marginBottom: '8px', opacity: 0.6 }} />
               <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-main)' }}>Aucun commentaire pour le moment</div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Soyez le premier à ouvrir le débat citoyen sur cet article !</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>Soyez le premier à réagir directement sur cet article !</p>
             </div>
           ) : (
             <div style={styles.commentsList}>
@@ -698,19 +911,21 @@ const ArticleDetail = () => {
                       <p style={styles.commentMessageText}>{com.content}</p>
                     </div>
 
-                    {/* Barre d'interaction style plateforme moderne */}
+                    {/* Barre d'interaction style Phoenix (Cœur rouge vibrant) */}
                     <div style={styles.commentInteractionsRow}>
                       <button 
+                        type="button"
                         onClick={() => handleLikeComment(com.id)} 
-                        style={{
-                          ...styles.likeBtn,
-                          color: com.userLiked ? '#ef4444' : 'var(--text-muted)',
-                          borderColor: com.userLiked ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-color)'
-                        }}
-                        title="J'aime cette réaction"
+                        className={`phoenix-like-btn ${com.userLiked ? 'liked' : ''}`}
+                        title="J'aime cette réaction (style Phoenix)"
                       >
-                        <Heart size={13} fill={com.userLiked ? '#ef4444' : 'none'} />
-                        <span style={{ fontWeight: '700' }}>{com.likesCount || 0}</span>
+                        <Heart
+                          size={14}
+                          fill={com.userLiked ? '#ef4444' : 'none'}
+                          color={com.userLiked ? '#ef4444' : 'var(--text-muted)'}
+                          className={com.userLiked ? 'heart-pop' : ''}
+                        />
+                        <span style={{ fontWeight: '800' }}>{com.likesCount || 0}</span>
                       </button>
 
                       <button 
