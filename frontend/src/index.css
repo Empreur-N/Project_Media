@@ -3504,45 +3504,50 @@ html[data-font-size="large"] .article-card-summary {
    STYLES PAGE "MOI" (PROFIL UTILISATEUR STYLE PHOENIX)
    ======================================================== */
 .moi-page-container {
-  max-width: 640px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 18px 16px 95px;
+  padding: 16px 14px 90px;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 
 .moi-header-title {
-  font-size: 28px;
-  font-weight: 900;
-  color: #F5F3F0;
-  margin: 4px 0 20px;
-  letter-spacing: -0.5px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 2px 0 16px;
+  letter-spacing: -0.3px;
+  padding-left: 2px;
 }
 
 .moi-profile-card {
-  background: #14100e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 18px 20px;
+  background: #18181c;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  gap: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.moi-profile-card:hover {
+  background: #1e1e24;
 }
 
 .moi-avatar-wrap {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   overflow: hidden;
-  background: linear-gradient(135deg, #E5A93C 0%, #D97706 100%);
+  background: #25252b;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1a1412;
-  font-size: 20px;
-  font-weight: 900;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .moi-avatar-img {
@@ -3560,35 +3565,36 @@ html[data-font-size="large"] .article-card-summary {
   font-size: 17px;
   font-weight: 800;
   font-style: italic;
-  color: #F5F3F0;
+  color: #ffffff;
   margin: 0 0 2px;
+  line-height: 1.2;
 }
 
 .moi-username {
-  font-size: 14.5px;
-  color: #94a3b8;
+  font-size: 14px;
+  color: #9ca3af;
   font-style: italic;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .moi-menu-group {
-  background: #14100e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: #18181c;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
   overflow: hidden;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 12px;
 }
 
 .moi-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   text-decoration: none;
   cursor: pointer;
   background: transparent;
@@ -3604,51 +3610,53 @@ html[data-font-size="large"] .article-card-summary {
   border-bottom: none;
 }
 
-.moi-menu-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+.moi-menu-item:hover, .moi-menu-item:active {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .moi-menu-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .moi-menu-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 22px;
   flex-shrink: 0;
 }
 
 .moi-menu-label {
-  font-size: 15.5px;
-  font-weight: 600;
-  color: #F5F3F0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #e5e7eb;
+  letter-spacing: -0.1px;
 }
 
 .moi-menu-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .moi-menu-badge {
   background: #ef4444;
-  color: #fff;
+  color: #ffffff;
   font-size: 11px;
-  font-weight: 800;
-  width: 20px;
-  height: 20px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
 }
 
 .moi-chevron {
-  color: #64748b;
+  color: #4b5563;
 }
 
 
