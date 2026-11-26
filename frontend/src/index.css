@@ -2848,9 +2848,345 @@ html[data-font-size="large"] .article-card-summary {
    STYLES FRANCE 24 : DIRECT TV & EN CONTINU / ÉMISSIONS
    ======================================================== */
 .f24-page-container {
-  max-width: 1080px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 16px 16px 90px;
+  padding: 12px 14px 95px;
+  box-sizing: border-box;
+}
+
+.live-mobile-header {
+  margin-bottom: 14px;
+}
+
+.live-badge-pulse {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.live-mobile-title {
+  font-size: clamp(19px, 5vw, 24px);
+  font-weight: 900;
+  color: #F5F3F0;
+  letter-spacing: -0.3px;
+  margin: 0;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+/* Lecteur Vidéo Principal Immersif */
+.clean-video-player-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #090706;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clean-video-slate {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  background: radial-gradient(circle at center, #1e1613 0%, #0a0807 100%);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.clean-slate-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clean-slate-live-pill {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.5px;
+}
+
+.clean-slate-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.clean-slate-play-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E5A93C 0%, #D97706 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1412;
+  box-shadow: 0 4px 20px rgba(229, 169, 60, 0.5);
+  transition: transform 0.2s ease;
+}
+
+.clean-video-slate:hover .clean-slate-play-btn {
+  transform: scale(1.1);
+}
+
+.clean-slate-title {
+  font-size: clamp(14px, 4vw, 17px);
+  font-weight: 800;
+  color: #F5F3F0;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.clean-slate-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+/* Barre d'info sous le lecteur */
+.clean-player-info {
+  background: #14100e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clean-player-info-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #F5F3F0;
+  margin: 0 0 2px;
+  line-height: 1.35;
+}
+
+.clean-player-info-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Filtres de formats vidéo épurés */
+.video-format-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+
+.video-format-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.video-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.video-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #F5F3F0;
+}
+
+.video-pill-btn.active {
+  background: linear-gradient(135deg, #E5A93C 0%, #D97706 100%);
+  border-color: #E5A93C;
+  color: #1a1412;
+  font-weight: 800;
+}
+
+/* Grille Vidéo Épurée (Style YouTube Mobile & France 24) */
+.clean-video-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 600px) {
+  .clean-video-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (min-width: 992px) {
+  .clean-video-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+.clean-video-card {
+  background: #14100e;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.clean-video-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(229, 169, 60, 0.4);
+}
+
+.clean-video-thumb-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.clean-video-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.clean-video-card:hover .clean-video-thumb-img {
+  transform: scale(1.04);
+}
+
+.clean-video-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.clean-video-card:hover .clean-video-play-overlay {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: rgba(229, 169, 60, 0.95);
+  color: #1a1412;
+}
+
+.clean-video-duration-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.clean-video-cat-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(14, 11, 10, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #E5A93C;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.clean-video-info-box {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.clean-video-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #F5F3F0;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.clean-video-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+/* Grille Shorts 9:16 compacte */
+.clean-shorts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .clean-shorts-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
 }
 
 .f24-breadcrumb {

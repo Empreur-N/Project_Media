@@ -24,17 +24,9 @@ const RegionFilterBar = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
-  // Masquer sur les pages d'administration, d'authentification et de réglages
-  if (
-    location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/login') ||
-    location.pathname.startsWith('/register') ||
-    location.pathname === '/log' ||
-    location.pathname === '/staff' ||
-    location.pathname === '/settings' ||
-    location.pathname === '/parametres' ||
-    location.pathname === '/reglages'
-  ) {
+  // N'afficher la barre de rubriques régionales que sur la page d'accueil et la recherche
+  // Sur les pages Direct TV, En continu, Profil, Articles, etc., laisser la place au contenu
+  if (location.pathname !== '/' && location.pathname !== '/search') {
     return null;
   }
 
