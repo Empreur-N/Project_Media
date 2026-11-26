@@ -3501,45 +3501,47 @@ html[data-font-size="large"] .article-card-summary {
 }
 
 /* ========================================================
-   STYLES PAGE "MOI" (PROFIL UTILISATEUR STYLE PHOENIX)
+   STYLES PAGE "MOI" (PROFIL UTILISATEUR STYLE PHOENIX OPTIMISÉ)
    ======================================================== */
 .moi-page-container {
-  max-width: 560px;
+  max-width: 580px;
   margin: 0 auto;
-  padding: 16px 14px 90px;
+  padding: 24px 18px 110px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
 }
 
 .moi-header-title {
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 800;
   color: #ffffff;
-  margin: 2px 0 16px;
-  letter-spacing: -0.3px;
+  margin: 4px 0 20px;
+  letter-spacing: -0.4px;
   padding-left: 2px;
 }
 
 .moi-profile-card {
   background: #18181c;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 20px 22px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
+  gap: 18px;
+  margin-bottom: 16px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .moi-profile-card:hover {
   background: #1e1e24;
+  border-color: rgba(229, 169, 60, 0.2);
 }
 
 .moi-avatar-wrap {
-  width: 50px;
-  height: 50px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
   overflow: hidden;
   background: #25252b;
@@ -3547,7 +3549,8 @@ html[data-font-size="large"] .article-card-summary {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 2.5px solid rgba(229, 169, 60, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .moi-avatar-img {
@@ -3562,39 +3565,60 @@ html[data-font-size="large"] .article-card-summary {
 }
 
 .moi-greeting {
-  font-size: 17px;
+  font-size: 24px;
   font-weight: 800;
   font-style: italic;
   color: #ffffff;
-  margin: 0 0 2px;
+  margin: 0 0 4px;
   line-height: 1.2;
 }
 
 .moi-username {
-  font-size: 14px;
-  color: #9ca3af;
+  font-size: 16px;
+  color: #d1d5db;
   font-style: italic;
-  margin: 0;
+  margin: 0 0 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.3;
 }
 
+.moi-user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 3px 9px;
+  border-radius: 12px;
+}
+
+.moi-user-role-badge.reader {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
 .moi-menu-group {
   background: #18181c;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .moi-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 18px 20px;
+  min-height: 64px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   text-decoration: none;
   cursor: pointer;
   background: transparent;
@@ -3602,7 +3626,7 @@ html[data-font-size="large"] .article-card-summary {
   border-left: none;
   border-right: none;
   border-top: none;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 }
 
@@ -3611,43 +3635,51 @@ html[data-font-size="large"] .article-card-summary {
 }
 
 .moi-menu-item:hover, .moi-menu-item:active {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .moi-menu-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .moi-menu-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
 }
 
 .moi-menu-label {
-  font-size: 15px;
-  font-weight: 500;
-  color: #e5e7eb;
+  font-size: 17px;
+  font-weight: 600;
+  color: #f1f5f9;
   letter-spacing: -0.1px;
+}
+
+.moi-menu-sublabel {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+  font-weight: 400;
 }
 
 .moi-menu-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .moi-menu-badge {
   background: #ef4444;
   color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  width: 18px;
-  height: 18px;
+  font-size: 12px;
+  font-weight: 800;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3656,7 +3688,64 @@ html[data-font-size="large"] .article-card-summary {
 }
 
 .moi-chevron {
-  color: #4b5563;
+  color: #64748b;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.moi-menu-item:hover .moi-chevron {
+  color: #e2e8f0;
+  transform: translateX(2px);
+}
+
+.moi-action-card-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.moi-logout-btn {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  margin-top: 10px;
+}
+
+.moi-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.moi-login-btn {
+  background: linear-gradient(135deg, #E5A93C 0%, #D4972B 100%);
+  border: none;
+  color: #0c0c0e;
+  box-shadow: 0 4px 16px rgba(229, 169, 60, 0.35);
+  margin-top: 10px;
+}
+
+.moi-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(229, 169, 60, 0.5);
+}
+
+/* Masquer la barre top desktop sur mobile pour la page Moi afin de respecter rigoureusement la maquette */
+@media (max-width: 768px) {
+  body.hide-mobile-top-nav .navbar {
+    display: none !important;
+  }
+  body.hide-mobile-top-nav .main-content {
+    padding-top: 12px !important;
+  }
 }
 
 

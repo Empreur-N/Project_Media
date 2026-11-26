@@ -69,6 +69,20 @@ const ArticleDetail = () => {
   // États Spécifiques Phoenix (Recommandations, Tiroir de Réaction, Likes & Partages d'Article)
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const extractYouTubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    return match ? match[1] : null;
+  };
+
+  const articleVideoUrl = (() => {
+    if (article?.videoUrl) return article.videoUrl;
+    const matchUrl = article?.tags && article.tags.match(/\[VIDEO_URL:([^\]]+)\]/);
+    if (matchUrl) return matchUrl[1];
+    return null;
+  })();
+  const articleYtId = articleVideoUrl ? extractYouTubeId(articleVideoUrl) : null;
+
   const [articleLiked, setArticleLiked] = useState(() => {
     try {
       const liked = JSON.parse(localStorage.getItem('lifechannel_liked_articles') || '[]');
@@ -77,11 +91,40 @@ const ArticleDetail = () => {
       return false;
     }
   });
-  const [articleLikesCount, setArticleLikesCount] = useState(14);
-  const [articleSharesCount, setArticleSharesCount] = useState(24);
+
+  const [articleLikesCount, setArticleLikesCount] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`lifechannel_article_likes_${id}`);
+      if (stored !== null) return Math.max(0, parseInt(stored, 10) || 0);
+      return 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [articleSharesCount, setArticleSharesCount] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`lifechannel_article_shares_${id}`);
+      if (stored !== null) return Math.max(0, parseInt(stored, 10) || 0);
+      return 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const registerShare = () => {
+    setArticleSharesCount(prev => {
+      const nextVal = prev + 1;
+      try {
+        localStorage.setItem(`lifechannel_article_shares_${id}`, String(nextVal));
+      } catch {}
+      return nextVal;
+    });
+  };
 
   // Partage Rapide Helpers (Statuts WhatsApp, Facebook, Twitter, Partage natif mobile)
   const handleNativeShare = async () => {
+    registerShare();
     const shareUrl = window.location.href;
     const shareData = {
       title: article?.title || "LIFE CHANNEL",
@@ -103,6 +146,7 @@ const ArticleDetail = () => {
   };
 
   const handleCopyLink = () => {
+    registerShare();
     navigator.clipboard.writeText(window.location.href);
     showToast("Lien de l'article copié dans le presse-papier !", "success");
   };
@@ -135,6 +179,12 @@ const ArticleDetail = () => {
         const data = await getArticle(id);
         if (data && data.id) {
           setArticle(data);
+          if (data.likes !== undefined && localStorage.getItem(`lifechannel_article_likes_${id}`) === null) {
+            setArticleLikesCount(data.likes || 0);
+          }
+          if (data.shares !== undefined && localStorage.getItem(`lifechannel_article_shares_${id}`) === null) {
+            setArticleSharesCount(data.shares || 0);
+          }
           try {
             trackPageView(id);
           } catch (e) {
@@ -142,7 +192,15 @@ const ArticleDetail = () => {
           }
         } else {
           const fallback = IMPORTED_ARTICLES.find(a => String(a.id) === String(id));
-          if (fallback) setArticle(fallback);
+          if (fallback) {
+            setArticle(fallback);
+            if (fallback.likes !== undefined && localStorage.getItem(`lifechannel_article_likes_${id}`) === null) {
+              setArticleLikesCount(fallback.likes || 0);
+            }
+            if (fallback.shares !== undefined && localStorage.getItem(`lifechannel_article_shares_${id}`) === null) {
+              setArticleSharesCount(fallback.shares || 0);
+            }
+          }
         }
       } catch (error) {
         console.warn("Erreur de récupération de l'article via API, utilisation des données locales:", error);
@@ -611,15 +669,36 @@ const ArticleDetail = () => {
       </div>
 
       <article className="container article-detail-container-pc" style={styles.articleLayout}>
-        {/* Cover Image */}
+        {/* Cover Media: Lecteur Vidéo Responsive Centré ou Image de Couverture */}
         <div style={styles.coverContainer}>
-          <img 
-            src={getFullImageUrl(article.mainImageUrl, article.category)} 
-            alt={article.title} 
-            className="article-cover-pc img-cover-adaptive"
-            style={styles.coverImage} 
-            onError={(e) => handleImageError(e, article.category)}
-          />
+          {articleVideoUrl ? (
+            articleYtId ? (
+              <div style={{ position: 'relative', width: '100%', height: '100%', background: '#000' }}>
+                <iframe 
+                  src={`https://www.youtube-nocookie.com/embed/${articleYtId}?autoplay=0&rel=0`}
+                  title={article.title}
+                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video 
+                src={articleVideoUrl} 
+                controls 
+                poster={getFullImageUrl(article.mainImageUrl, article.category)}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
+              />
+            )
+          ) : (
+            <img 
+              src={getFullImageUrl(article.mainImageUrl, article.category)} 
+              alt={article.title} 
+              className="article-cover-pc img-cover-adaptive"
+              style={styles.coverImage} 
+              onError={(e) => handleImageError(e, article.category)}
+            />
+          )}
           <div style={styles.categoryBadge}>{article.category}</div>
         </div>
 
@@ -683,6 +762,7 @@ const ArticleDetail = () => {
               href={getWhatsAppShareUrl()}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={registerShare}
               className="share-btn-whatsapp"
               title="Partager sur mon statut ou mes discussions WhatsApp"
             >
@@ -693,6 +773,7 @@ const ArticleDetail = () => {
               href={getFacebookShareUrl()}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={registerShare}
               className="share-btn-facebook"
               title="Partager sur Facebook"
             >

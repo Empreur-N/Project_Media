@@ -9,7 +9,7 @@ import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, Plu
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
   return match ? match[1] : null;
 };
 

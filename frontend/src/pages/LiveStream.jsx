@@ -8,83 +8,125 @@ import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useToast } from '../contexts/ToastContext';
 import AdPlacement from '../components/AdPlacement';
 
-// Vidéos par défaut de démonstration si aucune vidéo n'est encore enregistrée en base
+// Vidéos officielles Life Channel Sports & Actualités
 const FALLBACK_VIDEOS = [
   {
-    id: 'v1',
-    title: "Guerre à l'Est de la RDC : Immersion exclusive avec les FARDC sur la ligne de front",
-    summary: "Grand format de nos envoyés spéciaux dans le Nord-Kivu au plus près des opérations sécuritaires.",
-    category: "Politique",
-    region: "Nord-Kivu",
-    duration: "14:20",
-    views: "48.5K",
-    authorUsername: "Marc Kasongo",
+    id: 'lc-yt-1',
+    title: "Premier entraînement des Léopards RDC sur le sol américain",
+    summary: "Reportage exclusif Life Channel Sports : première séance d'entraînement des Léopards de la RDC avant leurs confrontations internationales.",
+    category: "Léopards RDC",
+    region: "Kinshasa / USA",
+    duration: "8:24",
+    views: "12.8K",
+    authorUsername: "Life Channel Sports",
     createdAt: new Date(Date.now() - 3600 * 1000 * 4).toISOString(),
-    mainImageUrl: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    mainImageUrl: "https://img.youtube.com/vi/td_posdnQ4M/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=td_posdnQ4M",
     isShort: false
   },
   {
-    id: 'v2',
-    title: "Léopards RDC : L'ambiance au rassemblement à Kinshasa avant le grand choc",
-    summary: "Dans les coulisses de la tanière avec les joueurs et le sélectionneur national.",
-    category: "Sport",
+    id: 'lc-yt-2',
+    title: "RDC 1-1 Portugal : Les Léopards marquent l'histoire",
+    summary: "Analyse tactique et résumé complet du match héroïque de la République Démocratique du Congo face au Portugal.",
+    category: "Grands Formats",
+    region: "International",
+    duration: "10:04",
+    views: "24.3K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 12).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/MbXHwKpTJls/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=MbXHwKpTJls",
+    isShort: false
+  },
+  {
+    id: 'lc-short-1',
+    title: "RDC vs Danemark : Les Léopards sont-ils fin prêts pour le défi ?",
+    summary: "Format court 9:16 : état des troupes et dernières impressions du staff technique congolais.",
+    category: "Shorts",
     region: "Kinshasa",
+    duration: "0:58",
+    views: "18.5K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 16).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/792wSj2x0HY/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/shorts/792wSj2x0HY",
+    isShort: true
+  },
+  {
+    id: 'lc-yt-3',
+    title: "Gaël Kakuta Story : les adieux et l'hommage d'une légende du football congolais",
+    summary: "Rétrospective exclusive Life Channel sur la carrière, l'impact et l'héritage de Gaël Kakuta sous le maillot national.",
+    category: "Documentaire",
+    region: "RDC",
+    duration: "8:26",
+    views: "31.9K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/cdNCVIAKZTQ/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=cdNCVIAKZTQ",
+    isShort: false
+  },
+  {
+    id: 'lc-short-2',
+    title: "Jorthy Mokio ciblé par le Real Madrid : Ce que l'on sait",
+    summary: "Format court 9:16 : la pépite congolaise au centre de toutes les convoitises des géants européens.",
+    category: "Shorts",
+    region: "Europe",
     duration: "0:45",
-    views: "62.1K",
-    authorUsername: "Life Sport",
-    createdAt: new Date(Date.now() - 3600 * 1000 * 8).toISOString(),
-    mainImageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    views: "42.1K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 30).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/co5Mg2spHYk/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/shorts/co5Mg2spHYk",
     isShort: true
   },
   {
-    id: 'v3',
-    title: "Mines du Katanga & Cobalt : Quelles retombées directes pour les populations ?",
-    summary: "Enquête spéciale depuis Kolwezi et Lubumbashi sur les revenus miniers et le développement local.",
-    category: "Économie",
-    region: "Haut-Katanga",
-    duration: "18:45",
-    views: "34.8K",
-    authorUsername: "Rédaction Économique",
-    createdAt: new Date(Date.now() - 3600 * 1000 * 20).toISOString(),
-    mainImageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    id: 'lc-yt-4',
+    title: "Direct Match | RDC vs Angleterre : Les Léopards visent les 8èmes",
+    summary: "Revue tactique, compositions probables et enjeux majeurs du face-à-face mondial.",
+    category: "Direct Match",
+    region: "International",
+    duration: "8:12",
+    views: "27.4K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 36).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/R7cXbe4FsHg/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=R7cXbe4FsHg",
     isShort: false
   },
   {
-    id: 'v4',
-    title: "Kinshasa Express : 3 décisions majeures du conseil des ministres en 50 secondes",
-    summary: "Synthèse rapide des mesures prises par le gouvernement pour le pouvoir d'achat.",
-    category: "Société",
+    id: 'lc-short-3',
+    title: "Aaron Wan-Bissaka arrive enfin chez les Léopards de la RDC",
+    summary: "Format court 9:16 : officialisation et renfort de poids pour le couloir droit de la sélection.",
+    category: "Shorts",
     region: "Kinshasa",
-    duration: "0:50",
-    views: "29.3K",
-    authorUsername: "Rédaction Express",
-    createdAt: new Date(Date.now() - 3600 * 1000 * 28).toISOString(),
-    mainImageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    duration: "0:55",
+    views: "36.8K",
+    authorUsername: "Life Channel Sports",
+    createdAt: new Date(Date.now() - 3600 * 1000 * 42).toISOString(),
+    mainImageUrl: "https://img.youtube.com/vi/AgFSeDz94AM/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/shorts/AgFSeDz94AM",
     isShort: true
   },
   {
-    id: 'v5',
-    title: "Rumba congolaise et scène urbaine : Quand les jeunes réinventent le patrimoine",
-    summary: "Reportage culturel au cœur des studios d'enregistrement de Bandalungwa.",
-    category: "Culture",
-    region: "Kinshasa",
-    duration: "11:15",
-    views: "21.0K",
-    authorUsername: "Culture & Rumba",
+    id: 'lc-yt-5',
+    title: "CAN 2027 : La CAF prend sa décision finale pour l'Afrique centrale",
+    summary: "Décryptage des votes du comité exécutif et des retombées pour les infrastructures sportives de la sous-région.",
+    category: "Actualités CAF",
+    region: "Afrique",
+    duration: "8:18",
+    views: "19.2K",
+    authorUsername: "Life Channel Sports",
     createdAt: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
-    mainImageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    mainImageUrl: "https://img.youtube.com/vi/98sw6zqgpaw/hqdefault.jpg",
+    videoUrl: "https://www.youtube.com/watch?v=98sw6zqgpaw",
     isShort: false
   }
 ];
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
   return match ? match[1] : null;
 };
 
@@ -94,11 +136,21 @@ const LiveStream = () => {
   const [loading, setLoading] = useState(true);
   const [videoFilter, setVideoFilter] = useState('ALL'); // 'ALL' | 'LONGS' | 'SHORTS'
   const [selectedVideoModal, setSelectedVideoModal] = useState(null);
+  const [currentVideo, setCurrentVideo] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlayingLive, setIsPlayingLive] = useState(false);
 
   const { isPlaying, togglePlay } = useAudioPlayer();
   const { showToast } = useToast();
+
+  const handleSelectVideo = (vid) => {
+    setCurrentVideo(vid);
+    setIsPlayingLive(true);
+    const playerElem = document.getElementById('main-video-player');
+    if (playerElem) {
+      playerElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   useEffect(() => {
     const fetchLiveDataAndVideos = async () => {
@@ -176,10 +228,10 @@ const LiveStream = () => {
   };
 
   const handleStartLivePlayer = () => {
-    setIsPlayingLive(true);
-    if (!isPlaying) {
-      togglePlay();
+    if (!currentVideo && !validLiveYtId) {
+      setCurrentVideo(FALLBACK_VIDEOS[0]);
     }
+    setIsPlayingLive(true);
     showToast("Diffusion en direct lancée !", "success");
   };
 
@@ -191,6 +243,8 @@ const LiveStream = () => {
   });
 
   const validLiveYtId = activeLive && activeLive.streamUrl ? extractYouTubeId(activeLive.streamUrl) : null;
+  const activeYtId = currentVideo ? extractYouTubeId(currentVideo.videoUrl) : validLiveYtId;
+  const activeStreamUrl = currentVideo ? currentVideo.videoUrl : activeLive?.streamUrl;
 
   return (
     <div className="f24-page-container animate-fade-in">
@@ -211,19 +265,19 @@ const LiveStream = () => {
         </div>
       </div>
 
-      {/* LECTEUR DU DIRECT PRINCIPAL (Pro-grade, aucun message d'erreur YouTube) */}
-      <div className="clean-video-player-box">
-        {validLiveYtId ? (
+      {/* LECTEUR DU DIRECT PRINCIPAL (Pro-grade, centré, responsive et immédiat) */}
+      <div className="clean-video-player-box" id="main-video-player">
+        {activeYtId ? (
           <iframe
-            title="Direct TV Life Channel"
-            src={`https://www.youtube-nocookie.com/embed/${validLiveYtId}?autoplay=1&mute=${isMuted ? 1 : 0}`}
+            title={currentVideo?.title || "Direct TV Life Channel"}
+            src={`https://www.youtube-nocookie.com/embed/${activeYtId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0`}
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
-        ) : isPlayingLive && activeLive?.streamUrl && !activeLive.streamUrl.includes('youtube') ? (
+        ) : isPlayingLive && activeStreamUrl && !activeStreamUrl.includes('youtube') ? (
           <video
-            src={activeLive.streamUrl}
+            src={activeStreamUrl}
             controls
             autoPlay
             muted={isMuted}
@@ -251,7 +305,7 @@ const LiveStream = () => {
                 <Play size={24} fill="#1a1412" style={{ marginLeft: '3px' }} />
               </div>
               <h2 className="clean-slate-title">
-                {activeLive?.title || "LIFE CHANNEL TV : Antenne 24/7"}
+                {currentVideo?.title || activeLive?.title || "LIFE CHANNEL TV : Premier entraînement des Léopards"}
               </h2>
             </div>
 
@@ -267,10 +321,10 @@ const LiveStream = () => {
       <div className="clean-player-info">
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 className="clean-player-info-title">
-            {activeLive?.title || "Édition Continue d'Information RDC"}
+            {currentVideo?.title || activeLive?.title || "Édition Continue d'Information RDC"}
           </h3>
           <p className="clean-player-info-sub">
-            {activeLive?.description || "Suivez en continu l'actualité politique, économique et sociétale."}
+            {currentVideo?.summary || activeLive?.description || "Suivez en direct et en continu les actualités, reportages et débats sur Life Channel."}
           </p>
         </div>
         <button
@@ -342,7 +396,7 @@ const LiveStream = () => {
               key={vid.id}
               className="short-reel-card"
               style={{ height: '240px', borderRadius: '12px', overflow: 'hidden' }}
-              onClick={() => setSelectedVideoModal(vid)}
+              onClick={() => handleSelectVideo(vid)}
             >
               <img
                 src={getFullImageUrl(vid.mainImageUrl, 'Vidéos')}
@@ -374,7 +428,7 @@ const LiveStream = () => {
             <div
               key={vid.id}
               className="clean-video-card"
-              onClick={() => setSelectedVideoModal(vid)}
+              onClick={() => handleSelectVideo(vid)}
             >
               <div className="clean-video-thumb-box">
                 <img
