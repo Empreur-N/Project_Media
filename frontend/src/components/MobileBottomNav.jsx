@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Tv, Flame, PlayCircle, Menu } from 'lucide-react';
+import { Home, Tv, Flame, PlayCircle, Menu, User } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const MobileBottomNav = () => {
@@ -85,24 +85,27 @@ const MobileBottomNav = () => {
         )}
       </NavLink>
 
-      {/* 3. En continu (Fil d'actualité en direct) */}
-      <button 
-        onClick={handleEnContinuClick}
-        style={{
+      {/* 3. En continu (Dernières émissions & Fil d'actualité style France 24) */}
+      <NavLink 
+        to="/en-continu" 
+        style={({ isActive }) => ({
           ...styles.tabItem,
-          background: 'none',
-          border: 'none',
-          color: 'var(--text-muted)'
-        }}
+          color: isActive ? 'var(--primary)' : 'var(--text-muted)'
+        })}
         title={t('bottomNavFeed')}
       >
-        <div style={styles.iconWrapper}>
-          <Flame size={20} strokeWidth={1.8} style={{ color: '#f59e0b' }} />
-        </div>
-        <span style={styles.tabLabel}>
-          {t('bottomNavFeed')}
-        </span>
-      </button>
+        {({ isActive }) => (
+          <>
+            <div style={styles.iconWrapper}>
+              <Flame size={20} strokeWidth={isActive ? 2.5 : 1.8} style={{ color: isActive ? '#f59e0b' : 'inherit' }} />
+              {isActive && <div style={styles.activeDot} />}
+            </div>
+            <span style={{ ...styles.tabLabel, fontWeight: isActive ? '800' : '600' }}>
+              {t('bottomNavFeed')}
+            </span>
+          </>
+        )}
+      </NavLink>
 
       {/* 4. Replays & Podcasts */}
       <NavLink 
@@ -125,25 +128,28 @@ const MobileBottomNav = () => {
         )}
       </NavLink>
 
-      {/* 5. Menu / Tiroir & Paramètres */}
-      <button 
-        onClick={handleMenuClick}
-        style={{
+      {/* 5. Moi (Espace Profil style Phoenix) */}
+      <NavLink 
+        to="/moi" 
+        style={({ isActive }) => ({
           ...styles.tabItem,
-          background: 'none',
-          border: 'none',
-          color: 'var(--text-muted)'
-        }}
-        title={t('bottomNavMenu')}
-        aria-label={t('bottomNavMenu')}
+          color: isActive ? '#818cf8' : 'var(--text-muted)'
+        })}
+        title="Mon Espace Profil"
+        aria-label="Mon Espace Profil"
       >
-        <div style={styles.iconWrapper}>
-          <Menu size={20} strokeWidth={1.8} />
-        </div>
-        <span style={styles.tabLabel}>
-          {t('bottomNavMenu')}
-        </span>
-      </button>
+        {({ isActive }) => (
+          <>
+            <div style={styles.iconWrapper}>
+              <User size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+              {isActive && <div style={{ ...styles.activeDot, backgroundColor: '#818cf8' }} />}
+            </div>
+            <span style={{ ...styles.tabLabel, fontWeight: isActive ? '800' : '600', color: isActive ? '#818cf8' : 'inherit' }}>
+              Moi
+            </span>
+          </>
+        )}
+      </NavLink>
     </nav>
   );
 };

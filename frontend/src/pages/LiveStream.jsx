@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getActiveLive, getUpcomingLives, getArticles } from '../services/api';
-import { Radio, Calendar, Clock, Video, Tv, Play, Film, Sparkles, X, Share2, Flame, ExternalLink, Eye, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Radio, Calendar, Clock, Video, Tv, Play, Film, Sparkles, X, Share2, Flame, ExternalLink, Eye, ChevronRight, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
 import { getMediaUrl } from '../utils/urlUtils';
 import { getFullImageUrl } from '../utils/imageUtils';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import { Link } from 'react-router-dom';
+import AdPlacement from '../components/AdPlacement';
 
 const FALLBACK_ACTIVE_LIVE = {
   id: 1,
@@ -32,6 +33,45 @@ const FALLBACK_UPCOMING = [
     title: "Débat Économie : Mines du Katanga & Pouvoir d'Achat",
     description: "Émission spéciale en duplex depuis Lubumbashi et Kolwezi sur la transformation locale des minerais.",
     startTime: new Date(Date.now() + 3600 * 1000 * 24).toISOString()
+  }
+];
+
+const FALLBACK_RECOMMENDED = [
+  {
+    id: 'rec1',
+    title: "Guerre à l'Est : immersion exclusive avec les FARDC sur la ligne de front",
+    summary: "Reportage grand format de nos envoyés spéciaux dans le Nord-Kivu.",
+    category: "Afrique",
+    badge: "Reporters",
+    imageUrl: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    id: 'rec2',
+    title: "Diplomatie : La RDC face aux enjeux du bassin du Congo et du climat",
+    summary: "Décryptage des pourparlers régionaux et des accords environnementaux.",
+    category: "International",
+    badge: "Invité du Jour",
+    imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    id: 'rec3',
+    title: "Léopards RDC : Préparatifs intensifs pour la Coupe d'Afrique des Nations",
+    summary: "Au cœur des vestiaires avec les stars du onze national congolais.",
+    category: "Sport",
+    badge: "Édition Spéciale",
+    imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    id: 'rec4',
+    title: "Rumba congolaise & patrimoine mondial de l'UNESCO : voyage musical à Kinshasa",
+    summary: "Rencontre avec les maîtres guitaristes qui perpétuent la tradition musicale.",
+    category: "Culture",
+    badge: "Culture Mag",
+    imageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
+    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   }
 ];
 
@@ -81,6 +121,7 @@ const LiveStream = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'LIVES' | 'SHORTS' | 'LONGS' | 'SOCIAL'
   const [selectedVideoModal, setSelectedVideoModal] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   const fetchLiveInfo = async () => {
     try {
@@ -204,57 +245,156 @@ const LiveStream = () => {
   });
 
   return (
-    <div className="container animate-fade-in" style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <span style={{
-            background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-            color: '#fff',
-            fontSize: '11px',
-            fontWeight: '900',
-            padding: '3px 9px',
-            borderRadius: '9999px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            letterSpacing: '1px'
-          }}>
-            <Radio size={12} className="pulse" /> DIRECT & VIDÉOS 24/7
-          </span>
-          <span style={{ color: 'var(--argente)', fontSize: '13px' }}>
-            Portail Officiel Multimédia RDC
-          </span>
-        </div>
-        <h1 style={styles.title}>Direct TV & Vidéos d'Actualité</h1>
-        <p style={styles.subtitle}>
-          Suivez la chaîne en direct continu, visionnez nos reportages de terrain (grands formats) et nos décryptages express (formats courts).
-        </p>
+    <div className="f24-page-container animate-fade-in">
+      {/* Bannière Publicitaire Supérieure */}
+      <AdPlacement placement="HEADER" style={{ marginBottom: '16px' }} />
+
+      {/* Fil d'Ariane Style France 24 */}
+      <div className="f24-breadcrumb">
+        <Link to="/">Accueil</Link>
+        <span>&gt;</span>
+        <span>Télévision en direct</span>
       </div>
 
-      {/* Tabs Navigation de la section Vidéos */}
-      <div className="direct-tv-tabs-nav">
-        <button
-          type="button"
-          onClick={() => setActiveTab('ALL')}
-          className={`direct-tv-tab-pill ${activeTab === 'ALL' ? 'active' : ''}`}
-        >
-          <Sparkles size={15} />
-          <span>Tous les flux & vidéos</span>
-        </button>
+      {/* Grand Titre Style France 24 */}
+      <h1 className="f24-page-title">
+        <Tv size={24} style={{ color: '#0284c7', flexShrink: 0 }} />
+        <span>Regardez Life Channel en direct</span>
+      </h1>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('LIVES')}
-          className={`direct-tv-tab-pill ${activeTab === 'LIVES' ? 'active' : ''}`}
-        >
-          <Tv size={15} />
-          <span>Direct TV & Grille</span>
-        </button>
+      {/* LECTEUR DU DIRECT EN CONTINU (Style France 24 - 16/9 Plein Cadre) */}
+      <div className="f24-player-wrap">
+        <div className="f24-player-overlay">
+          <span className="f24-live-pill">
+            <Radio size={11} className="pulse" /> EN DIRECT
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsMuted(prev => !prev)}
+            className="f24-audio-btn"
+            title={isMuted ? "Activer le son" : "Couper le son"}
+          >
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </button>
+        </div>
 
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+            Chargement du direct Life Channel...
+          </div>
+        ) : activeLive && activeLive.streamUrl ? (
+          isYoutube(activeLive.streamUrl) ? (
+            <iframe
+              title="Direct Life Channel TV"
+              src={`${getEmbedUrl(activeLive.streamUrl)}${isMuted ? '&mute=1' : ''}`}
+              className="f24-player-iframe"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          ) : (
+            <video 
+              src={activeLive.streamUrl} 
+              controls 
+              autoPlay 
+              muted={isMuted}
+              className="f24-player-video"
+              poster={activeLive.coverUrl ? getMediaUrl(activeLive.coverUrl) : undefined}
+            />
+          )
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', padding: '20px', textAlign: 'center' }}>
+            <Tv size={48} style={{ color: '#64748b', marginBottom: '12px' }} />
+            <h3 style={{ margin: '0 0 6px', color: '#fff' }}>Diffusion en direct momentanément interrompue</h3>
+            <p style={{ margin: 0, fontSize: '13px' }}>Nos équipes techniques rétablissent le signal. Visionnez nos replays et reportages ci-dessous.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bannière d'information sur le programme en cours */}
+      {activeLive && (
+        <div className="f24-live-info-banner">
+          <h2 className="f24-live-info-title">{activeLive.title}</h2>
+          <p className="f24-live-info-desc">{activeLive.description}</p>
+        </div>
+      )}
+
+      {/* SECTION "LIFE CHANNEL RECOMMANDE" (Style France 24 avec carré bleu/cyan) */}
+      <div className="f24-section-header">
+        <div className="f24-square-accent" />
+        <h3 className="f24-section-title">Life Channel Recommande</h3>
+      </div>
+
+      <div className="f24-rec-grid">
+        {(videos.length > 0 ? videos.slice(0, 4) : FALLBACK_RECOMMENDED).map((prog) => {
+          const matchUrl = prog.tags && prog.tags.match(/\[VIDEO_URL:([^\]]+)\]/);
+          const vidUrl = matchUrl ? matchUrl[1] : (prog.videoUrl || '');
+          const imgUrl = prog.mainImageUrl || prog.imageUrl || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80';
+          const badgeText = prog.badge || (prog.category === 'Vidéos' ? 'Reporters' : (prog.category || 'Magazine'));
+
+          return (
+            <div 
+              key={prog.id} 
+              className="f24-rec-card"
+              onClick={() => {
+                if (vidUrl) {
+                  setSelectedVideoModal({
+                    id: prog.id,
+                    title: prog.title,
+                    videoUrl: vidUrl,
+                    duration: '12:30',
+                    author: prog.authorUsername || 'Life Channel',
+                    summary: prog.summary,
+                    imageUrl: imgUrl
+                  });
+                }
+              }}
+            >
+              <div className="f24-rec-img-wrap">
+                <img 
+                  src={getFullImageUrl(imgUrl, prog.category || 'Vidéos')} 
+                  alt={prog.title} 
+                  className="f24-rec-img"
+                  onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80'; }}
+                />
+                <span className="f24-rec-badge">{badgeText}</span>
+              </div>
+              <div className="f24-rec-bottom-strip">
+                <Play size={10} fill="#38bdf8" />
+                <span>Programme | {prog.region || prog.category || 'Afrique'}</span>
+              </div>
+              <div className="f24-rec-content">
+                <h4 className="f24-rec-item-title">{prog.title}</h4>
+                {prog.summary && <p className="f24-rec-item-desc">{prog.summary}</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* SECTION "PROCHAINS DIRECTS SUR LIFE CHANNEL TV" */}
+      <div className="f24-section-header" style={{ marginTop: '36px' }}>
+        <div className="f24-square-accent" />
+        <h3 className="f24-section-title">Prochains Directs & Grille</h3>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '35px' }}>
+        {upcoming.map((up) => (
+          <div key={up.id} className="glass-card" style={{ padding: '18px 20px', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#38bdf8', fontSize: '12px', fontWeight: '800', marginBottom: '8px' }}>
+              <Clock size={13} />
+              <span>{formatDate(up.startTime)} à {formatTime(up.startTime)}</span>
+            </div>
+            <h4 style={{ margin: '0 0 6px', fontSize: '15px', color: '#F5F3F0', fontWeight: '800' }}>{up.title}</h4>
+            <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8', lineHeight: '1.45' }}>{up.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Onglets pour Explorer les Autres Formats Multimédias */}
+      <div className="direct-tv-tabs-nav" style={{ marginTop: '20px', marginBottom: '24px' }}>
         <button
           type="button"
-          onClick={() => setActiveTab('SHORTS')}
+          onClick={() => setActiveTab(activeTab === 'SHORTS' ? 'ALL' : 'SHORTS')}
           className={`direct-tv-tab-pill ${activeTab === 'SHORTS' ? 'active' : ''}`}
         >
           <Film size={15} />
@@ -263,7 +403,7 @@ const LiveStream = () => {
 
         <button
           type="button"
-          onClick={() => setActiveTab('LONGS')}
+          onClick={() => setActiveTab(activeTab === 'LONGS' ? 'ALL' : 'LONGS')}
           className={`direct-tv-tab-pill ${activeTab === 'LONGS' ? 'active' : ''}`}
         >
           <Video size={15} />
@@ -272,101 +412,13 @@ const LiveStream = () => {
 
         <button
           type="button"
-          onClick={() => setActiveTab('SOCIAL')}
+          onClick={() => setActiveTab(activeTab === 'SOCIAL' ? 'ALL' : 'SOCIAL')}
           className={`direct-tv-tab-pill ${activeTab === 'SOCIAL' ? 'active' : ''}`}
         >
           <ExternalLink size={15} />
           <span>Réseaux Synchronisés (YouTube, FB, TikTok)</span>
         </button>
       </div>
-
-      {/* 1. SECTION PRINCIPALE : LECTEUR DU DIRECT TV EN CONTINU */}
-      {(activeTab === 'ALL' || activeTab === 'LIVES') && (
-        <div style={styles.mainLayout} className="admin-form-grid" style={{ marginBottom: '45px' }}>
-          {/* Left Side: Active Live Player */}
-          <div style={styles.playerContainer}>
-            {loading ? (
-              <div className="glass-card" style={styles.placeholderCard}>
-                <p>Chargement du flux en direct...</p>
-              </div>
-            ) : activeLive ? (
-              <div style={styles.liveContent}>
-                <div style={styles.badgeRow}>
-                  <span style={styles.liveBadge}>
-                    <Radio size={14} className="pulse" /> DIRECT EN COURS
-                  </span>
-                  <span style={styles.viewersCount}>{activeLive.title}</span>
-                </div>
-
-                {/* Video Player */}
-                <div style={styles.videoWrapper}>
-                  {isYoutube(activeLive.streamUrl) ? (
-                    <iframe
-                      title="Direct Video"
-                      src={getEmbedUrl(activeLive.streamUrl)}
-                      style={styles.iframe}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video 
-                      src={activeLive.streamUrl} 
-                      controls 
-                      autoPlay 
-                      style={styles.videoPlayer}
-                      poster={activeLive.coverUrl ? getMediaUrl(activeLive.coverUrl) : undefined}
-                    />
-                  )}
-                </div>
-
-                <div className="glass-card" style={styles.liveInfoCard}>
-                  <h2 style={styles.liveTitle}>{activeLive.title}</h2>
-                  <p style={styles.liveDesc}>{activeLive.description}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="glass-card" style={styles.offlineCard}>
-                <Tv size={60} style={{ color: 'var(--text-muted)', marginBottom: '20px' }} />
-                <h2 style={styles.offlineTitle}>Média Hors Ligne</h2>
-                <p style={styles.offlineDesc}>
-                  Aucun direct n'est diffusé pour le moment. Consultez notre planning ci-contre pour ne rien rater de nos prochains rendez-vous.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Right Side: Upcoming Timeline */}
-          <div style={styles.sidebar}>
-            <div className="glass-card" style={styles.sidebarCard}>
-              <h3 style={styles.sidebarTitle}>
-                <Calendar size={18} style={{ color: 'var(--primary)' }} /> Prochains Directs
-              </h3>
-
-              {upcoming.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
-                  Aucune émission n'est programmée pour l'instant.
-                </p>
-              ) : (
-                <div style={styles.timeline}>
-                  {upcoming.map((up) => (
-                    <div key={up.id} style={styles.timelineItem}>
-                      <div style={styles.timelineDot} />
-                      <div style={styles.timelineContent}>
-                        <div style={styles.timeLabel}>
-                          <Clock size={12} /> {formatDate(up.startTime)} à {formatTime(up.startTime)}
-                        </div>
-                        <h4 style={styles.upcomingTitle}>{up.title}</h4>
-                        <p style={styles.upcomingDesc}>{up.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 2. SECTION FORMATS COURTS (SHORTS & REELS 9:16) */}
       {(activeTab === 'ALL' || activeTab === 'SHORTS') && (

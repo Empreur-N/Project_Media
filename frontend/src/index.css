@@ -2844,6 +2844,477 @@ html[data-font-size="large"] .article-card-summary {
   box-shadow: 0 0 12px rgba(229, 169, 60, 0.25);
 }
 
+/* ========================================================
+   STYLES FRANCE 24 : DIRECT TV & EN CONTINU / ÉMISSIONS
+   ======================================================== */
+.f24-page-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px 16px 90px;
+}
+
+.f24-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.f24-breadcrumb a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.f24-breadcrumb a:hover {
+  color: #F5F3F0;
+}
+
+.f24-page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #F5F3F0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px;
+}
+
+@media (min-width: 768px) {
+  .f24-page-title {
+    font-size: 26px;
+  }
+}
+
+.f24-player-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  margin-bottom: 24px;
+}
+
+.f24-player-iframe,
+.f24-player-video {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.f24-player-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.f24-live-pill {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.8px;
+}
+
+.f24-audio-btn {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.f24-audio-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  transform: scale(1.08);
+}
+
+.f24-live-info-banner {
+  background: rgba(20, 15, 13, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 30px;
+}
+
+.f24-live-info-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #F5F3F0;
+  margin: 0 0 6px;
+}
+
+.f24-live-info-desc {
+  font-size: 13.5px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Indicateur carré cyan / or style France 24 */
+.f24-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 32px 0 18px;
+}
+
+.f24-square-accent {
+  width: 14px;
+  height: 14px;
+  background: #0284c7;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.f24-section-title {
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #F5F3F0;
+  margin: 0;
+}
+
+/* Grille de programmes & émissions recommandées */
+.f24-rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.f24-rec-card {
+  background: #14100e;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.f24-rec-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(2, 132, 199, 0.4);
+}
+
+.f24-rec-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0a0807;
+}
+
+.f24-rec-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.f24-rec-card:hover .f24-rec-img {
+  transform: scale(1.04);
+}
+
+.f24-rec-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.f24-rec-bottom-strip {
+  background: #0a0807;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.f24-rec-content {
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.f24-rec-item-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #F5F3F0;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.f24-rec-item-desc {
+  font-size: 12.5px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Barre de défilement horizontal des rubriques style France 24 */
+.f24-categories-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.f24-categories-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.f24-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.f24-cat-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #F5F3F0;
+}
+
+.f24-cat-btn.active {
+  background: rgba(2, 132, 199, 0.18);
+  border-color: #0284c7;
+  color: #38bdf8;
+}
+
+.f24-cat-square {
+  width: 8px;
+  height: 8px;
+  background: #0284c7;
+  border-radius: 1px;
+}
+
+.f24-intro-text {
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+/* ========================================================
+   STYLES PAGE "MOI" (PROFIL UTILISATEUR STYLE PHOENIX)
+   ======================================================== */
+.moi-page-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 18px 16px 95px;
+}
+
+.moi-header-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #F5F3F0;
+  margin: 4px 0 20px;
+  letter-spacing: -0.5px;
+}
+
+.moi-profile-card {
+  background: #14100e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.moi-avatar-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #E5A93C 0%, #D97706 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1412;
+  font-size: 20px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.moi-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.moi-profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.moi-greeting {
+  font-size: 17px;
+  font-weight: 800;
+  font-style: italic;
+  color: #F5F3F0;
+  margin: 0 0 2px;
+}
+
+.moi-username {
+  font-size: 14.5px;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moi-menu-group {
+  background: #14100e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.moi-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  cursor: pointer;
+  background: transparent;
+  width: 100%;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+}
+
+.moi-menu-item:last-child {
+  border-bottom: none;
+}
+
+.moi-menu-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.moi-menu-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.moi-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.moi-menu-label {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #F5F3F0;
+}
+
+.moi-menu-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.moi-menu-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moi-chevron {
+  color: #64748b;
+}
+
 
 
 

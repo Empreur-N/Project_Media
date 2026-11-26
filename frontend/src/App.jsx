@@ -16,6 +16,8 @@ import Search from './pages/Search';
 import CommentModeration from './pages/CommentModeration';
 import Podcasts from './pages/Podcasts';
 import LiveStream from './pages/LiveStream';
+import EnContinu from './pages/EnContinu';
+import Moi from './pages/Moi';
 import ManagePodcasts from './pages/ManagePodcasts';
 import ManageLives from './pages/ManageLives';
 import ManageAds from './pages/ManageAds';
@@ -84,6 +86,12 @@ function App() {
                   <Route path="/search" element={<Search />} />
                   <Route path="/podcasts" element={<Podcasts />} />
                   <Route path="/live" element={<LiveStream />} />
+                  <Route path="/en-continu" element={<EnContinu />} />
+                  <Route path="/emissions" element={<EnContinu />} />
+                  <Route path="/tv-shows" element={<EnContinu />} />
+                  <Route path="/moi" element={<Moi />} />
+                  <Route path="/profil" element={<Moi />} />
+                  <Route path="/mon-compte" element={<Moi />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/log" element={<Login />} />
                   <Route path="/staff" element={<Login />} />
