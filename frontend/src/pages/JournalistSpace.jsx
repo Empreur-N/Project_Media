@@ -5,7 +5,7 @@ import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArti
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import { REGION_GROUPS } from '../data/regions';
 import { getMediaUrl } from '../utils/urlUtils';
-import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X, Video, Film, Play, Tv, Sparkles, FileVideo, Camera, ShieldCheck } from 'lucide-react';
+import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, CheckCircle2, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X, Video, Film, Play, Tv, Sparkles, FileVideo, Camera, ShieldCheck } from 'lucide-react';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
