@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
-import { ChevronRight, X, LogOut, CheckCircle2, Star, Clock, HelpCircle, PenSquare, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react';
+import { ChevronRight, X, LogOut, CheckCircle2, Star, Clock, HelpCircle, PenSquare, MessageSquare, ShieldCheck, UserCheck, Camera } from 'lucide-react';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
+import { uploadMedia, updateUserProfile } from '../services/api';
+import { getMediaUrl } from '../utils/urlUtils';
 
 // Icônes agrandies (24px) avec design haute précision
 const NewsIcon = () => (
@@ -65,13 +67,35 @@ const HelpIcon = () => (
 );
 
 const Moi = () => {
-  const { user, logout } = useAuth();
+  const { user, token, logout, updateUser } = useAuth();
   const { showToast } = useToast();
   const { togglePlay, isPlaying } = useAudioPlayer();
   const navigate = useNavigate();
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Nom d'utilisateur personnalisé
   const displayName = user?.fullName || user?.username || localStorage.getItem('lifechannel_reader_name') || 'Ampereure Ngoy Modeste';
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingPhoto(true);
+      const media = await uploadMedia(file, null, token);
+      if (media && media.fileUrl) {
+        const fullUrl = getMediaUrl(media.fileUrl);
+        await updateUserProfile({ username: user?.username || displayName, picture: fullUrl }, token);
+        if (updateUser) {
+          updateUser({ picture: fullUrl });
+        }
+        showToast("Photo de profil enregistrée avec succès !", "success");
+      }
+    } catch (err) {
+      showToast("Erreur lors de l'enregistrement de la photo: " + err.message, "error");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   // Masquer la top navbar desktop sur mobile quand on est sur la page Moi
   useEffect(() => {
@@ -142,6 +166,20 @@ const Moi = () => {
               }}
             />
           )}
+          <label 
+            className="moi-avatar-camera-btn" 
+            title="Modifier votre photo de profil"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Camera size={13} color="#ffffff" />
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handlePhotoUpload} 
+              style={{ display: 'none' }} 
+              disabled={uploadingPhoto}
+            />
+          </label>
         </div>
         <div className="moi-profile-info">
           <div className="moi-greeting">Bonjour</div>

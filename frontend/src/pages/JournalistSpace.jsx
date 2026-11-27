@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, publishArticleDirectly, uploadMedia } from '../services/api';
+import { getArticlesByAuthor, getArticles, getArticle, createArticle, updateArticle, submitArticle, publishArticleDirectly, uploadMedia, updateUserProfile } from '../services/api';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import { REGION_GROUPS } from '../data/regions';
 import { getMediaUrl } from '../utils/urlUtils';
-import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X, Video, Film, Play, Tv, Sparkles, FileVideo } from 'lucide-react';
+import { FileText, Send, Edit, Image as ImageIcon, CheckCircle, AlertCircle, PlusCircle, List, UserCheck, Globe, LifeBuoy, UploadCloud, Trash2, RefreshCw, X, Video, Film, Play, Tv, Sparkles, FileVideo, Camera, ShieldCheck } from 'lucide-react';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -14,13 +14,35 @@ const extractYouTubeId = (url) => {
 };
 
 const JournalistSpace = () => {
-  const { user, token } = useAuth();
+  const { user, token, updateUser } = useAuth();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('list'); // 'list' or 'form'
+  const [profileUploading, setProfileUploading] = useState(false);
+
+  const handleProfilePhotoChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      setProfileUploading(true);
+      const media = await uploadMedia(file, null, token);
+      if (media && media.fileUrl) {
+        const fullUrl = getMediaUrl(media.fileUrl);
+        await updateUserProfile({ username: user.username, picture: fullUrl }, token);
+        if (updateUser) {
+          updateUser({ picture: fullUrl });
+        }
+        showMessage("Photo de profil mise à jour avec succès !", "success");
+      }
+    } catch (err) {
+      showMessage("Erreur lors du changement de photo: " + err.message, "error");
+    } finally {
+      setProfileUploading(false);
+    }
+  };
   
   // Form State
   const [articleId, setArticleId] = useState(null);
@@ -285,7 +307,7 @@ const JournalistSpace = () => {
       tags: finalTags,
       mainImageUrl: finalImageUrl,
       publicationDate: utcPublicationDate,
-      authorUsername: user.username,
+      authorUsername: user?.username || 'redaction',
       status: targetStatus
     };
 
@@ -295,7 +317,7 @@ const JournalistSpace = () => {
         await updateArticle(articleId, payload, token);
         showMessage("Publication mise à jour avec succès !");
       } else {
-        // Mode création
+        // Mode création immédiate sans délai ni restriction de fréquence
         await createArticle(payload, token);
         if (targetStatus === 'PUBLISHED') {
           showMessage("Publication mise en ligne immédiatement ! La direction a été notifiée.");
@@ -307,7 +329,7 @@ const JournalistSpace = () => {
       setView('list');
       fetchMyArticles();
     } catch (error) {
-      showMessage(error.message, "error");
+      showMessage("Erreur lors de la publication : " + (error.message || "Vérifiez votre connexion."), "error");
     }
   };
 
@@ -417,6 +439,56 @@ const JournalistSpace = () => {
           )}
         </div>
       </div>
+
+      {/* Profil de l'Agent Journaliste avec Photo Obligatoire & Nom Complet */}
+      <div className="agent-profile-header-card">
+        <div className="agent-profile-avatar-container">
+          <div className="agent-profile-avatar-wrap">
+            {user?.picture ? (
+              <img src={user.picture} alt={user?.fullName || user?.username} className="agent-profile-avatar-img" />
+            ) : (
+              <div className="agent-profile-avatar-placeholder">
+                <Camera size={26} color="var(--primary)" />
+              </div>
+            )}
+          </div>
+          <label className="agent-profile-photo-btn" title="Modifier votre photo de profil professionnelle">
+            <Camera size={14} />
+            <span>{profileUploading ? 'Envoi...' : (user?.picture ? 'Changer ma photo' : 'Photo obligatoire *')}</span>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleProfilePhotoChange} 
+              style={{ display: 'none' }} 
+              disabled={profileUploading}
+            />
+          </label>
+        </div>
+
+        <div className="agent-profile-meta">
+          <div className="agent-profile-fullname">{user?.fullName || user?.username || 'Journaliste Rédaction'}</div>
+          <div className="agent-profile-username">Identifiant officiel : @{user?.username} • Statut : Actif</div>
+          <div className="agent-profile-badge-row">
+            <span className="agent-badge-accredited">
+              <ShieldCheck size={13} />
+              Journaliste Accrédité • Rédaction Life Channel
+            </span>
+            <span className="agent-badge-unlimited">
+              Publication en continu sans délai
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Alerte Photo Obligatoire si manquante */}
+      {!user?.picture && (
+        <div className="agent-mandatory-photo-banner">
+          <AlertCircle size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.4 }}>
+            <strong style={{ color: '#fbbf24' }}>Photo de profil obligatoire :</strong> Conformément à la déontologie rédactionnelle, chaque rédacteur doit être clairement identifiable. Veuillez charger votre photo portrait ci-dessus pour signer vos publications.
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       {message.text && (

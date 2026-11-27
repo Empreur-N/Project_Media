@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getUsers, updateUserActivation, updateUserRole, deleteUser, register } from '../services/api';
-import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic, X, Clock } from 'lucide-react';
+import { getUsers, updateUserActivation, updateUserRole, deleteUser, register, getUserLoginHistory } from '../services/api';
+import { Shield, UserPlus, Trash2, Power, UserCheck, AlertCircle, CheckCircle, Search, Mail, ShieldAlert, Mic, X, Clock, History, Smartphone, Monitor } from 'lucide-react';
 
 const ManageUsers = () => {
   const { token, user: currentUser } = useAuth();
@@ -20,6 +20,9 @@ const ManageUsers = () => {
   const [creating, setCreating] = useState(false);
 
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'JOURNALISTS'
+  const [mainTab, setMainTab] = useState('ACCOUNTS'); // 'ACCOUNTS' | 'SESSIONS'
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const rolesList = ['VISITOR', 'USER', 'JOURNALIST', 'EDITOR', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'];
 
   const fetchUsers = async () => {
@@ -35,8 +38,21 @@ const ManageUsers = () => {
     }
   };
 
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const data = await getUserLoginHistory(token);
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.warn("Échec de chargement des sessions:", error);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchSessions();
   }, []);
 
   const showMessage = (text, type = 'success') => {
@@ -246,7 +262,29 @@ const ManageUsers = () => {
         </form>
       )}
 
-      {/* Filtres Rapides & Barre de Recherche */}
+      {/* Sélecteur d'onglets principal */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px' }}>
+        <button
+          onClick={() => setMainTab('ACCOUNTS')}
+          className={`btn ${mainTab === 'ACCOUNTS' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '10px 18px' }}
+        >
+          <Shield size={16} />
+          <span>Comptes & Accréditations ({users.length})</span>
+        </button>
+        <button
+          onClick={() => { setMainTab('SESSIONS'); fetchSessions(); }}
+          className={`btn ${mainTab === 'SESSIONS' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '10px 18px' }}
+        >
+          <History size={16} />
+          <span>Journal des Connexions des Agents ({sessions.length})</span>
+        </button>
+      </div>
+
+      {mainTab === 'ACCOUNTS' && (
+        <>
+          {/* Filtres Rapides & Barre de Recherche */}
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '16px' }}>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
@@ -425,6 +463,108 @@ const ManageUsers = () => {
           </div>
         )}
       </div>
+      </>
+      )}
+
+      {/* Onglet 2 : Journal des Connexions & Traçabilité des Sessions */}
+      {mainTab === 'SESSIONS' && (
+        <div className="glass-card" style={styles.tableCard}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+            <div>
+              <h3 style={{ margin: '0 0 4px', fontSize: '18px', color: '#fff', fontWeight: '800' }}>
+                Journal des Connexions & Sessions des Rédacteurs
+              </h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+                Traçabilité continue de l'heure exacte de connexion, heure de déconnexion et type d'appareil (mobile & desktop).
+              </p>
+            </div>
+            <button onClick={fetchSessions} className="btn btn-secondary" style={{ fontSize: '13px', padding: '8px 14px' }}>
+              Actualiser le journal
+            </button>
+          </div>
+
+          {loadingSessions ? (
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>Chargement du journal des sessions...</p>
+          ) : sessions.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
+              Aucune session enregistrée pour le moment.
+            </p>
+          ) : (
+            <div style={styles.tableWrapper}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Agent / Rédacteur</th>
+                    <th style={styles.th}>Rôle</th>
+                    <th style={styles.th}>Appareil Détecté</th>
+                    <th style={styles.th}>Heure de Connexion</th>
+                    <th style={styles.th}>Heure de Déconnexion</th>
+                    <th style={styles.th}>État</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Adresse IP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sessions.map((sess) => {
+                    const isMobile = sess.deviceType && sess.deviceType.toLowerCase().includes('mobile');
+                    const isActive = sess.status === 'ACTIVE' && !sess.logoutTime;
+                    return (
+                      <tr key={sess.id} style={styles.tr}>
+                        <td style={styles.td}>
+                          <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>
+                            {sess.fullName || sess.username}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>@{sess.username}</div>
+                        </td>
+                        <td style={styles.td}>
+                          <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(229,169,60,0.1)', color: 'var(--primary)', fontWeight: '700' }}>
+                            {sess.role}
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                            {isMobile ? <Smartphone size={16} color="#38bdf8" /> : <Monitor size={16} color="#94a3b8" />}
+                            <span>{sess.deviceType || 'Appareil Connecté'}</span>
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          <span style={{ color: '#10b981', fontWeight: '600' }}>
+                            {sess.loginTime ? new Date(sess.loginTime).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'medium' }) : '-'}
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          {sess.logoutTime ? (
+                            <span style={{ color: '#94a3b8' }}>
+                              {new Date(sess.logoutTime).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'medium' })}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#10b981', fontStyle: 'italic', fontWeight: '600' }}>
+                              Session active
+                            </span>
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isActive ? (
+                            <span style={{ ...styles.statusActiveBadge, backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                              <CheckCircle size={13} /> En ligne
+                            </span>
+                          ) : (
+                            <span style={{ ...styles.statusActiveBadge, backgroundColor: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8', borderColor: 'rgba(148, 163, 184, 0.2)' }}>
+                              Clôturée
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, textAlign: 'right', fontFamily: 'monospace', fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {sess.ipAddress || '127.0.0.1'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

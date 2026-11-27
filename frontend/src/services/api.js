@@ -74,6 +74,18 @@ export const getProfile = (token) => {
   return apiCall('/users/me', 'GET', null, token);
 };
 
+export const updateUserProfile = (data, token = null) => {
+  return apiCall('/users/profile', 'PUT', data, token);
+};
+
+export const getUserLoginHistory = (token = null) => {
+  return apiCall('/users/login-history', 'GET', null, token);
+};
+
+export const logoutSession = (sessionId = null, username = null) => {
+  return apiCall('/auth/logout', 'POST', { sessionId, username });
+};
+
 // --- Articles ---
 export const getArticles = (category = null, region = null, status = null, token = null) => {
   let query = [];

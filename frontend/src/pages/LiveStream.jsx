@@ -248,31 +248,32 @@ const LiveStream = () => {
 
   return (
     <div className="f24-page-container animate-fade-in">
-      {/* En-tête Mobile Épuré (Sans overflow ni texte tronqué) */}
+      {/* En-tête Mobile Épuré (Style France 24 officiel) */}
       <div className="live-mobile-header">
         <div className="f24-breadcrumb">
-          <Link to="/">Accueil</Link>
+          <Link to="/">ACCUEIL</Link>
           <span>&gt;</span>
-          <span>Direct TV & Vidéos</span>
+          <span>TÉLÉVISION EN DIRECT</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
           <div>
-            <span className="live-badge-pulse">
-              <Radio size={11} className="pulse" /> EN DIRECT 24/7
-            </span>
-            <h1 className="live-mobile-title">Life Channel en direct</h1>
+            <h1 className="live-mobile-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Tv size={22} color="var(--primary)" />
+              REGARDEZ LIFE CHANNEL EN DIRECT
+            </h1>
           </div>
         </div>
       </div>
 
-      {/* LECTEUR DU DIRECT PRINCIPAL (Pro-grade, centré, responsive et immédiat) */}
+      {/* LECTEUR DU DIRECT PRINCIPAL (Centré, responsive 16:9, embed officiel immédiat) */}
       <div className="clean-video-player-box" id="main-video-player">
         {activeYtId ? (
           <iframe
             title={currentVideo?.title || "Direct TV Life Channel"}
-            src={`https://www.youtube-nocookie.com/embed/${activeYtId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0`}
+            src={`https://www.youtube.com/embed/${activeYtId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&playsinline=1&enablejsapi=1`}
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
         ) : isPlayingLive && activeStreamUrl && !activeStreamUrl.includes('youtube') ? (
@@ -356,7 +357,7 @@ const LiveStream = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
         <div className="f24-section-header" style={{ margin: 0 }}>
           <div className="f24-square-accent" />
-          <h2 className="f24-section-title">Vidéos de la Rédaction</h2>
+          <h2 className="f24-section-title">LIFE CHANNEL RECOMMANDE</h2>
         </div>
 
         {/* Pilules de filtres par format */}

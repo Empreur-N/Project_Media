@@ -7,9 +7,12 @@ import com.media.user.dto.RegisterWithOtpRequest;
 import com.media.user.dto.SendOtpRequest;
 import com.media.user.model.Role;
 import com.media.user.model.User;
+import com.media.user.model.UserSessionLog;
 import com.media.user.repository.UserRepository;
+import com.media.user.repository.UserSessionLogRepository;
 import com.media.user.security.JwtUtils;
 import com.media.user.service.OtpService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +30,49 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final UserSessionLogRepository userSessionLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final OtpService otpService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, OtpService otpService) {
+    public AuthController(
+            UserRepository userRepository, 
+            UserSessionLogRepository userSessionLogRepository,
+            PasswordEncoder passwordEncoder, 
+            JwtUtils jwtUtils, 
+            OtpService otpService) {
         this.userRepository = userRepository;
+        this.userSessionLogRepository = userSessionLogRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.otpService = otpService;
+    }
+
+    private String extractIp(HttpServletRequest request) {
+        if (request == null) return "127.0.0.1";
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip != null ? ip : "127.0.0.1";
+    }
+
+    private String extractDeviceType(String userAgent) {
+        if (userAgent == null) return "Mobile / Smartphone";
+        String ua = userAgent.toLowerCase();
+        if (ua.contains("android")) return "Mobile (Android)";
+        if (ua.contains("iphone") || ua.contains("ipad") || ua.contains("ios")) return "Mobile (iOS / iPhone)";
+        if (ua.contains("mobile")) return "Mobile / Smartphone";
+        if (ua.contains("windows")) return "Ordinateur (Windows)";
+        if (ua.contains("macintosh") || ua.contains("mac os")) return "Ordinateur (Mac)";
+        if (ua.contains("linux")) return "Ordinateur (Linux)";
+        return "Appareil Connecté";
     }
 
     // Étape 1 : Demande d'envoi du code OTP par e-mail
@@ -212,7 +249,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         String identifier = loginRequest.username() != null ? loginRequest.username().trim() : "";
         User user = userRepository.findByUsernameIgnoreCase(identifier)
                 .or(() -> userRepository.findByEmailIgnoreCase(identifier))
@@ -241,14 +278,64 @@ public class AuthController {
                     .body(Map.of("message", "Ce compte est désactivé ou en attente d'approbation administrative."));
         }
 
+        // Enregistrement de la session dans le journal de traçabilité (Règle Traçabilité Connexions)
+        String ip = extractIp(request);
+        String ua = request.getHeader("User-Agent");
+        String device = extractDeviceType(ua);
+
+        UserSessionLog session = UserSessionLog.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName() != null ? user.getFullName() : user.getUsername())
+                .role(user.getRole().name())
+                .ipAddress(ip)
+                .userAgent(ua != null && ua.length() > 500 ? ua.substring(0, 500) : ua)
+                .deviceType(device)
+                .loginTime(java.time.LocalDateTime.now())
+                .status("ACTIVE")
+                .build();
+        UserSessionLog savedSession = userSessionLogRepository.save(session);
+
         String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name());
 
         return ResponseEntity.ok(new AuthResponse(
                 token,
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole().name()
+                user.getRole().name(),
+                user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                user.getPicture(),
+                savedSession.getId()
         ));
+    }
+
+    // Déconnexion avec traçabilité de l'horodatage de fin de session
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@RequestBody(required = false) Map<String, Object> payload, HttpServletRequest request) {
+        String username = null;
+        Long sessionId = null;
+        if (payload != null) {
+            if (payload.get("username") != null) username = payload.get("username").toString();
+            if (payload.get("sessionId") != null) {
+                try {
+                    sessionId = Long.valueOf(payload.get("sessionId").toString());
+                } catch (Exception ignored) {}
+            }
+        }
+        if (sessionId != null) {
+            userSessionLogRepository.findById(sessionId).ifPresent(s -> {
+                s.setLogoutTime(java.time.LocalDateTime.now());
+                s.setStatus("CLOSED");
+                userSessionLogRepository.save(s);
+            });
+        } else if (username != null && !username.isBlank()) {
+            userSessionLogRepository.findFirstByUsernameAndStatusOrderByLoginTimeDesc(username, "ACTIVE").ifPresent(s -> {
+                s.setLogoutTime(java.time.LocalDateTime.now());
+                s.setStatus("CLOSED");
+                userSessionLogRepository.save(s);
+            });
+        }
+        return ResponseEntity.ok(Map.of("message", "Déconnexion enregistrée avec succès."));
     }
 
     // Connexion / Inscription rapide pour les lecteurs (Google / Facebook style Opera News)
@@ -325,8 +412,46 @@ public class AuthController {
                 "email", user.getEmail(),
                 "emailVerified", user.isEmailVerified(),
                 "role", user.getRole().name(),
+                "picture", user.getPicture() != null ? user.getPicture() : "",
                 "createdAt", user.getCreatedAt()
         ));
+    }
+
+    // Mise à jour de la photo de profil et des informations de l'agent
+    @PutMapping("/users/profile")
+    public ResponseEntity<?> updateProfile(
+            @RequestBody Map<String, String> payload,
+            @AuthenticationPrincipal String authUsername) {
+        String targetUsername = authUsername;
+        if (targetUsername == null || targetUsername.isBlank()) {
+            targetUsername = payload.get("username");
+        }
+        if (targetUsername == null || targetUsername.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Utilisateur non identifié."));
+        }
+        User user = userRepository.findByUsername(targetUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Utilisateur non trouvé."));
+        }
+        if (payload.containsKey("fullName") && payload.get("fullName") != null && !payload.get("fullName").isBlank()) {
+            user.setFullName(payload.get("fullName").trim());
+        }
+        if (payload.containsKey("picture") && payload.get("picture") != null) {
+            user.setPicture(payload.get("picture").trim());
+        }
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of(
+                "message", "Profil mis à jour avec succès !",
+                "username", user.getUsername(),
+                "fullName", user.getFullName(),
+                "picture", user.getPicture() != null ? user.getPicture() : ""
+        ));
+    }
+
+    // Journal d'audit et traçabilité des connexions/déconnexions des agents (Mobile & Desktop)
+    @GetMapping("/users/login-history")
+    public ResponseEntity<List<UserSessionLog>> getLoginHistory() {
+        return ResponseEntity.ok(userSessionLogRepository.findAllByOrderByLoginTimeDesc());
     }
 
     // --- Endpoints d'administration (Jakob Nielsen & Africanews Access Control) ---

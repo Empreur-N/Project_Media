@@ -32,7 +32,7 @@ public class SecurityConfig {
             .cors(AbstractHttpConfigurer::disable) // CORS is managed at the API Gateway level
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/users/profile", "/api/users/login-history").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

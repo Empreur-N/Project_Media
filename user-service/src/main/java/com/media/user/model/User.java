@@ -28,6 +28,9 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "picture", columnDefinition = "TEXT")
+    private String picture;
+
     @Column(name = "email_verified")
     @Builder.Default
     private Boolean emailVerified = true;

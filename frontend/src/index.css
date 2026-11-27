@@ -3746,6 +3746,182 @@ html[data-font-size="large"] .article-card-summary {
   body.hide-mobile-top-nav .main-content {
     padding-top: 12px !important;
   }
+  .moi-page-container {
+    padding: 12px 14px 90px !important;
+    max-width: 100% !important;
+  }
+}
+
+.moi-avatar-wrap {
+  position: relative;
+}
+
+.moi-avatar-camera-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #18181c;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease;
+}
+
+.moi-avatar-camera-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ========================================================
+   STYLES PROFIL AGENT / JOURNALISTE AVEC NOM ET PHOTO OBLIGATOIRE
+   ======================================================== */
+.agent-profile-header-card {
+  background: #18181c;
+  border: 1px solid rgba(229, 169, 60, 0.2);
+  border-radius: 16px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 640px) {
+  .agent-profile-header-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 18px 16px;
+    gap: 14px;
+  }
+}
+
+.agent-profile-avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.agent-profile-avatar-wrap {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #25252b;
+  border: 2.5px solid rgba(229, 169, 60, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.agent-profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.agent-profile-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.agent-profile-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(229, 169, 60, 0.12);
+  border: 1px solid rgba(229, 169, 60, 0.3);
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.agent-profile-photo-btn:hover {
+  background: rgba(229, 169, 60, 0.22);
+}
+
+.agent-profile-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-profile-fullname {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.agent-profile-username {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.agent-profile-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .agent-profile-badge-row {
+    justify-content: center;
+  }
+}
+
+.agent-badge-accredited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+
+.agent-badge-unlimited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+
+.agent-mandatory-photo-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  color: #f3f4f6;
 }
 
 
