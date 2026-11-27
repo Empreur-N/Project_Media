@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import RegionFilterBar from './components/RegionFilterBar';
@@ -64,6 +64,123 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+const AppLayout = () => {
+  const location = useLocation();
+  const isMoi = location.pathname === '/moi' || location.pathname === '/profil' || location.pathname === '/mon-compte';
+
+  return (
+    <div className={`app-container ${isMoi ? 'moi-screen-mode' : ''}`}>
+      {!isMoi && <BreakingNewsBanner />}
+      {!isMoi && <Navbar />}
+      {!isMoi && <RegionFilterBar />}
+      <main className="main-content">
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/articles/:id" element={<ArticleDetail />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/podcasts" element={<Podcasts />} />
+            <Route path="/live" element={<LiveStream />} />
+            <Route path="/en-continu" element={<EnContinu />} />
+            <Route path="/emissions" element={<EnContinu />} />
+            <Route path="/tv-shows" element={<EnContinu />} />
+            <Route path="/moi" element={<Moi />} />
+            <Route path="/profil" element={<Moi />} />
+            <Route path="/mon-compte" element={<Moi />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/log" element={<Login />} />
+            <Route path="/staff" element={<Login />} />
+            <Route path="/admin/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/aide" element={<Help />} />
+            <Route path="/faq" element={<Help />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/parametres" element={<Settings />} />
+            <Route path="/reglages" element={<Settings />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/journalist" 
+              element={
+                <ProtectedRoute allowedRoles={['JOURNALIST', 'ADMIN', 'SUPER_ADMIN']}>
+                  <JournalistSpace />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/editor" 
+              element={
+                <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                  <EditorSpace />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/messages" 
+              element={
+                <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                  <StaffChat />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/comments" 
+              element={
+                <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN']}>
+                  <CommentModeration />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/podcasts" 
+              element={
+                <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                  <ManagePodcasts />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/lives" 
+              element={
+                <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                  <ManageLives />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/ads" 
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
+                  <ManageAds />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users" 
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+                  <ManageUsers />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
+      </main>
+      {!isMoi && <Footer />}
+      <AudioPlayer />
+      {!isMoi && <FloatingLivePlayer />}
+      <MobileBottomNav />
+    </div>
+  );
+};
+
 function App() {
   return (
     <ThemeProvider>
@@ -74,123 +191,15 @@ function App() {
               <AudioPlayerProvider>
                 <AuthProvider>
                   <Router>
-              <div className="app-container">
-                <BreakingNewsBanner />
-                <Navbar />
-                <RegionFilterBar />
-                <main className="main-content">
-              <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/articles/:id" element={<ArticleDetail />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/podcasts" element={<Podcasts />} />
-                  <Route path="/live" element={<LiveStream />} />
-                  <Route path="/en-continu" element={<EnContinu />} />
-                  <Route path="/emissions" element={<EnContinu />} />
-                  <Route path="/tv-shows" element={<EnContinu />} />
-                  <Route path="/moi" element={<Moi />} />
-                  <Route path="/profil" element={<Moi />} />
-                  <Route path="/mon-compte" element={<Moi />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/log" element={<Login />} />
-                  <Route path="/staff" element={<Login />} />
-                  <Route path="/admin/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/aide" element={<Help />} />
-                  <Route path="/faq" element={<Help />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/parametres" element={<Settings />} />
-                  <Route path="/reglages" element={<Settings />} />
-                  <Route 
-                    path="/admin" 
-                    element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/journalist" 
-                    element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'ADMIN', 'SUPER_ADMIN']}>
-                        <JournalistSpace />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/editor" 
-                    element={
-                      <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
-                        <EditorSpace />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/messages" 
-                    element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
-                        <StaffChat />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/comments" 
-                    element={
-                      <ProtectedRoute allowedRoles={['EDITOR', 'ADMIN', 'SUPER_ADMIN']}>
-                        <CommentModeration />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/podcasts" 
-                    element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
-                        <ManagePodcasts />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/lives" 
-                    element={
-                      <ProtectedRoute allowedRoles={['JOURNALIST', 'EDITOR', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
-                        <ManageLives />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/ads" 
-                    element={
-                      <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN', 'SUPERVISOR']}>
-                        <ManageAds />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="/admin/users" 
-                    element={
-                      <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
-                        <ManageUsers />
-                      </ProtectedRoute>
-                    } 
-                  />
-                   <Route path="*" element={<NotFound />} />
-                 </Routes>
-               </ErrorBoundary>
-            </main>
-                <Footer />
-                <AudioPlayer />
-                <FloatingLivePlayer />
-                <MobileBottomNav />
-              </div>
-        </Router>
-        </AuthProvider>
-      </AudioPlayerProvider>
-    </TimezoneProvider>
-  </DataSaverProvider>
-</ToastProvider>
-</LanguageProvider>
-</ThemeProvider>
+                    <AppLayout />
+                  </Router>
+                </AuthProvider>
+              </AudioPlayerProvider>
+            </TimezoneProvider>
+          </DataSaverProvider>
+        </ToastProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

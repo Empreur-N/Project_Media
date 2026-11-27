@@ -73,8 +73,16 @@ const Moi = () => {
   const navigate = useNavigate();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // Nom d'utilisateur personnalisé
-  const displayName = user?.fullName || user?.username || localStorage.getItem('lifechannel_reader_name') || 'Ampereure Ngoy Modeste';
+  // Nom d'utilisateur personnalisé (Privilégie le nom complet réel)
+  const displayName = (() => {
+    if (user?.fullName && user.fullName.trim() && user.fullName.trim().toLowerCase() !== 'empe') {
+      return user.fullName;
+    }
+    if (user?.username === 'empe') {
+      return 'Empereur Ngoy mukonkole';
+    }
+    return user?.fullName || user?.username || localStorage.getItem('lifechannel_reader_name') || 'Ampereure Ngoy Modeste';
+  })();
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files && e.target.files[0];

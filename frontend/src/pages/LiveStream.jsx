@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getActiveLive, getArticles } from '../services/api';
-import { Radio, Tv, Play, Film, Video, Clock, X, Share2, Volume2, VolumeX, Eye, ChevronRight } from 'lucide-react';
+import { Radio, Tv, Play, Film, Video, Clock, X, Share2, Volume2, VolumeX, Eye, ChevronRight, ExternalLink } from 'lucide-react';
 import { getFullImageUrl, handleImageError } from '../utils/imageUtils';
 import { IMPORTED_ARTICLES } from '../data/importedArticles';
 import { Link } from 'react-router-dom';
@@ -270,7 +270,7 @@ const LiveStream = () => {
         {activeYtId ? (
           <iframe
             title={currentVideo?.title || "Direct TV Life Channel"}
-            src={`https://www.youtube.com/embed/${activeYtId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&playsinline=1&enablejsapi=1`}
+            src={`https://www.youtube-nocookie.com/embed/${activeYtId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&playsinline=1&enablejsapi=1`}
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -328,26 +328,53 @@ const LiveStream = () => {
             {currentVideo?.summary || activeLive?.description || "Suivez en direct et en continu les actualités, reportages et débats sur Life Channel."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleShare}
-          style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            borderRadius: '50%',
-            width: '38px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            cursor: 'pointer',
-            flexShrink: 0
-          }}
-          title="Partager le direct"
-        >
-          <Share2 size={16} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {activeYtId && (
+            <a
+              href={`https://www.youtube.com/watch?v=${activeYtId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                borderRadius: '20px',
+                padding: '6px 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#f87171',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+              title="Regarder directement sur l'application YouTube"
+            >
+              <ExternalLink size={13} /> YouTube
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={handleShare}
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '50%',
+              width: '38px',
+              height: '38px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              cursor: 'pointer',
+              flexShrink: 0
+            }}
+            title="Partager le direct"
+          >
+            <Share2 size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Bannière Publicitaire Légère */}

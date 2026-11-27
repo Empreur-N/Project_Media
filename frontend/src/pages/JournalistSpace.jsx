@@ -22,6 +22,7 @@ const JournalistSpace = () => {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('list'); // 'list' or 'form'
   const [profileUploading, setProfileUploading] = useState(false);
+  const [showCustomThumbnail, setShowCustomThumbnail] = useState(false);
 
   const handleProfilePhotoChange = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -689,95 +690,84 @@ const JournalistSpace = () => {
 
               {/* MODULE DÉDIÉ PUBLICATION VIDÉO */}
               {publicationType === 'VIDEO' && (
-                <div className="form-group journalist-col-full" style={{
-                  background: 'rgba(25, 18, 15, 0.85)',
-                  border: '1px solid rgba(229, 169, 60, 0.35)',
-                  borderRadius: '14px',
-                  padding: '22px',
-                  marginBottom: '10px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                    <Film size={18} style={{ color: 'var(--primary)' }} />
-                    <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#F5F3F0', margin: 0 }}>
-                      Configuration & Format de la Vidéo
-                    </h3>
+                <div className="form-group journalist-col-full video-config-module">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(229, 169, 60, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Film size={18} style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#F5F3F0', margin: 0 }}>
+                        Configuration & Format de la Vidéo
+                      </h3>
+                      <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        Choisissez le format d'affichage adapté aux smartphones ou aux grands écrans.
+                      </p>
+                    </div>
                   </div>
 
                   {/* Choix du format : Format Court (Shorts 9:16) vs Grand Format (16:9) */}
-                  <div style={{ marginBottom: '18px' }}>
-                    <label className="form-label" style={{ marginBottom: '8px', display: 'block' }}>Format d'affichage de la vidéo *</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="form-label" style={{ marginBottom: '10px', display: 'block', fontSize: '13px' }}>
+                      Format d'affichage de la vidéo *
+                    </label>
+                    <div className="video-format-grid">
                       <button
                         type="button"
                         onClick={() => setVideoFormat('SHORT')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '14px',
-                          borderRadius: '10px',
-                          border: videoFormat === 'SHORT' ? '1px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.08)',
-                          background: videoFormat === 'SHORT' ? 'rgba(229, 169, 60, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                          color: '#F5F3F0',
-                          cursor: 'pointer',
-                          textAlign: 'left'
-                        }}
+                        className={`video-format-card ${videoFormat === 'SHORT' ? 'active' : ''}`}
                       >
-                        <div style={{ width: '28px', height: '42px', border: '2px solid var(--primary)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Play size={14} style={{ color: 'var(--primary)' }} />
+                        <div className="video-format-icon-wrap short">
+                          <Play size={15} style={{ color: 'var(--primary)' }} />
                         </div>
-                        <div>
-                          <div style={{ fontWeight: '800', fontSize: '13.5px' }}>Format Court (Short / Reel)</div>
-                          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Ratio 9:16 vertical • Buzz & actu flash</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: '800', fontSize: '14px', color: '#ffffff' }}>Format Court (9:16)</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                            Short / Reel vertical • Idéal smartphone & buzz
+                          </div>
                         </div>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setVideoFormat('LONG')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '14px',
-                          borderRadius: '10px',
-                          border: videoFormat === 'LONG' ? '1px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.08)',
-                          background: videoFormat === 'LONG' ? 'rgba(229, 169, 60, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                          color: '#F5F3F0',
-                          cursor: 'pointer',
-                          textAlign: 'left'
-                        }}
+                        className={`video-format-card ${videoFormat === 'LONG' ? 'active' : ''}`}
                       >
-                        <div style={{ width: '42px', height: '26px', border: '2px solid var(--primary)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Tv size={14} style={{ color: 'var(--primary)' }} />
+                        <div className="video-format-icon-wrap long">
+                          <Tv size={15} style={{ color: 'var(--primary)' }} />
                         </div>
-                        <div>
-                          <div style={{ fontWeight: '800', fontSize: '13.5px' }}>Grand Format (JT / Reportage)</div>
-                          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>Ratio 16:9 • Interviews, débats & documentaires</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: '800', fontSize: '14px', color: '#ffffff' }}>Grand Format (16:9)</div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                            JT, Reportage & Débat • Format paysage classique
+                          </div>
                         </div>
                       </button>
                     </div>
                   </div>
 
                   {/* Source de la vidéo : Lien externe vs Upload fichier */}
-                  <div style={{ marginBottom: '18px' }}>
-                    <label className="form-label" style={{ marginBottom: '8px', display: 'block' }}>Source vidéo *</label>
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="form-label" style={{ marginBottom: '10px', display: 'block', fontSize: '13px' }}>
+                      Origine de la vidéo *
+                    </label>
+                    <div className="video-source-switcher">
                       <button
                         type="button"
                         onClick={() => setVideoSourceType('URL')}
                         className={`btn ${videoSourceType === 'URL' ? 'btn-primary' : 'btn-secondary'}`}
-                        style={{ fontSize: '12.5px', padding: '8px 16px' }}
+                        style={{ fontSize: '13px', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                       >
-                        <Globe size={14} /> Lien Vidéo (YouTube, TikTok, Facebook, MP4)
+                        <Globe size={15} />
+                        <span>Lien vidéo (Réseaux / Web)</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setVideoSourceType('UPLOAD')}
                         className={`btn ${videoSourceType === 'UPLOAD' ? 'btn-primary' : 'btn-secondary'}`}
-                        style={{ fontSize: '12.5px', padding: '8px 16px' }}
+                        style={{ fontSize: '13px', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                       >
-                        <UploadCloud size={14} /> Importer un Fichier Vidéo (MP4, WEBM)
+                        <UploadCloud size={15} />
+                        <span>Téléverser un fichier MP4</span>
                       </button>
                     </div>
 
@@ -788,25 +778,25 @@ const JournalistSpace = () => {
                           className="form-input"
                           value={videoUrl}
                           onChange={(e) => setVideoUrl(e.target.value)}
-                          placeholder="Ex : https://www.youtube.com/watch?v=... ou https://www.tiktok.com/@... ou lien direct .mp4"
-                          style={{ width: '100%', boxSizing: 'border-box' }}
+                          placeholder="Collez ici le lien YouTube, TikTok, Facebook ou direct .mp4..."
+                          style={{ width: '100%', boxSizing: 'border-box', fontSize: '14px', padding: '12px 14px' }}
                         />
-                        <div style={{ fontSize: '12px', color: 'var(--argente)', marginTop: '6px' }}>
-                          Les liens YouTube, TikTok et Facebook sont automatiquement intégrés dans le lecteur officiel et synchronisés sur la page Direct TV & Vidéos.
+                        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
+                          Intégration directe de vos comptes officiels YouTube, TikTok, Facebook et liens vidéo.
                         </div>
                       </div>
                     ) : (
                       <div>
                         {videoPreviewUrl || videoUrl ? (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <FileVideo size={20} style={{ color: 'var(--primary)' }} />
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <FileVideo size={22} style={{ color: 'var(--primary)' }} />
                               <div>
-                                <div style={{ fontSize: '13px', fontWeight: '700', color: '#F5F3F0' }}>
+                                <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#F5F3F0' }}>
                                   {videoFile ? videoFile.name : videoUrl.split('/').pop()}
                                 </div>
-                                <div style={{ fontSize: '11px', color: '#10b981' }}>
-                                  {videoFile ? `${((videoFile.size) / (1024 * 1024)).toFixed(1)} Mo • Fichier prêt` : 'Vidéo active sur le serveur'}
+                                <div style={{ fontSize: '11.5px', color: '#10b981' }}>
+                                  {videoFile ? `${((videoFile.size) / (1024 * 1024)).toFixed(1)} Mo • Fichier prêt` : 'Vidéo active'}
                                 </div>
                               </div>
                             </div>
@@ -820,7 +810,7 @@ const JournalistSpace = () => {
                             </button>
                           </div>
                         ) : (
-                          <label className="image-dropzone" style={{ minHeight: '110px' }}>
+                          <label className="image-dropzone" style={{ minHeight: '100px', padding: '20px' }}>
                             <input
                               type="file"
                               accept="video/mp4,video/webm,video/quicktime"
@@ -828,14 +818,14 @@ const JournalistSpace = () => {
                               style={{ display: 'none' }}
                             />
                             <div className="dropzone-icon-circle">
-                              <Video size={24} style={{ color: 'var(--primary)' }} />
+                              <Video size={22} style={{ color: 'var(--primary)' }} />
                             </div>
                             <div style={{ textAlign: 'center' }}>
                               <p style={{ margin: 0, fontWeight: 700, fontSize: '14px', color: 'var(--text-main)' }}>
-                                Cliquez pour sélectionner votre fichier vidéo (.mp4, .webm, .mov)
+                                Cliquez pour choisir votre vidéo (.mp4, .webm, .mov)
                               </p>
                               <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
-                                Téléchargement direct vers la plateforme de streaming LIFE CHANNEL
+                                Import direct haute définition
                               </p>
                             </div>
                           </label>
@@ -845,22 +835,23 @@ const JournalistSpace = () => {
                   </div>
 
                   {/* Durée estimée de la vidéo */}
-                  <div style={{ maxWidth: '240px' }}>
-                    <label className="form-label">Durée de la vidéo (ex: 0:45 ou 15:30)</label>
+                  <div style={{ maxWidth: '260px' }}>
+                    <label className="form-label" style={{ fontSize: '13px', marginBottom: '6px' }}>Durée estimée (ex: 0:45 ou 8:30)</label>
                     <input
                       type="text"
                       className="form-input"
                       value={videoDuration}
                       onChange={(e) => setVideoDuration(e.target.value)}
                       placeholder={videoFormat === 'SHORT' ? '0:45' : '12:30'}
+                      style={{ fontSize: '14px' }}
                     />
                   </div>
 
                   {/* Aperçu vidéo en direct si lien YouTube ou fichier présent */}
                   {(videoUrl || videoPreviewUrl) && (
-                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                      <div style={{ fontSize: '12.5px', fontWeight: '700', color: 'var(--primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Play size={13} /> Aperçu du lecteur avant publication :
+                    <div style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Play size={14} /> Aperçu du lecteur vidéo :
                       </div>
                       <div style={{
                         position: 'relative',
@@ -868,7 +859,7 @@ const JournalistSpace = () => {
                         maxWidth: videoFormat === 'SHORT' ? '240px' : '480px',
                         aspectRatio: videoFormat === 'SHORT' ? '9 / 16' : '16 / 9',
                         background: '#000',
-                        borderRadius: '10px',
+                        borderRadius: '12px',
                         overflow: 'hidden',
                         border: '1px solid var(--border-color)',
                         boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
@@ -950,98 +941,201 @@ const JournalistSpace = () => {
                 </select>
               </div>
 
-              {/* Cover Image upload (Media Service Integration) */}
-              <div className="form-group journalist-col-full">
-                <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>Image Principale / Vignette de Couverture</span>
-                  {(previewUrl || mainImageUrl) && (
-                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <CheckCircle size={13} /> {previewUrl ? "Nouvelle image prête" : "Image active sur le serveur"}
-                    </span>
-                  )}
-                </label>
+              {/* MODULE COUVERTURE & VIGNETTE (Facultatif pour les vidéos, automatique par défaut) */}
+              {publicationType === 'ARTICLE' ? (
+                <div className="form-group journalist-col-full">
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span>Image Principale / Vignette de Couverture</span>
+                    {(previewUrl || mainImageUrl) && (
+                      <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckCircle size={13} /> {previewUrl ? "Nouvelle image prête" : "Image active sur le serveur"}
+                      </span>
+                    )}
+                  </label>
 
-                {previewUrl || mainImageUrl ? (
-                  <div className="image-preview-card">
-                    <div className="image-preview-wrapper">
-                      <img 
-                        src={previewUrl || getMediaUrl(mainImageUrl)} 
-                        alt="Aperçu couverture" 
-                        className="image-preview-img"
-                      />
-                      <div className="image-preview-overlay">
-                        {previewUrl && (
-                          <div className="image-preview-tag">
-                            <ImageIcon size={14} /> Fichier : {selectedFile?.name} ({((selectedFile?.size || 0) / 1024).toFixed(0)} Ko)
-                          </div>
-                        )}
-                        {!previewUrl && mainImageUrl && (
-                          <div className="image-preview-tag">
-                            <CheckCircle size={14} /> Image : {mainImageUrl.split('/').pop()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="image-preview-actions">
-                      <label htmlFor="article-cover-file" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
-                        <RefreshCw size={15} /> Remplacer l'image
-                        <input
-                          id="article-cover-file"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          style={{ display: 'none' }}
+                  {previewUrl || mainImageUrl ? (
+                    <div className="image-preview-card">
+                      <div className="image-preview-wrapper">
+                        <img 
+                          src={previewUrl || getMediaUrl(mainImageUrl)} 
+                          alt="Aperçu couverture" 
+                          className="image-preview-img"
                         />
-                      </label>
-                      {selectedFile && !uploading && (
+                        <div className="image-preview-overlay">
+                          {previewUrl && (
+                            <div className="image-preview-tag">
+                              <ImageIcon size={14} /> Fichier : {selectedFile?.name} ({((selectedFile?.size || 0) / 1024).toFixed(0)} Ko)
+                            </div>
+                          )}
+                          {!previewUrl && mainImageUrl && (
+                            <div className="image-preview-tag">
+                              <CheckCircle size={14} /> Image : {mainImageUrl.split('/').pop()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="image-preview-actions">
+                        <label htmlFor="article-cover-file" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                          <RefreshCw size={15} /> Remplacer l'image
+                          <input
+                            id="article-cover-file"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                        {selectedFile && !uploading && (
+                          <button
+                            type="button"
+                            onClick={handleUploadImage}
+                            className="btn btn-secondary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                          >
+                            <UploadCloud size={15} /> Téléverser maintenant
+                          </button>
+                        )}
+                        {uploading && (
+                          <span style={{ fontSize: '12px', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="spin"><RefreshCw size={14} /></span> Téléversement...
+                          </span>
+                        )}
                         <button
                           type="button"
-                          onClick={handleUploadImage}
+                          onClick={handleClearImage}
                           className="btn btn-secondary"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--error)' }}
+                          title="Retirer l'image"
                         >
-                          <UploadCloud size={15} /> Téléverser maintenant
+                          <Trash2 size={15} /> Supprimer
                         </button>
-                      )}
-                      {uploading && (
-                        <span style={{ fontSize: '12px', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <span className="spin"><RefreshCw size={14} /></span> Téléversement...
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleClearImage}
-                        className="btn btn-secondary"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--error)' }}
-                        title="Retirer l'image"
-                      >
-                        <Trash2 size={15} /> Supprimer
-                      </button>
+                      </div>
                     </div>
+                  ) : (
+                    <label htmlFor="article-cover-file" className="image-dropzone">
+                      <input
+                        id="article-cover-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <div className="dropzone-icon-circle">
+                        <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: '15px', color: 'var(--text-main)' }}>
+                          Choisir une photo d'illustration ou vignette
+                        </p>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                          Cliquez ici pour sélectionner une photo depuis votre appareil (JPG, PNG, WEBP)
+                        </p>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              ) : (
+                /* Module Vignette Automatique / Facultatif pour publication VIDÉO */
+                <div className="form-group journalist-col-full video-thumbnail-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CheckCircle2 size={17} color="#10b981" />
+                      <span style={{ fontSize: '14px', fontWeight: '800', color: '#F5F3F0' }}>
+                        Image de couverture : Automatique (Aucune photo requise)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomThumbnail(!showCustomThumbnail)}
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(229, 169, 60, 0.3)' }}
+                    >
+                      {showCustomThumbnail ? "Masquer la sélection d'image" : "Vignette personnalisée (Facultatif)"}
+                    </button>
                   </div>
-                ) : (
-                  <label htmlFor="article-cover-file" className="image-dropzone">
-                    <input
-                      id="article-cover-file"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      style={{ display: 'none' }}
-                    />
-                    <div className="dropzone-icon-circle">
-                      <UploadCloud size={24} style={{ color: 'var(--primary)' }} />
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: '1.45' }}>
+                    Pour les reportages et vidéos, l'image de couverture est facultative : elle est générée automatiquement à partir de votre vidéo. Vous pouvez publier directement sans importer de photo supplémentaire.
+                  </p>
+
+                  {/* Aperçu automatique si aucune vignette manuelle n'est sélectionnée */}
+                  {!showCustomThumbnail && !previewUrl && !mainImageUrl && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ width: '64px', height: '40px', borderRadius: '6px', overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {extractYouTubeId(videoUrl) ? (
+                          <img 
+                            src={`https://img.youtube.com/vi/${extractYouTubeId(videoUrl)}/hqdefault.jpg`} 
+                            alt="Vignette auto" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <Film size={18} color="var(--primary)" />
+                        )}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>
+                        {extractYouTubeId(videoUrl) ? "Vignette YouTube détectée et prête à être utilisée" : "Vignette générée automatiquement à la publication"}
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <p style={{ margin: 0, fontWeight: 700, fontSize: '15px', color: 'var(--text-main)' }}>
-                        Choisir une photo d'illustration ou vignette
-                      </p>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
-                        Cliquez ici pour sélectionner une photo depuis votre appareil (JPG, PNG, WEBP)
-                      </p>
+                  )}
+
+                  {/* Sélection manuelle d'une image si l'auteur le souhaite */}
+                  {(showCustomThumbnail || previewUrl || mainImageUrl) && (
+                    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      {previewUrl || mainImageUrl ? (
+                        <div className="image-preview-card">
+                          <div className="image-preview-wrapper" style={{ maxHeight: '180px' }}>
+                            <img 
+                              src={previewUrl || getMediaUrl(mainImageUrl)} 
+                              alt="Vignette personnalisée" 
+                              className="image-preview-img"
+                            />
+                          </div>
+                          <div className="image-preview-actions">
+                            <label htmlFor="article-cover-file-video" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+                              <RefreshCw size={14} /> Changer la vignette
+                              <input
+                                id="article-cover-file-video"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleClearImage}
+                              className="btn btn-secondary"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--error)' }}
+                            >
+                              <Trash2 size={14} /> Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label htmlFor="article-cover-file-video" className="image-dropzone" style={{ minHeight: '90px', padding: '16px' }}>
+                          <input
+                            id="article-cover-file-video"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                          />
+                          <div className="dropzone-icon-circle" style={{ width: '36px', height: '36px' }}>
+                            <UploadCloud size={18} style={{ color: 'var(--primary)' }} />
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ margin: 0, fontWeight: 700, fontSize: '13px', color: 'var(--text-main)' }}>
+                              Sélectionner une vignette personnalisée (Optionnel)
+                            </p>
+                            <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted)' }}>
+                              JPG, PNG ou WEBP
+                            </p>
+                          </div>
+                        </label>
+                      )}
                     </div>
-                  </label>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <div className="form-group journalist-col-full">
                 <label className="form-label">{publicationType === 'VIDEO' ? "Description courte de la vidéo" : "Résumé de l'article (max. 1000 caractères)"}</label>

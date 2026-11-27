@@ -3503,12 +3503,34 @@ html[data-font-size="large"] .article-card-summary {
 /* ========================================================
    STYLES PAGE "MOI" (PROFIL UTILISATEUR STYLE PHOENIX OPTIMISÉ)
    ======================================================== */
+.moi-screen-mode {
+  background: #0d0d10 !important;
+  min-height: 100vh;
+}
+
+.moi-screen-mode .main-content {
+  padding-top: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  background: #0d0d10 !important;
+}
+
 .moi-page-container {
-  max-width: 580px;
+  max-width: 520px;
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 18px 110px;
+  padding: 24px 16px 110px;
   min-height: calc(100vh - 60px);
   box-sizing: border-box;
+}
+
+@media (max-width: 680px) {
+  .moi-page-container {
+    padding: 16px 14px 90px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .moi-header-title {
@@ -3578,10 +3600,9 @@ html[data-font-size="large"] .article-card-summary {
   color: #d1d5db;
   font-style: italic;
   margin: 0 0 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
 .moi-user-role-badge {
@@ -3775,6 +3796,108 @@ html[data-font-size="large"] .article-card-summary {
 
 .moi-avatar-camera-btn:hover {
   transform: scale(1.1);
+}
+
+/* ========================================================
+   MODULE DE PUBLICATION VIDÉO & FORMATS ERGONOMIQUES (MOBILE FIRST)
+   ======================================================== */
+.video-config-module {
+  background: #17181f;
+  border: 1px solid rgba(229, 169, 60, 0.28);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.video-format-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 680px) {
+  .video-format-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .video-config-module {
+    padding: 16px 14px !important;
+  }
+}
+
+.video-format-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: #F5F3F0;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+.video-format-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(229, 169, 60, 0.3);
+}
+
+.video-format-card.active {
+  border: 1.5px solid var(--primary);
+  background: rgba(229, 169, 60, 0.12);
+  box-shadow: 0 0 16px rgba(229, 169, 60, 0.15);
+}
+
+.video-format-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.video-format-icon-wrap.short {
+  width: 32px;
+  height: 48px;
+  border: 2px solid var(--primary);
+}
+
+.video-format-icon-wrap.long {
+  width: 48px;
+  height: 32px;
+  border: 2px solid var(--primary);
+}
+
+.video-source-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 580px) {
+  .video-source-switcher {
+    flex-direction: column;
+  }
+  .video-source-switcher button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.video-thumbnail-card {
+  background: #181920;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* ========================================================

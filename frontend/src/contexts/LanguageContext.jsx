@@ -231,12 +231,12 @@ const translations = {
     loading: 'Cargando contenido...',
 
     // Mobile Bottom Nav & Regions
-    bottomNavTopStories: 'A la una',
-    bottomNavLive: 'Directo TV',
-    bottomNavFeed: 'En continuo',
+    bottomNavTopStories: 'À la une',
+    bottomNavLive: 'Direct TV',
+    bottomNavFeed: 'En continu',
     bottomNavReplays: 'Replays',
-    bottomNavMenu: 'Menú',
-    regionAll: 'A la una',
+    bottomNavMenu: 'Menu',
+    regionAll: 'À la une',
     regionRdc: 'RDC y Kinshasa',
     regionAfrica: 'África',
     regionWorld: 'Mundo',
